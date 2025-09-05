@@ -1,0 +1,69 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: "git@github.com:IrrationalCharm/gecko2-config.git"
+          ignore-local-ssh-settings: true
+          default-label: main
+          private-key: |
+            -----BEGIN RSA PRIVATE KEY-----
+            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
+            -----END RSA PRIVATE KEY-----
+          refresh-rate: 60
+          strict-host-key-checking: false
+          clone-on-start: true
+
