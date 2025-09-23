@@ -5,18 +5,22 @@ import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
+import eu.irrationalcharm.userservice.entity.UserFriendshipPreferenceEntity;
 import eu.irrationalcharm.userservice.entity.UserIdentityProviderEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.IdentityProviderType;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
+import eu.irrationalcharm.userservice.repository.UserFriendshipPreferenceRepository;
 import eu.irrationalcharm.userservice.repository.UserIdentityProviderRepository;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -29,6 +33,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserIdentityProviderRepository userIdpRepository;
+
 
 
     @Transactional(readOnly = true)
@@ -57,6 +62,16 @@ public class UserService {
         }
 
         return Optional.empty();
+    }
+
+
+    @Transactional(readOnly = true)
+    public UserEntity getEntityByUsernameOrThrow(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() ->
+                new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        ErrorCode.USERNAME_NOT_FOUND,
+                        String.format("User with username %s not found.", username)));
     }
 
 
@@ -96,4 +111,7 @@ public class UserService {
     public List<PublicUserResponseDto> findAllUsersByUserIdAsDto(List<UUID> userFriends) {
         return userRepository.findAllUsersByUserId(userFriends);
     }
+
+
+
 }

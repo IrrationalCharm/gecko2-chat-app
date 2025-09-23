@@ -10,12 +10,14 @@ public enum SuccessfulCode {
     ONBOARDING_REQUIRED,
 
     //Friend requests domain
+    FRIENDS_LIST,
     FRIEND_REQUEST_SENT,
     FRIEND_REQUEST_DECLINED,
     FRIEND_REQUEST_ACCEPTED,
     FRIEND_REQUEST_CANCELLED,
     FRIEND_REQUEST_PENDING,
 
-    //Friendship domain
-    FRIENDS_LIST
+    FRIEND_PREFERENCE_FOUND, //Friendship domain
+    FRIEND_PREFERENCE_UPDATED,
+
 }

@@ -16,17 +16,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class FriendRequestService {
 
-
     private final UserService userService;
     private final UserRepository userRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipService friendshipService;
-    private final UserFriendshipServicePreferenceService friendPreferenceService;
+    private final UserFriendshipPreferenceService friendPreferenceService;
 
 
     @Transactional
@@ -67,6 +67,9 @@ public class FriendRequestService {
             case ACCEPT_REQUEST -> {
                 friendshipService.addFriendOrThrow(requestInitiatorEntity.getId(), userEntity.getId());
                 friendRequestRepository.delete(friendRequestEntity);
+                friendPreferenceService.createNewFriendshipPreferenceEntity(userEntity.getId(), requestInitiatorEntity.getId());
+                friendPreferenceService.createNewFriendshipPreferenceEntity(requestInitiatorEntity.getId(), userEntity.getId());
+
                 yield SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
             }
             case DECLINE_REQUEST -> {
@@ -98,4 +101,13 @@ public class FriendRequestService {
 
     }
 
+    /**
+     * removes any remaining friend requests on both sides
+     * @param userId
+     * @param toBeBlockedUserId
+     */
+    public void removeFriendRequestBetweenUsers(UUID userId, UUID toBeBlockedUserId) {
+        friendRequestRepository.findExistingRequestsBetweenUsers(userId, toBeBlockedUserId)
+                .ifPresent(friendRequestRepository::delete);
+    }
 }

@@ -23,12 +23,12 @@ public class UserFriendshipPreferenceEntity extends BaseEntity {
     private UUID friendId;
 
     @Column(name = "is_blocked")
-    private Boolean isBlocked;
+    private boolean isBlocked;
 
     @Column(name = "is_muted")
-    private Boolean isMuted;
+    private boolean isMuted;
 
     @Column(name = "is_pinned")
-    private Boolean isPinned;
+    private boolean isPinned;
 
 }

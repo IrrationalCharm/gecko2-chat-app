@@ -21,7 +21,7 @@ import java.util.UUID;
 public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
-    private final UserFriendshipServicePreferenceService friendPreferenceService;
+    private final UserFriendshipPreferenceService friendPreferenceService;
     private final UserService userService;
 
     /**
@@ -56,6 +56,16 @@ public class FriendshipService {
         newFriendship.setFriendB(userB);
 
         friendshipRepository.save(newFriendship);
+    }
+
+
+    private void removeFriend(UUID userA, UUID userB) {
+        if (areFriends(userA, userB)) {
+            UUID friendA = userA.compareTo(userB) > 0 ? userA : userB;
+            UUID friendB = userA.compareTo(userB) < 0 ? userA : userB;
+
+            friendshipRepository.deleteByFriendAAndFriendB(friendA, friendB);
+        }
     }
 
 

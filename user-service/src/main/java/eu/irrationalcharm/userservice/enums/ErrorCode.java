@@ -1,6 +1,8 @@
 package eu.irrationalcharm.userservice.enums;
 
 public enum ErrorCode {
+    //Friend Preference domain
+    FRIEND_PREFERENCE_NOT_FOUND,
 
     //Hibernate validation
     VALIDATION_ERROR,

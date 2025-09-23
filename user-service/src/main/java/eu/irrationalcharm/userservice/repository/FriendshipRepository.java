@@ -21,4 +21,7 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
         select f.friendA from FriendshipEntity f where f.friendB = :userId
     """)
     List<UUID> findAllFriendsByUserId(UUID userId);
+
+
+    void deleteByFriendAAndFriendB(UUID friendA, UUID friendB);
 }
