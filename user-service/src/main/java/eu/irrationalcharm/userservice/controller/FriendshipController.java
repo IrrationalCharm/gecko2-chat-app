@@ -51,6 +51,21 @@ public class FriendshipController {
     }
 
 
+    @GetMapping("/requests")
+    public ResponseEntity<SuccessResponseDto< List<PublicUserResponseDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
+
+        List<PublicUserResponseDto> pendingFriendRequests = friendRequestService.getPendingFriendRequests(jwt);
+
+        return ApiResponse.success(
+                HttpStatus.OK,
+                SuccessfulCode.FRIEND_REQUEST_PENDING,
+                "List of pending friend requests",
+                pendingFriendRequests,
+                request
+        );
+    }
+
+
     @PostMapping("/requests/{username}")
     public ResponseEntity<SuccessResponseDto<Object>> sendFriendRequest(@PathVariable("username") @UsernameValid String username,
                                                                         @AuthenticationPrincipal Jwt jwt,
@@ -67,16 +82,17 @@ public class FriendshipController {
     }
 
 
-    @GetMapping("/requests")
-    public ResponseEntity<SuccessResponseDto< List<PublicUserResponseDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
-
-        List<PublicUserResponseDto> pendingFriendRequests = friendRequestService.getPendingFriendRequests(jwt);
+    @DeleteMapping("/{username}")
+    public ResponseEntity<SuccessResponseDto<Object>> removeFriend(@PathVariable @UsernameValid String username,
+                                                                   @AuthenticationPrincipal Jwt jwt,
+                                                                   HttpServletRequest request) {
+        friendshipOrchestrator.removeFriend(jwt, username);
 
         return ApiResponse.success(
-                HttpStatus.OK,
-                SuccessfulCode.FRIEND_REQUEST_PENDING,
-                "List of pending friend requests",
-                pendingFriendRequests,
+                HttpStatus.CREATED,
+                SuccessfulCode.FRIEND_REMOVED,
+                String.format("Successfully removed %s as friend", username),
+                null,
                 request
         );
     }

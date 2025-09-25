@@ -19,5 +19,6 @@ public enum SuccessfulCode {
 
     FRIEND_PREFERENCE_FOUND, //Friendship domain
     FRIEND_PREFERENCE_UPDATED,
+    FRIEND_REMOVED,
 
 }

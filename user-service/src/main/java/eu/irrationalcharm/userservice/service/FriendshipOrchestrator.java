@@ -47,6 +47,7 @@ public class FriendshipOrchestrator {
     }
 
 
+    @Transactional
     public SuccessfulCode updateFriendRequest(Jwt jwt, UpdateFriendRequestDto friendRequestDto, String username) {
         UserEntity requestUpdater = userService.getAuthenticatedEntityOrThrow(jwt);
         UserEntity requestRecipient = userService.getEntityByUsernameOrThrow(username);
@@ -71,5 +72,16 @@ public class FriendshipOrchestrator {
             }
         };
 
+    }
+
+
+    @Transactional
+    public void removeFriend(Jwt jwt, String username) {
+        UserEntity principal = userService.getAuthenticatedEntityOrThrow(jwt);
+        UserEntity friendToBeRemoved = userService.getEntityByUsernameOrThrow(username);
+
+        if (!friendshipService.removeFriend(principal, friendToBeRemoved)) {
+            throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_NOT_FOUND, String.format("%s is not your friend", username));
+        }
     }
 }

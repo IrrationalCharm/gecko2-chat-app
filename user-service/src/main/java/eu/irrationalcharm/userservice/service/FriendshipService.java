@@ -67,12 +67,17 @@ public class FriendshipService {
 
 
     @Transactional
-    public void removeFriend(UserEntity userA, UserEntity userB) {
+    public boolean removeFriend(UserEntity userA, UserEntity userB) {
         FriendshipId friendshipId = getOrderedFriendshipId(userA, userB);
 
         Optional<FriendshipEntity> friendship = friendshipRepository.findByFriendAAndFriendB(friendshipId.friendA, friendshipId.friendB);
 
-        friendship.ifPresent(friendshipRepository::delete);
+        if( friendship.isPresent() ) {
+            friendshipRepository.delete(friendship.get());
+            return true;
+        }
+
+        return false;
     }
 
 

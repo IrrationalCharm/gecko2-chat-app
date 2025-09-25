@@ -15,6 +15,7 @@ public enum ErrorCode {
     FRIEND_REQUEST_NOT_FOUND,
 
     //User domain
+    FRIEND_NOT_FOUND,
     USERNAME_ALREADY_EXISTS,
     EMAIL_TAKEN,
     USERNAME_NOT_FOUND,
