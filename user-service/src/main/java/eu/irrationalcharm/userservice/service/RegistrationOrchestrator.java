@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
-public class RegistrationService {
+public class RegistrationOrchestrator {
 
     private final UserRepository userRepository;
     private final IdentityProviderService identityProviderService;

@@ -5,7 +5,7 @@ import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.service.RegistrationService;
+import eu.irrationalcharm.userservice.service.RegistrationOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class RegistrationController {
 
-    private final RegistrationService registrationService;
+    private final RegistrationOrchestrator registrationOrchestrator;
 
     @PostMapping("/onboard")
     public ResponseEntity<SuccessResponseDto<UserDto>> completeOnBoarding(
             @RequestBody @Valid OnBoardingRequestDto boardingResponseDto, @AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
 
-        UserDto userDto = registrationService.onBoarding(boardingResponseDto, jwt);
+        UserDto userDto = registrationOrchestrator.onBoarding(boardingResponseDto, jwt);
 
         return ApiResponse.success(
                 HttpStatus.CREATED,

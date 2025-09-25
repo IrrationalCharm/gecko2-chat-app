@@ -20,11 +20,13 @@ public class FriendshipEntity {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "friend_a")
-    private UUID friendA;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "friend_a", referencedColumnName = "id")
+    private UserEntity friendA;
 
-    @Column(name = "friend_b")
-    private UUID friendB;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "friend_b", referencedColumnName = "id")
+    private UserEntity friendB;
 
     @CreatedDate
     private LocalDateTime created_at;
@@ -35,11 +37,14 @@ public class FriendshipEntity {
      */
     @PrePersist
     public void prePersist() {
-        if (friendA == null || friendB == null)
+        UUID friendA_id = friendA.getId();
+        UUID friendB_id = friendB.getId();
+
+        if (friendA_id == null || friendB.getId() == null)
             return;
 
-        if (friendA.compareTo(friendB) < 0) {
-            UUID placeholder = friendA;
+        if (friendA_id.compareTo(friendB_id) < 0) {
+            UserEntity placeholder = friendA;
             friendA = friendB;
             friendB = placeholder;
         }

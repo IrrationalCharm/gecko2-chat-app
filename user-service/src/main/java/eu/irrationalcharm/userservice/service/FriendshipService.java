@@ -8,47 +8,76 @@ import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.repository.FriendshipRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
-    private final UserFriendshipPreferenceService friendPreferenceService;
-    private final UserService userService;
-
-    /**
-     *If two users are friends, and is persisted into FriendshipRepository, automatically it is determined which UUID
-     *has the higher value and its stored accordingly. On lookup, we just find the higher UUID and set it as the first parameter.
-     */
-    public boolean areFriends(UUID userA, UUID userB) {
-        UUID friendA = userA.compareTo(userB) > 0 ? userA : userB;
-        UUID friendB = userA.compareTo(userB) < 0 ? userA : userB;
-
-        return friendshipRepository.findByFriendAAndFriendB(friendA, friendB).isPresent();
-    }
 
 
     @Transactional(readOnly = true)
-    public List<PublicUserResponseDto> getFriends(Jwt jwt) {
-        UserEntity userEntity = userService.getAuthenticatedEntityOrThrow(jwt);
-        List<UUID> userFriends = friendshipRepository.findAllFriendsByUserId(userEntity.getId());
+    public boolean areFriends(UserEntity userA, UserEntity userB) {
+        FriendshipId orderedFriendshipIds = getOrderedFriendshipId(userA, userB);
 
-        if (userFriends.isEmpty())
-            return Collections.emptyList();
-
-        return userService.findAllUsersByUserIdAsDto(userFriends);
+        return friendshipRepository.existsByFriendAAndFriendB(orderedFriendshipIds.friendA, orderedFriendshipIds.friendB);
     }
 
 
-    public void addFriendOrThrow(UUID userA, UUID userB) {
+    /**
+     * Only needed on lookup, not persistence.
+     * If two users are friends, and is persisted into FriendshipRepository, automatically it is determined which UUID
+     * has the higher value and its stored accordingly. Look @PrePersist in FriendshipEntity.
+     * On lookup, we just find the higher UUID and set it as the first parameter.
+     */
+    private FriendshipId getOrderedFriendshipId(UserEntity unorderedUserA, UserEntity unorderedUserB) {
+        UUID userA_id = unorderedUserA.getId();
+        UUID userB_id = unorderedUserB.getId();
+
+        UserEntity orderedUserA = userA_id.compareTo(userB_id) > 0 ? unorderedUserA : unorderedUserB;
+        UserEntity orderedUserB = userA_id.compareTo(userB_id) < 0 ? unorderedUserA : unorderedUserB;
+
+        return new FriendshipId(orderedUserA, orderedUserB);
+    }
+
+    private record FriendshipId(UserEntity friendA, UserEntity friendB) {  }
+
+
+    @Transactional(readOnly = true)
+    public Set<PublicUserResponseDto> getFriends(UserEntity userEntity) {
+        Set<UserEntity> userFriends = friendshipRepository.findAllFriendsByUserId(userEntity);
+
+        if (userFriends.isEmpty())
+            return Collections.emptySet();
+
+        return userFriends.stream()
+                .map(user -> PublicUserResponseDto.builder()
+                        .displayName(user.getDisplayName())
+                        .profileImageUrl(user.getProfileImageUrl())
+                        .username(user.getUsername())
+                        .profileBio(user.getProfileBio())
+                        .build())
+                .collect(Collectors.toSet());
+    }
+
+
+    @Transactional
+    public void removeFriend(UserEntity userA, UserEntity userB) {
+        FriendshipId friendshipId = getOrderedFriendshipId(userA, userB);
+
+        Optional<FriendshipEntity> friendship = friendshipRepository.findByFriendAAndFriendB(friendshipId.friendA, friendshipId.friendB);
+
+        friendship.ifPresent(friendshipRepository::delete);
+    }
+
+
+    @Transactional
+    public void addFriendOrThrow(UserEntity userA, UserEntity userB) {
         validateFriendshipOrThrow(userA, userB);
 
         var newFriendship = new FriendshipEntity();
@@ -59,26 +88,12 @@ public class FriendshipService {
     }
 
 
-    private void removeFriend(UUID userA, UUID userB) {
-        if (areFriends(userA, userB)) {
-            UUID friendA = userA.compareTo(userB) > 0 ? userA : userB;
-            UUID friendB = userA.compareTo(userB) < 0 ? userA : userB;
-
-            friendshipRepository.deleteByFriendAAndFriendB(friendA, friendB);
-        }
-    }
-
-
-    private void validateFriendshipOrThrow(UUID userA, UUID userB) {
-        if (userA.compareTo(userB) == 0)
+    @SuppressWarnings("SpringTransactionalMethodCallsInspection")
+    private void validateFriendshipOrThrow(UserEntity userA, UserEntity userB) {
+        if (userA.getId().compareTo(userB.getId()) == 0)
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.FRIEND_REQUEST_SELF, "Cannot add yourself as friend.");
-
-        if (friendPreferenceService.isBlocking(userA, userB) || friendPreferenceService.isBlocking(userB, userA))
-            throw new BusinessException(HttpStatus.FORBIDDEN, ErrorCode.FRIEND_REQUEST_BLOCKED_BY_USER, "Cannot add friend");
 
         if (areFriends(userA, userB))
             throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.FRIEND_REQUEST_ALREADY_FRIENDS, "Cannot add friend. Users are already friends");
     }
-
-
 }

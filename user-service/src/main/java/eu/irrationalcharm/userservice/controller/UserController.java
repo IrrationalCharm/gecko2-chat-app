@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.controller;
 
 
+import eu.irrationalcharm.userservice.annotation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.dto.UserDto;
@@ -27,7 +28,8 @@ public class UserController {
 
 
     @GetMapping("/{username}")
-    public ResponseEntity<SuccessResponseDto<PublicUserResponseDto>> fetchPublicProfile(@PathVariable String username, HttpServletRequest request) {
+    public ResponseEntity<SuccessResponseDto<PublicUserResponseDto>> fetchPublicProfile(@PathVariable @UsernameValid String username,
+                                                                                        HttpServletRequest request) {
 
         PublicUserResponseDto publicUser = userService.fetchPublicProfile(username);
 
@@ -42,9 +44,10 @@ public class UserController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<SuccessResponseDto<UserDto>> fetchMe(@AuthenticationPrincipal Jwt authJwt, HttpServletRequest request) {
+    public ResponseEntity<SuccessResponseDto<UserDto>> fetchMe(@AuthenticationPrincipal Jwt authJwt,
+                                                               HttpServletRequest request) {
 
-        Optional<UserDto> optionalUserDto = userService.fetchMe(authJwt);
+        Optional<UserDto> optionalUserDto = userService.getAuthenticatedDto(authJwt);
         SuccessfulCode successfulCode;
         UserDto userDto = null;
 
