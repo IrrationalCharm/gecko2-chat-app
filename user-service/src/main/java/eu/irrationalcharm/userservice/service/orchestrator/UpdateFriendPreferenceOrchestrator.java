@@ -1,10 +1,14 @@
-package eu.irrationalcharm.userservice.service;
+package eu.irrationalcharm.userservice.service.orchestrator;
 
 import eu.irrationalcharm.userservice.dto.response.FriendPreferenceDto;
 import eu.irrationalcharm.userservice.dto.response.PatchFriendPreferenceDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.entity.UserFriendshipPreferenceEntity;
 import eu.irrationalcharm.userservice.repository.UserFriendshipPreferenceRepository;
+import eu.irrationalcharm.userservice.service.FriendRequestService;
+import eu.irrationalcharm.userservice.service.FriendshipService;
+import eu.irrationalcharm.userservice.service.UserFriendshipPreferenceService;
+import eu.irrationalcharm.userservice.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;

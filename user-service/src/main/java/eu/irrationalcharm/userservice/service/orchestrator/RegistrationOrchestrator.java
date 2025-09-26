@@ -1,4 +1,4 @@
-package eu.irrationalcharm.userservice.service;
+package eu.irrationalcharm.userservice.service.orchestrator;
 
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
@@ -9,6 +9,8 @@ import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 
+import eu.irrationalcharm.userservice.service.IdentityProviderService;
+import eu.irrationalcharm.userservice.service.UserValidatorService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;

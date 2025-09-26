@@ -6,7 +6,7 @@ import eu.irrationalcharm.userservice.dto.response.PatchFriendPreferenceDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.service.UpdateFriendPreferenceOrchestrator;
+import eu.irrationalcharm.userservice.service.orchestrator.UpdateFriendPreferenceOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

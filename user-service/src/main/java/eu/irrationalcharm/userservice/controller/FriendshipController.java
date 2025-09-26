@@ -9,7 +9,7 @@ import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
-import eu.irrationalcharm.userservice.service.FriendshipOrchestrator;
+import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

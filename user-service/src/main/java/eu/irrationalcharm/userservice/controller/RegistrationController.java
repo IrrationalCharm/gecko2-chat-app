@@ -5,7 +5,7 @@ import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.service.RegistrationOrchestrator;
+import eu.irrationalcharm.userservice.service.orchestrator.RegistrationOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

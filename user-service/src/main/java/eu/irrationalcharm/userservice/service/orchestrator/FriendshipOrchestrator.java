@@ -1,4 +1,4 @@
-package eu.irrationalcharm.userservice.service;
+package eu.irrationalcharm.userservice.service.orchestrator;
 
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
@@ -6,6 +6,10 @@ import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
+import eu.irrationalcharm.userservice.service.FriendRequestService;
+import eu.irrationalcharm.userservice.service.FriendshipService;
+import eu.irrationalcharm.userservice.service.UserFriendshipPreferenceService;
+import eu.irrationalcharm.userservice.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
