@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway
+  config:
+    import: configserver:http://localhost:8888
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/user-service/**
