@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -31,6 +32,7 @@ public class MyChannelInterceptor implements ChannelInterceptor {
 
                 Jwt jwt = jwtDecoder.decode(token);
                 JwtAuthenticationToken jwtAuthToken = (JwtAuthenticationToken) authenticationConverter.convert(jwt);
+                SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
                 accessor.setUser(jwtAuthToken);
             }
         }
