@@ -32,7 +32,6 @@ public class MyChannelInterceptor implements ChannelInterceptor {
 
                 Jwt jwt = jwtDecoder.decode(token);
                 JwtAuthenticationToken jwtAuthToken = (JwtAuthenticationToken) authenticationConverter.convert(jwt);
-                SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
                 accessor.setUser(jwtAuthToken);
             }
         }
