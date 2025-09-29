@@ -71,6 +71,15 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
+    public Optional<UserEntity> getAuthenticatedEntity(Jwt authJwt) {
+        String authId = authJwt.getClaimAsString(JwtClaims.SUBJECT);
+        IdentityProviderType idpType = IdentityProviderType.fromIssuer(authJwt.getClaimAsString(JwtClaims.ISSUER));
+
+        return userIdpRepository.findUserIdByProviderAndProviderUserId(idpType, authId);
+    }
+
+
+    @Transactional(readOnly = true)
     public UserEntity getEntityByUsernameOrThrow(String username) {
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new BusinessException(
