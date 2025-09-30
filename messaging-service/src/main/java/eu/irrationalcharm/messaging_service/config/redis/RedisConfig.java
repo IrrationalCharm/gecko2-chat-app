@@ -1,9 +1,12 @@
 package eu.irrationalcharm.messaging_service.config.redis;
 
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -26,20 +29,20 @@ public class RedisConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         var objectMapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
-                .activateDefaultTyping( // It tells Jackson to include the Java class name "@class": "eu.irrationalcharm...UserSocialGraphDto" in the JSON it stores in Redis.
-                        BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
-                        ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE
-                );
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        var redisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        // Use Jackson2JsonRedisSerializer with target class
+        var valueSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserSocialGraphDto.class);
+
 
         var redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer))
                 .entryTtl(Duration.ofDays(1));
 
-        return RedisCacheManager.builder(connectionFactory)
+        return RedisCacheManager
+                .builder(connectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
                 .build();
     }
@@ -75,9 +78,4 @@ public class RedisConfig {
 
         return template;
     }
-
-
-
-
-
 }

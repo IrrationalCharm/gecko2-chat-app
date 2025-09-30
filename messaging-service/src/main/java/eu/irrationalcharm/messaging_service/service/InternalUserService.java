@@ -14,7 +14,7 @@ public class InternalUserService {
 
     private final UserServiceClient userServiceClient;
 
-    @Cacheable(cacheNames = "user-graph", key = "#idpUUID")
+    @Cacheable(value = "user-graph", key = "#idpUUID")
     public UserSocialGraphDto getUserSocialGraphDto(@NotNull String idpUUID){
         ResponseEntity<UserSocialGraphDto> response = userServiceClient.getUserSocialGraph();
 
