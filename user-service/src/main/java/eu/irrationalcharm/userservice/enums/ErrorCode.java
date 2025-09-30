@@ -25,6 +25,9 @@ public enum ErrorCode {
     //User Identity Provider domain
     IDP_ACCOUNT_ALREADY_LINKED,
     IDP_PROVIDER_ALREADY_REGISTERED,
-    IDP_NOT_SUPPORTED
+    IDP_NOT_SUPPORTED,
+
+    //Internal
+    UNAUTHORIZED_ACCESS,
 
 }

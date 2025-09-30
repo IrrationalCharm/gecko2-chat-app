@@ -1,12 +1,14 @@
 package eu.irrationalcharm.userservice.service.orchestrator;
 
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.internal.response.UserSocialGraphDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
+import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.service.FriendshipService;
 import eu.irrationalcharm.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
