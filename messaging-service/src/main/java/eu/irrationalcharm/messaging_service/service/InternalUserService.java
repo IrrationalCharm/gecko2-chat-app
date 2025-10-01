@@ -14,6 +14,12 @@ public class InternalUserService {
 
     private final UserServiceClient userServiceClient;
 
+
+    /**
+     * Get user friends list by Identity Provider ID
+     * @param idpUUID Identity Provider ID
+     * @return UserSocialGraphDto
+     */
     @Cacheable(value = "user-graph", key = "#idpUUID")
     public UserSocialGraphDto getUserSocialGraphDto(@NotNull String idpUUID){
         ResponseEntity<UserSocialGraphDto> response = userServiceClient.getUserSocialGraph();

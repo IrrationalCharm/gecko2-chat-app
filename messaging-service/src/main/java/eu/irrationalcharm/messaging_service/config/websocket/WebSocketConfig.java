@@ -23,7 +23,7 @@ import java.util.List;
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final MyChannelInterceptor myChannelInterceptor;
+    private final AuthenticationChannelInterceptor authenticationChannelInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -44,7 +44,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(myChannelInterceptor);
+        registration.interceptors(authenticationChannelInterceptor);
     }
 
     @Override

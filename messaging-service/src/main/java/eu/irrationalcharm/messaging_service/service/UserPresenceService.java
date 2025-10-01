@@ -18,8 +18,8 @@ public class UserPresenceService {
     private final RedisTemplate<String, String> redisTemplate;
 
 
-    public void setUserOnline(String userId, String sessionId) {
-        String key = USER_STATUS_KEY_PREFIX + userId;
+    public void setUserOnline(String username, String sessionId) {
+        String key = USER_STATUS_KEY_PREFIX + username;
 
         Map<String, String> statusDetails = Map.of(
                 "status", "online",
@@ -30,10 +30,16 @@ public class UserPresenceService {
         redisTemplate.opsForHash().putAll(key, statusDetails);
         redisTemplate.expire(key, Duration.ofMinutes(USER_STATUS_TTL_MINUTES));
 
-        redisTemplate.opsForSet().add(ONLINE_USERS_KEY, userId);
+        redisTemplate.opsForSet().add(ONLINE_USERS_KEY, username);
     }
 
+    public boolean isUserOnline(String username) {
+        Boolean isOnline = redisTemplate.opsForSet().isMember(ONLINE_USERS_KEY, username);
+        if (isOnline == null)
+            return false;
 
+        return isOnline;
+    }
 
     public void setUserOffline(String userId) {
         String key = USER_STATUS_KEY_PREFIX + userId;

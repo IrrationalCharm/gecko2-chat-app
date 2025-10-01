@@ -1,5 +1,7 @@
 package eu.irrationalcharm.messaging_service.listener;
 
+import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
+import eu.irrationalcharm.messaging_service.service.InternalUserService;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,8 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 public class WebsocketEventListener {
 
     private final UserPresenceService userPresenceService;
+    private final InternalUserService internalUserService;
+    private final WebSocketSessionRegistry sessionRegistry;
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
@@ -25,13 +29,18 @@ public class WebsocketEventListener {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         if(authentication != null) {
-            String userId = authentication.getName();
+            String idpUuid = authentication.getName();
             String sessionId = accessor.getSessionId();
-            userPresenceService.setUserOnline(authentication.getName(), accessor.getSessionId());
 
-            log.info("User connected: {}, session id: {}", userId, sessionId);
+            var userSocialGraph = internalUserService.getUserSocialGraphDto(idpUuid);
 
-        } else throw new RuntimeException("Something went wrong, user should be authenticated here!!");
+            userPresenceService.setUserOnline(userSocialGraph.username(), sessionId);
+            sessionRegistry.registerSession(userSocialGraph.username(), sessionId);
+
+            log.info("User connected: {}, session id: {}", idpUuid, sessionId);
+
+        } else
+            throw new RuntimeException("Something went wrong, user should be authenticated here!!");
     }
 
     @EventListener
@@ -40,13 +49,14 @@ public class WebsocketEventListener {
         Authentication authentication = (Authentication) accessor.getUser();
 
         if (authentication != null) {
-            userPresenceService.setUserOffline(authentication.getName());
+            var userSocialGraph = internalUserService.getUserSocialGraphDto(authentication.getName());
+            userPresenceService.setUserOffline(userSocialGraph.username());
+            sessionRegistry.removeSession(userSocialGraph.username());
+
             log.info("User disconnected: {}, session id: {}", authentication.getName(), accessor.getSessionId());
         } else {
             log.info("Unauthenticated user disconnected, session id: {}", accessor.getSessionId());
         }
-
-
     }
 
 }
