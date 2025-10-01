@@ -1,7 +1,8 @@
 package eu.irrationalcharm.messaging_service.listener;
 
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
-import eu.irrationalcharm.messaging_service.service.InternalUserService;
+import eu.irrationalcharm.messaging_service.security.CustomWebSocketAuthToken;
+import eu.irrationalcharm.messaging_service.security.WebSocketPrincipal;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,6 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 public class WebsocketEventListener {
 
     private final UserPresenceService userPresenceService;
-    private final InternalUserService internalUserService;
     private final WebSocketSessionRegistry sessionRegistry;
 
     @EventListener
@@ -29,15 +29,13 @@ public class WebsocketEventListener {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         if(authentication != null) {
-            String idpUuid = authentication.getName();
+            WebSocketPrincipal principal = (WebSocketPrincipal) authentication.getPrincipal();
             String sessionId = accessor.getSessionId();
 
-            var userSocialGraph = internalUserService.getUserSocialGraphDto(idpUuid);
+            userPresenceService.setUserOnline(principal.getName(), sessionId);
+            sessionRegistry.registerSession(principal.getName(), sessionId);
 
-            userPresenceService.setUserOnline(userSocialGraph.username(), sessionId);
-            sessionRegistry.registerSession(userSocialGraph.username(), sessionId);
-
-            log.info("User connected: {}, session id: {}", idpUuid, sessionId);
+            log.info("User connected: {}, session id: {}", principal.getName(), sessionId);
 
         } else
             throw new RuntimeException("Something went wrong, user should be authenticated here!!");
@@ -46,12 +44,11 @@ public class WebsocketEventListener {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        Authentication authentication = (Authentication) accessor.getUser();
+        CustomWebSocketAuthToken authentication = (CustomWebSocketAuthToken) accessor.getUser();
 
         if (authentication != null) {
-            var userSocialGraph = internalUserService.getUserSocialGraphDto(authentication.getName());
-            userPresenceService.setUserOffline(userSocialGraph.username());
-            sessionRegistry.removeSession(userSocialGraph.username());
+            userPresenceService.setUserOffline(authentication.getName());
+            sessionRegistry.removeSession(accessor.getSessionId());
 
             log.info("User disconnected: {}, session id: {}", authentication.getName(), accessor.getSessionId());
         } else {

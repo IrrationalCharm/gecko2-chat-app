@@ -2,7 +2,7 @@ package eu.irrationalcharm.messaging_service.config.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.irrationalcharm.messaging_service.model.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;

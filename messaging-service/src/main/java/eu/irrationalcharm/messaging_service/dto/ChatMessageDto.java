@@ -1,4 +1,4 @@
-package eu.irrationalcharm.messaging_service.model;
+package eu.irrationalcharm.messaging_service.dto;
 
 
 import jakarta.validation.constraints.NotBlank;

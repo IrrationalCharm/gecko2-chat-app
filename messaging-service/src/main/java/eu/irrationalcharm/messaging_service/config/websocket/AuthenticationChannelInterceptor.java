@@ -1,5 +1,8 @@
 package eu.irrationalcharm.messaging_service.config.websocket;
 
+import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
+import eu.irrationalcharm.messaging_service.security.CustomWebSocketAuthToken;
+import eu.irrationalcharm.messaging_service.security.WebSocketPrincipal;
 import eu.irrationalcharm.messaging_service.service.InternalUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,25 +40,24 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
+            JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
+            var userSocialGraphDto = internalUserService.getUserSocialGraphDto(jwtAuthToken.getName());
 
-            JwtAuthenticationToken jwtAuthToken = getAuthenticationOrThrow(authHeader);
-            accessor.setUser(jwtAuthToken);
+            validateUserOrThrow(userSocialGraphDto);
 
-            validateUserOrThrow(jwtAuthToken);
+            var principal = new WebSocketPrincipal(userSocialGraphDto.username(), jwtAuthToken.getName());
+            accessor.setUser(new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken()));
         }
         return message;
     }
 
 
-    private void validateUserOrThrow(JwtAuthenticationToken jwtAuthToken) {
-        var userSocialGraphDto = internalUserService.getUserSocialGraphDto(jwtAuthToken.getName());
-        System.out.println(userSocialGraphDto);
-
+    private void validateUserOrThrow(UserSocialGraphDto userSocialGraphDto) {
         if(!userSocialGraphDto.isOnBoarded()) throw new RuntimeException("User cannot connect, hasn't completed OnBoarding");
     }
 
 
-    private JwtAuthenticationToken getAuthenticationOrThrow(String authHeader) {
+    private JwtAuthenticationToken getValidAuthenticationOrThrow(String authHeader) {
         if (authHeader == null || !authHeader.startsWith(BEARER)) {
             throw new BadCredentialsException("Missing or invalid Authorization header");
         }

@@ -1,7 +1,7 @@
 package eu.irrationalcharm.messaging_service.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import eu.irrationalcharm.messaging_service.model.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 import eu.irrationalcharm.messaging_service.service.orchestrator.ChatServiceOrchestrator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
