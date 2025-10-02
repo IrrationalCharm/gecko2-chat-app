@@ -23,4 +23,4 @@ spring:
           issuer-uri: "http://localhost:8080/realms/gecko2-realm"
 logging:
   level:
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO

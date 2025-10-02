@@ -24,6 +24,6 @@ public class WebSocketSessionRegistry {
     }
 
     public Optional<String> getSession(String username) {
-        return Optional.of(userSessionMap.get(username));
+        return Optional.ofNullable(userSessionMap.get(username));
     }
 }

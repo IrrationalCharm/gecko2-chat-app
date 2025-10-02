@@ -49,7 +49,9 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
             validateUserOrThrow(userSocialGraphDto);
 
             var principal = new WebSocketPrincipal(userSocialGraphDto.username(), jwtAuthToken.getName());
-            accessor.setUser(new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken()));
+            var customAuthToken = new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken());
+            customAuthToken.setAuthenticated(true);
+            accessor.setUser(customAuthToken);
         }
         return message;
     }

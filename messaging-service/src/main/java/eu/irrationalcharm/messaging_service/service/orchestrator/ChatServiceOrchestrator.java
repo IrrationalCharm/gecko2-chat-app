@@ -27,9 +27,10 @@ public class ChatServiceOrchestrator {
     private final UserPresenceService userPresenceService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+
     public void sendMessage(ChatMessageDto message, Authentication authentication) throws JsonProcessingException {
-        var recipientSocialGraph = internalUserService.getUserSocialGraphByUsername(message.recipientUsername());
-        validateMessageOrThrow(message, authentication, recipientSocialGraph);
+        var senderSocialGraph = internalUserService.getUserSocialGraphByProviderId(authentication.getName());
+        validateMessageOrThrow(message, authentication, senderSocialGraph);
 
         Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientUsername());
         if ( sessionIdOptional.isEmpty() ) { //Send to redis to fanout
@@ -50,7 +51,7 @@ public class ChatServiceOrchestrator {
     /**
      * Validates if the user is allowed to send message to recipient
      */
-    private static void validateMessageOrThrow(ChatMessageDto message, Authentication senderAuth, UserSocialGraphDto recipientSocialGraph) {
+    private static void validateMessageOrThrow(ChatMessageDto message, Authentication senderAuth, UserSocialGraphDto senderSocialGraph) {
         //senderUsername same as authenticated?
         if (!message.senderUsername().equals(senderAuth.getName())) {
             throw new RuntimeException("senderUsername must be the same as the authenticated user");
@@ -60,9 +61,9 @@ public class ChatServiceOrchestrator {
             throw new RuntimeException("Cant send message to yourself");
         }
         //Are friends?
-        Set<String> recipientFriends = recipientSocialGraph.friendsUsername();
-        boolean areFriends = recipientFriends.stream()
-                .anyMatch(username -> username.equals(senderAuth.getName()));
+        Set<String> senderFriends = senderSocialGraph.friendsUsername();
+        boolean areFriends = senderFriends.stream()
+                .anyMatch(username -> username.equals(message.recipientUsername()));
         if(!areFriends) {
             throw new RuntimeException("recipient isn't friends with " + message.senderUsername());
         }
