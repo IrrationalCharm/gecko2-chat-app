@@ -38,15 +38,22 @@ public class ChatServiceOrchestrator {
             if(userPresenceService.isUserOnline(message.recipientUsername())) {
                 String payload = objectMapper.writeValueAsString(message);
                 redisTemplate.convertAndSend("queue/private/messages", payload);
-            } else System.out.println("Recipient is offline");
+            } else
+                System.out.println("Recipient is offline"); //TODO kafka implementation
         }
 
         if( sessionIdOptional.isPresent()) {
-            simpMessagingTemplate.convertAndSendToUser(message.recipientUsername(), "/user", message);
+            internalSendPrivateMessage(message);
             System.out.println("message sent!");
         }
-
     }
+
+
+    public void internalSendPrivateMessage(ChatMessageDto messageDto) {
+        simpMessagingTemplate.convertAndSendToUser(messageDto.recipientUsername(), "/private", messageDto);
+    }
+
+
 
 
     /**
