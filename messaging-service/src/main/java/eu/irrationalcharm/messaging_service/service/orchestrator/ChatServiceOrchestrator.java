@@ -42,7 +42,8 @@ public class ChatServiceOrchestrator {
         }
 
         if( sessionIdOptional.isPresent()) {
-            simpMessagingTemplate.convertAndSendToUser(message.recipientUsername(), "/private", message);
+            simpMessagingTemplate.convertAndSendToUser(message.recipientUsername(), "/user", message);
+            System.out.println("message sent!");
         }
 
     }
