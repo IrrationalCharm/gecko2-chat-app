@@ -42,7 +42,6 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
-
             SecurityContextHolder.getContext().setAuthentication(jwtAuthToken); //Temporary, until FeignClientInterceptor is finished
 
             var userSocialGraphDto = internalUserService.getUserSocialGraphByProviderId(jwtAuthToken.getName());
@@ -51,7 +50,6 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
             var principal = new WebSocketPrincipal(userSocialGraphDto.username(), jwtAuthToken.getName());
             accessor.setUser(new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken()));
-            //SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
         }
         return message;
     }
