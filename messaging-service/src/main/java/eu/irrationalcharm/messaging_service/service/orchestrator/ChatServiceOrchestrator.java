@@ -28,7 +28,7 @@ public class ChatServiceOrchestrator {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public void sendMessage(ChatMessageDto message, Authentication authentication) throws JsonProcessingException {
-        var recipientSocialGraph = internalUserService.getUserSocialGraphDto(message.recipientUsername());
+        var recipientSocialGraph = internalUserService.getUserSocialGraphByUsername(message.recipientUsername());
         validateMessageOrThrow(message, authentication, recipientSocialGraph);
 
         Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientUsername());

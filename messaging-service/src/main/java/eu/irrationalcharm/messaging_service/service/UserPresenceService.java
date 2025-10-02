@@ -46,7 +46,8 @@ public class UserPresenceService {
 
         redisTemplate.delete(key);
         redisTemplate.opsForSet().remove(ONLINE_USERS_KEY, userId);
-
     }
+
+
 
 }

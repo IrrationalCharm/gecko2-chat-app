@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -33,7 +34,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
-
+    //TODO to fix
     @Override
     public Message<?> preSend(@NotNull Message<?> message, @NotNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -41,12 +42,16 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
-            var userSocialGraphDto = internalUserService.getUserSocialGraphDto(jwtAuthToken.getName());
+
+            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken); //Temporary, until FeignClientInterceptor is finished
+
+            var userSocialGraphDto = internalUserService.getUserSocialGraphByProviderId(jwtAuthToken.getName());
 
             validateUserOrThrow(userSocialGraphDto);
 
             var principal = new WebSocketPrincipal(userSocialGraphDto.username(), jwtAuthToken.getName());
             accessor.setUser(new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken()));
+            //SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
         }
         return message;
     }

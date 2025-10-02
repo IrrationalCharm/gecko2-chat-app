@@ -20,8 +20,16 @@ public class InternalSocialGraphController {
     private final InternalSocialGraphOrchestrator socialGraphOrchestrator;
 
     @GetMapping
-    public ResponseEntity<UserSocialGraphDto> getSocialGraph(@AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<UserSocialGraphDto> getAuthenticatedSocialGraph(@AuthenticationPrincipal Jwt jwt){
         UserSocialGraphDto userSocialGraphDto = socialGraphOrchestrator.getSocialGraph(jwt);
+
+        return ResponseEntity.ok(userSocialGraphDto);
+    }
+
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<UserSocialGraphDto> getSocialGraphByUsername(@PathVariable("username") String username){
+        UserSocialGraphDto userSocialGraphDto = socialGraphOrchestrator.getSocialGraphByUsername(username);
 
         return ResponseEntity.ok(userSocialGraphDto);
     }

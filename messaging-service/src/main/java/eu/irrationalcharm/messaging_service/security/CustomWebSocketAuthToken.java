@@ -5,6 +5,10 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 
+/**
+ * Personalized Authentication so that we can have our own implementation of Principal WebSocketPrincipal, where we associate
+ * the providerId given by the Authorization server and username provided by user-service.
+ */
 public class CustomWebSocketAuthToken extends AbstractAuthenticationToken {
 
     private final WebSocketPrincipal webSocketPrincipal;

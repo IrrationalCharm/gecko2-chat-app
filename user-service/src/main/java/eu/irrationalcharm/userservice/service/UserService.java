@@ -89,6 +89,12 @@ public class UserService {
     }
 
 
+    @Transactional(readOnly = true)
+    public Optional<UserEntity> getEntityByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+
     @Transactional
     @PreAuthorize("isAuthenticated()")
     public UserDto updateUserDetails(UpdateUserProfileRequestDto userProfileRequestDto, Jwt jwt) {

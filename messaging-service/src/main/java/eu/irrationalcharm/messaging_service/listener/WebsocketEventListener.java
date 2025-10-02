@@ -55,5 +55,4 @@ public class WebsocketEventListener {
             log.info("Unauthenticated user disconnected, session id: {}", accessor.getSessionId());
         }
     }
-
 }
