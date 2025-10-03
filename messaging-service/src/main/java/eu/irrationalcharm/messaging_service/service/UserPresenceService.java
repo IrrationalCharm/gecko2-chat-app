@@ -31,6 +31,7 @@ public class UserPresenceService {
         redisTemplate.expire(key, Duration.ofMinutes(USER_STATUS_TTL_MINUTES));
 
         redisTemplate.opsForSet().add(ONLINE_USERS_KEY, username);
+        redisTemplate.expire(ONLINE_USERS_KEY + username, Duration.ofMinutes(USER_STATUS_TTL_MINUTES));
     }
 
     public boolean isUserOnline(String username) {
@@ -41,11 +42,11 @@ public class UserPresenceService {
         return isOnline;
     }
 
-    public void setUserOffline(String userId) {
-        String key = USER_STATUS_KEY_PREFIX + userId;
+    public void setUserOffline(String username) {
+        String key = USER_STATUS_KEY_PREFIX + username;
 
         redisTemplate.delete(key);
-        redisTemplate.opsForSet().remove(ONLINE_USERS_KEY, userId);
+        redisTemplate.opsForSet().remove(ONLINE_USERS_KEY, username);
     }
 
 

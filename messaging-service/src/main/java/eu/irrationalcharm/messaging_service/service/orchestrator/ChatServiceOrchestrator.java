@@ -54,8 +54,6 @@ public class ChatServiceOrchestrator {
     }
 
 
-
-
     /**
      * Validates if the user is allowed to send message to recipient
      */

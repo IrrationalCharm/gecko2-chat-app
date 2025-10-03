@@ -9,3 +9,10 @@ spring:
   mvc:
     servlet:
       path: "/user-service"
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      value-serializer: org.apache.kafka.common.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      user-updates: "user-updates-topic"

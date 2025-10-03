@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class IdentityProviderService {
@@ -62,6 +64,12 @@ public class IdentityProviderService {
                             String.format("This user_id has already been registered in %s", identityProviderType.toString().toLowerCase()));
                 });
 
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<String> findProviderIdByUserId(UserEntity userEntity) {
+        return userIdentityProviderRepository.findProviderIdByUserEntity(userEntity);
     }
 
 }

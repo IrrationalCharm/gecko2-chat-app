@@ -16,11 +16,11 @@ spring:
     redis:
       host: localhost
       port: 6379
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: "http://localhost:8080/realms/gecko2-realm"
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092 #,localhost:9093... for more kafka brokers
+      group-id: messaging-service-group
+      auto-offset-reset: earliest #If no committed offset exists for this consumer group, start consuming from the beginning of the topic.
 logging:
   level:
     org.springframework.security: INFO

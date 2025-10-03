@@ -5,17 +5,17 @@ import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
+import eu.irrationalcharm.userservice.event.UserUpdateEvent;
 import eu.irrationalcharm.userservice.exception.BusinessException;
-import eu.irrationalcharm.userservice.service.FriendRequestService;
-import eu.irrationalcharm.userservice.service.FriendshipService;
-import eu.irrationalcharm.userservice.service.UserFriendshipPreferenceService;
-import eu.irrationalcharm.userservice.service.UserService;
+import eu.irrationalcharm.userservice.service.*;
+import eu.irrationalcharm.userservice.service.event.UserEventProducer;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -26,6 +26,8 @@ public class FriendshipOrchestrator {
     private final FriendRequestService friendRequestService;
     private final UserFriendshipPreferenceService friendPreferenceService;
     private final UserService userService;
+    private final UserEventProducer userEventProducer;
+    private final IdentityProviderService idpService;
 
 
     @Transactional(readOnly = true)
@@ -52,20 +54,23 @@ public class FriendshipOrchestrator {
 
 
     @Transactional
+    public void removeFriend(Jwt jwt, String username) {
+        UserEntity principal = userService.getAuthenticatedEntityOrThrow(jwt);
+        UserEntity friendToBeRemoved = userService.getEntityByUsernameOrThrow(username);
+
+        if (!friendshipService.removeFriend(principal, friendToBeRemoved)) {
+            throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_NOT_FOUND, String.format("%s is not your friend", username));
+        }
+    }
+
+
+    @Transactional
     public SuccessfulCode updateFriendRequest(Jwt jwt, UpdateFriendRequestDto friendRequestDto, String username) {
         UserEntity requestUpdater = userService.getAuthenticatedEntityOrThrow(jwt);
         UserEntity requestRecipient = userService.getEntityByUsernameOrThrow(username);
 
         return switch (friendRequestDto.action()) {
-            case ACCEPT_REQUEST -> {
-                friendRequestService.deleteFriendRequestOrThrow(requestRecipient, requestUpdater);
-                friendshipService.addFriendOrThrow(requestRecipient, requestUpdater);
-
-                friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(requestRecipient.getId(), requestUpdater.getId());
-                friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(requestUpdater.getId(), requestRecipient.getId());
-
-                yield SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
-            }
+            case ACCEPT_REQUEST -> handleAcceptRequest(requestRecipient, requestUpdater);
             case DECLINE_REQUEST -> {
                 friendRequestService.deleteFriendRequestOrThrow(requestRecipient, requestUpdater);
                 yield SuccessfulCode.FRIEND_REQUEST_DECLINED;
@@ -79,13 +84,30 @@ public class FriendshipOrchestrator {
     }
 
 
-    @Transactional
-    public void removeFriend(Jwt jwt, String username) {
-        UserEntity principal = userService.getAuthenticatedEntityOrThrow(jwt);
-        UserEntity friendToBeRemoved = userService.getEntityByUsernameOrThrow(username);
+    //  PRIVATE HELPER METHODS  \\
 
-        if (!friendshipService.removeFriend(principal, friendToBeRemoved)) {
-            throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_NOT_FOUND, String.format("%s is not your friend", username));
-        }
+
+    private SuccessfulCode handleAcceptRequest(UserEntity requestRecipient, UserEntity requestUpdater) {
+        friendRequestService.deleteFriendRequestOrThrow(requestRecipient, requestUpdater);
+        friendshipService.addFriendOrThrow(requestRecipient, requestUpdater);
+
+        friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(requestRecipient.getId(), requestUpdater.getId());
+        friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(requestUpdater.getId(), requestRecipient.getId());
+
+        publishFriendshipChangeEvents(requestRecipient, requestUpdater);
+
+        return SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
+    }
+
+
+    /**
+     * Sends an update event to messaging service to evict outdated cached data
+     */
+    private void publishFriendshipChangeEvents(UserEntity requestRecipient, UserEntity requestUpdater) {
+        List<String> requestUpdaterProvidersId = idpService.findProviderIdByUserId(requestUpdater);
+        List<String> requestRecipientProvidersId = idpService.findProviderIdByUserId(requestRecipient);
+        var recipientUserUpdateEvent = new UserUpdateEvent(requestRecipient.getUsername(), requestRecipientProvidersId.getFirst());
+        var updaterUserUpdateEvent = new UserUpdateEvent(requestUpdater.getUsername(), requestUpdaterProvidersId.getFirst());
+        userEventProducer.publishUserUpdatedEvent(recipientUserUpdateEvent, updaterUserUpdateEvent);
     }
 }
