@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class ChatServiceOrchestrator {
 
 
     public void sendMessage(ChatMessageDto message, Authentication authentication) throws JsonProcessingException {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         var senderSocialGraph = internalUserService.getUserSocialGraphByProviderId(authentication.getName());
         validateMessageOrThrow(message, authentication, senderSocialGraph);
 

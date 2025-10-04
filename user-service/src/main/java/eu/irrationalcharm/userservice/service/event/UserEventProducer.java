@@ -8,7 +8,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +20,8 @@ public class UserEventProducer {
 
     @Transactional(readOnly = true)
     public void publishUserUpdatedEvent(@NotNull UserUpdateEvent... userUpdateEvents) {
-        Arrays.stream(userUpdateEvents).forEach(updateEvent -> {
+        for(UserUpdateEvent updateEvent : userUpdateEvents) {
             kafkaTemplate.send(userUpdateTopic, updateEvent.username(), updateEvent);
-        });
+        }
     }
 }

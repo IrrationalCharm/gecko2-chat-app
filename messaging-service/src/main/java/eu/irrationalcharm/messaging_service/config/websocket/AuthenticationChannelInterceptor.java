@@ -42,7 +42,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
-            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken); //Temporary, until FeignClientInterceptor is finished
+            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
 
             var userSocialGraphDto = internalUserService.getUserSocialGraphByProviderId(jwtAuthToken.getName());
 

@@ -3,23 +3,30 @@ package eu.irrationalcharm.messaging_service.service;
 import eu.irrationalcharm.messaging_service.client.UserServiceClient;
 import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+
+/**
+ * Sends requests to user-service and caches the results
+ */
 @Service
 public class InternalUserService {
 
     private final UserServiceClient userServiceClient;
     private final Cache userGraphCache;
-    private static final String USER_GRAPH_PREFIX = "user-graph";
 
 
-    public InternalUserService(UserServiceClient userServiceClient, CacheManager cache) {
+    public InternalUserService(UserServiceClient userServiceClient,
+                               CacheManager cache,
+                               @Value("${spring.data.redis.cache.user-graph}") String userGraphCacheName) {
+
         this.userServiceClient = userServiceClient;
-        this.userGraphCache = cache.getCache(USER_GRAPH_PREFIX);
+        this.userGraphCache = cache.getCache(userGraphCacheName);
     }
 
     /**
