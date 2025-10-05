@@ -31,6 +31,7 @@ public class ChatServiceOrchestrator {
 
     public void sendMessage(ChatMessageDto message, Authentication authentication) throws JsonProcessingException {
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         var senderSocialGraph = internalUserService.getUserSocialGraphByProviderId(authentication.getName());
         validateMessageOrThrow(message, authentication, senderSocialGraph);
 

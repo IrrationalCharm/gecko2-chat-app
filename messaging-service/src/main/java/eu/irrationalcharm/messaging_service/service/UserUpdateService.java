@@ -22,11 +22,9 @@ public class UserUpdateService {
 
 
     public void evictUserGraph(String username, String providerId) {
-
         if (username != null) {
             userGraphCache.evictIfPresent(username);
         }
-
 
         if(providerId != null)
             userGraphCache.evictIfPresent(providerId);

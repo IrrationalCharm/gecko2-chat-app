@@ -32,7 +32,7 @@ public class WebsocketEventListener {
             WebSocketPrincipal principal = (WebSocketPrincipal) authentication.getPrincipal();
             String sessionId = accessor.getSessionId();
 
-            userPresenceService.setUserOnline(principal.getName(), sessionId);
+            userPresenceService.refreshUserOnline(principal.getName(), sessionId);
             sessionRegistry.registerSession(principal.getName(), sessionId);
 
             log.info("User connected: {}, session id: {}", principal.getName(), sessionId);

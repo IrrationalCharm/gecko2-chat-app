@@ -4,6 +4,7 @@ import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
 import eu.irrationalcharm.messaging_service.security.CustomWebSocketAuthToken;
 import eu.irrationalcharm.messaging_service.security.WebSocketPrincipal;
 import eu.irrationalcharm.messaging_service.service.InternalUserService;
+import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 
 @Slf4j
 @Component
@@ -34,16 +37,16 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
-    //TODO to fix
+
     @Override
     public Message<?> preSend(@NotNull Message<?> message, @NotNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        if(StompCommand.CONNECT.equals(accessor.getCommand())) {
+        if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.CONNECT) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
-            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
 
+            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken); //Needed temporarily for the feign interceptor
             var userSocialGraphDto = internalUserService.getUserSocialGraphByProviderId(jwtAuthToken.getName());
 
             validateUserOrThrow(userSocialGraphDto);
@@ -53,6 +56,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
             customAuthToken.setAuthenticated(true);
             accessor.setUser(customAuthToken);
         }
+
         return message;
     }
 

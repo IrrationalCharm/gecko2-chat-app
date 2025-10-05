@@ -61,6 +61,8 @@ public class FriendshipOrchestrator {
         if (!friendshipService.removeFriend(principal, friendToBeRemoved)) {
             throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_NOT_FOUND, String.format("%s is not your friend", username));
         }
+
+        publishFriendshipChangeEvents(principal, friendToBeRemoved);
     }
 
 
@@ -103,11 +105,12 @@ public class FriendshipOrchestrator {
     /**
      * Sends an update event to messaging service to evict outdated cached data
      */
-    private void publishFriendshipChangeEvents(UserEntity requestRecipient, UserEntity requestUpdater) {
-        List<String> requestUpdaterProvidersId = idpService.findProviderIdByUserId(requestUpdater);
-        List<String> requestRecipientProvidersId = idpService.findProviderIdByUserId(requestRecipient);
-        var recipientUserUpdateEvent = new UserUpdateEvent(requestRecipient.getUsername(), requestRecipientProvidersId.getFirst());
-        var updaterUserUpdateEvent = new UserUpdateEvent(requestUpdater.getUsername(), requestUpdaterProvidersId.getFirst());
+    private void publishFriendshipChangeEvents(UserEntity userFriendA, UserEntity userFriendB) {
+        List<String> userFriendBProvidersId = idpService.findProviderIdByUserId(userFriendB);
+        List<String> userFriendAProvidersId = idpService.findProviderIdByUserId(userFriendA);
+        var recipientUserUpdateEvent = new UserUpdateEvent(userFriendA.getUsername(), userFriendAProvidersId.getFirst());
+        var updaterUserUpdateEvent = new UserUpdateEvent(userFriendB.getUsername(), userFriendBProvidersId.getFirst());
+
         userEventProducer.publishUserUpdatedEvent(recipientUserUpdateEvent, updaterUserUpdateEvent);
     }
 }
