@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -34,6 +35,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter authenticationConverter;
     private final InternalUserService internalUserService;
+    private final WebSocketSessionRegistry webSocketSessionRegistry;
 
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
@@ -56,6 +58,23 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
             customAuthToken.setAuthenticated(true);
             accessor.setUser(customAuthToken);
         }
+
+
+        //Checks if websocket is already subscribed to destination
+        if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.SUBSCRIBE) {
+            Authentication auth = (Authentication) accessor.getUser();
+
+            if(auth instanceof CustomWebSocketAuthToken customAuth) {
+                String sessionId = accessor.getSessionId();
+                String destination = accessor.getDestination();
+
+                if (webSocketSessionRegistry.isSubscribed(customAuth.getName(), destination)) {
+                    log.warn("User with session {} is already subscribed to {}. Ignoring request.", sessionId, destination);
+                    return null;
+                }
+            }
+        }
+
 
         return message;
     }

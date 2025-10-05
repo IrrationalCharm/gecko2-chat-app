@@ -13,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 @Slf4j
 @Component
@@ -21,6 +23,7 @@ public class WebsocketEventListener {
 
     private final UserPresenceService userPresenceService;
     private final WebSocketSessionRegistry sessionRegistry;
+
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
@@ -41,6 +44,7 @@ public class WebsocketEventListener {
             throw new RuntimeException("Something went wrong, user should be authenticated here!!");
     }
 
+
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -48,11 +52,41 @@ public class WebsocketEventListener {
 
         if (authentication != null) {
             userPresenceService.setUserOffline(authentication.getName());
-            sessionRegistry.removeSession(accessor.getSessionId());
+            sessionRegistry.userDisconnected(authentication.getName(), accessor.getSessionId());
 
             log.info("User disconnected: {}, session id: {}", authentication.getName(), accessor.getSessionId());
         } else {
             log.info("Unauthenticated user disconnected, session id: {}", accessor.getSessionId());
+        }
+    }
+
+
+    @EventListener
+    public void handleWebSocketSubscribedListener(SessionSubscribeEvent event) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        CustomWebSocketAuthToken authentication = (CustomWebSocketAuthToken) accessor.getUser();
+
+        if (authentication != null) {
+            sessionRegistry.addSubscribedSession(authentication.getName(), accessor.getDestination());
+
+            log.info("User subscribed: {}, to destination: {}", authentication.getName(), accessor.getDestination());
+        } else {
+            log.warn("Unauthenticated user subscribed, this should not occur! {}", accessor.getSessionId());
+        }
+    }
+
+
+    @EventListener
+    public void handleWebSocketUnSubscribedListener(SessionUnsubscribeEvent event) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        CustomWebSocketAuthToken authentication = (CustomWebSocketAuthToken) accessor.getUser();
+
+        if (authentication != null) {
+            sessionRegistry.removeSubscribedSession(authentication.getName());
+
+            log.info("User unsubscribed: {}, to destination: {}", authentication.getName(), accessor.getDestination());
+        } else {
+            log.warn("Unauthenticated user subscribed, this should not occur! {}", accessor.getSessionId());
         }
     }
 }
