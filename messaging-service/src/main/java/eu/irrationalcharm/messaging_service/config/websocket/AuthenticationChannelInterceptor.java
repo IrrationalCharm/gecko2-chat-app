@@ -68,6 +68,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
                 String sessionId = accessor.getSessionId();
                 String destination = accessor.getDestination();
 
+                assert destination != null;
                 if (webSocketSessionRegistry.isSubscribed(customAuth.getName(), destination)) {
                     log.warn("User with session {} is already subscribed to {}. Ignoring request.", sessionId, destination);
                     return null;

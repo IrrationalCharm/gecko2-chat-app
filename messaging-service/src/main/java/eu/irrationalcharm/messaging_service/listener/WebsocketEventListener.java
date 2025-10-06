@@ -82,7 +82,7 @@ public class WebsocketEventListener {
         CustomWebSocketAuthToken authentication = (CustomWebSocketAuthToken) accessor.getUser();
 
         if (authentication != null) {
-            sessionRegistry.removeSubscribedSession(authentication.getName());
+            sessionRegistry.removeSubscribedSession(authentication.getName(), accessor.getDestination());
 
             log.info("User unsubscribed: {}, to destination: {}", authentication.getName(), accessor.getDestination());
         } else {

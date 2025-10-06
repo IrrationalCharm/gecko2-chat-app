@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class WebSocketSessionRegistry {
 
     private final Map<String, String> userSessionMap = new ConcurrentHashMap<>();
-    private final Map<String, String> subscribedSessionMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> subscribedSessionMap = new ConcurrentHashMap<>();
 
 
     /**
@@ -19,7 +20,7 @@ public class WebSocketSessionRegistry {
      */
     public void userDisconnected(String username, String sessionId) {
         removeSession(sessionId);
-        removeSubscribedSession(username);
+        removeAllSubscribedSessions(username);
     }
 
 
@@ -40,15 +41,26 @@ public class WebSocketSessionRegistry {
 
 
     public boolean isSubscribed(String username, String destination) {
-        return subscribedSessionMap.entrySet().stream()
-                .anyMatch(entry -> entry.getKey().equals(username) && entry.getValue().equals(destination));
+        return subscribedSessionMap.getOrDefault(username, ConcurrentHashMap.newKeySet())
+                .stream().anyMatch(destination::equals);
+
     }
 
     public void addSubscribedSession(String username, String destination) {
-        subscribedSessionMap.put(username, destination);
+        subscribedSessionMap.computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
+                .add(destination);
     }
 
-    public void removeSubscribedSession(String username) {
+
+    public void removeSubscribedSession(String username, String destination) {
+        subscribedSessionMap.computeIfPresent(username, (key, destinations) -> {
+            destinations.remove(destination);
+            return destinations.isEmpty() ? null : destinations;
+        });
+    }
+
+
+    public void removeAllSubscribedSessions(String username) {
         subscribedSessionMap.remove(username);
     }
 }
