@@ -5,12 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record ChatMessageDto(
-        @NotBlank(message = "senderUsername cannot be empty")
-        @Size(message = "username must be between 3 and 50 characters", min = 3, max = 20)
+        @NotBlank(message = "userId cannot be empty")
+        @Size(message = "Please provide a valid Internal User Id", max = 36)
         String userId,
 
-        @NotBlank(message = "recipientUsername cannot be empty")
-        @Size(message = "username must be between 3 and 50 characters", min = 3, max = 20)
+        @NotBlank(message = "recipientId cannot be empty")
+        @Size(message = "Please provide a valid Internal User I", max = 36)
         String recipientId,
 
         @Size(max = 3000)

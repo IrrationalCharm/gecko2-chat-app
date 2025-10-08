@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "user-service", url = "http://localhost:8082/user-service/internal/api/v1")
+@FeignClient(name = "user-service", url = "${spring.feign.client.user-service.v1.base-url}")
 public interface UserServiceClient {
 
     @GetMapping("/social-graph")

@@ -3,8 +3,8 @@ package eu.irrationalcharm.userservice.dto.internal.response;
 import java.util.Set;
 
 public record UserSocialGraphDto(
-        String userId,
+        String internalId,
         boolean isOnBoarded,
-        Set<String> friendsId
+        Set<String> friendsInternalId
 ) {
 }

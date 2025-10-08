@@ -22,7 +22,7 @@ public class InternalSocialGraphController {
     @GetMapping
     public ResponseEntity<UserSocialGraphDto> getAuthenticatedSocialGraph(@AuthenticationPrincipal Jwt jwt){
         UserSocialGraphDto userSocialGraphDto = socialGraphOrchestrator.getSocialGraph(jwt);
-
+        System.out.println("Returning to messaging-service: " + userSocialGraphDto);
         return ResponseEntity.ok(userSocialGraphDto);
     }
 

@@ -30,9 +30,4 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        return new JwtAuthenticationConverter();
-    }
-
 }
