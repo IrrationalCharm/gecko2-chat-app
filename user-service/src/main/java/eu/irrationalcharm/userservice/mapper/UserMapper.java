@@ -10,6 +10,7 @@ public final class UserMapper {
         UserEntity userEntity = new UserEntity();
 
         userEntity.setUsername(userDto.username());
+        userEntity.setProviderId(userDto.providerId());
         userEntity.setDisplayName(userDto.displayName());
         userEntity.setEmail(userDto.email());
         userEntity.setMobileNumber(userDto.mobileNumber());
@@ -21,6 +22,7 @@ public final class UserMapper {
 
     public static UserDto mapToUserDto(@NotNull UserEntity userEntity) {
         return UserDto.builder()
+                .providerId(userEntity.getProviderId())
                 .username(userEntity.getUsername())
                 .displayName(userEntity.getDisplayName())
                 .email(userEntity.getEmail())

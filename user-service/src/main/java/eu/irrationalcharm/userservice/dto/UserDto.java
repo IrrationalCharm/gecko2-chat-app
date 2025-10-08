@@ -1,9 +1,11 @@
 package eu.irrationalcharm.userservice.dto;
 
+import eu.irrationalcharm.userservice.annotation.UsernameValid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
@@ -12,11 +14,16 @@ import java.io.Serializable;
  */
 @Builder
 public record UserDto(
-        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 50)
+
+        @NotNull
+        String providerId,
+
+        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 20)
         @NotBlank(message = "Display Name cannot be empty")
+        @UsernameValid
         String username,
 
-        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 50)
+        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 20)
         @NotBlank(message = "Display Name cannot be empty")
         String displayName,
 

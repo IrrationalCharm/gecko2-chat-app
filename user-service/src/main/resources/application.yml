@@ -16,3 +16,5 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
     topic:
       user-updates: "user-updates-topic"
+
+

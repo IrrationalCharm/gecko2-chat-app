@@ -25,4 +25,6 @@ public interface UserRepository extends CrudRepository<UserEntity, UUID> {
         u.profileImageUrl)
         from UserEntity u where u.id in :userFriends""")
     List<PublicUserResponseDto> findAllUsersByUserId(List<UUID> userFriends);
+
+    boolean existsUserEntityByProviderId(String providerId);
 }

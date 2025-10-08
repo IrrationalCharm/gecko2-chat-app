@@ -16,6 +16,7 @@ public enum ErrorCode {
 
     //User domain
     FRIEND_NOT_FOUND,
+    PROVIDER_ID_ALREADY_EXISTS,
     USERNAME_ALREADY_EXISTS,
     EMAIL_TAKEN,
     USERNAME_NOT_FOUND,
@@ -28,6 +29,6 @@ public enum ErrorCode {
     IDP_NOT_SUPPORTED,
 
     //Internal
-    UNAUTHORIZED_ACCESS,
+    UNAUTHORIZED_ACCESS, KEYCLOAK_API_ERROR,
 
 }

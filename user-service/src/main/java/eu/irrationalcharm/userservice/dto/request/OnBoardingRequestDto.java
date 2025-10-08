@@ -11,7 +11,7 @@ public record OnBoardingRequestDto(
         @UsernameValid
         String username,
 
-        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 50)
+        @Size(message = "Display name must be between 3 and 50 characters", min = 3, max = 20)
         @NotBlank(message = "Display Name cannot be empty")
         String displayName,
 

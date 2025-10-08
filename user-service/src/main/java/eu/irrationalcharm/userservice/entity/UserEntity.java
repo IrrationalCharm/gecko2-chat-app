@@ -16,6 +16,8 @@ public class UserEntity extends BaseEntity {
     @Column(name = "id")
     private UUID id;
 
+    private String providerId;
+
     private String username;
     private String displayName;
     private String email;
