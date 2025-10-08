@@ -1,7 +1,6 @@
 package eu.irrationalcharm.userservice.service.orchestrator;
 
 import eu.irrationalcharm.userservice.dto.internal.response.UserSocialGraphDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.service.FriendshipService;
 import eu.irrationalcharm.userservice.service.UserService;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,10 +43,10 @@ public class InternalSocialGraphOrchestrator {
         }
 
         UserEntity userEntity = userOptional.get();
-        Set<String> usersFriends = friendshipService.getFriends(userEntity).stream()
-                .map(PublicUserResponseDto::username)
+        Set<String> usersFriends = friendshipService.getFriendsId(userEntity).stream()
+                .map(UUID::toString)
                 .collect(Collectors.toSet());
 
-        return new UserSocialGraphDto(userEntity.getUsername(), true, usersFriends);
+        return new UserSocialGraphDto(userEntity.getId().toString(), true, usersFriends);
     }
 }

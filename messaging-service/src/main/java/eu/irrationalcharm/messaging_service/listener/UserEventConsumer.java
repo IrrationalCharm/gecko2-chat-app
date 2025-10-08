@@ -19,7 +19,7 @@ public class UserEventConsumer {
     public void userUpdateEventConsumerListener(UserUpdateEvent updateEvent) {
         log.info("User update event, evicting cached data from {}", updateEvent);
 
-        updateService.evictUserGraph(updateEvent.username(), updateEvent.providerId());
+        updateService.evictUserGraph(updateEvent.userId(), updateEvent.userId());
     }
 
 }

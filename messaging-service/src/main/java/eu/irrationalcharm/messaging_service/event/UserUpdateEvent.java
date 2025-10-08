@@ -1,4 +1,4 @@
 package eu.irrationalcharm.messaging_service.event;
 
-public record UserUpdateEvent(String username, String providerId) {
+public record UserUpdateEvent(String userId) {
 }

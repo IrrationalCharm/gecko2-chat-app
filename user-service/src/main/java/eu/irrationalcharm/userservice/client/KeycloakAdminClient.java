@@ -1,5 +1,6 @@
 package eu.irrationalcharm.userservice.client;
 
+import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
@@ -11,10 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static eu.irrationalcharm.userservice.constants.JwtClaims.*;
 import static org.springframework.security.oauth2.client.web.client.RequestAttributeClientRegistrationIdResolver.clientRegistrationId;
 
 @Slf4j
@@ -40,13 +41,13 @@ public class KeycloakAdminClient {
     public void addUserAttributes(String keycloakUserId, UserEntity userEntity) {
 
         var attributes = Map.of(
-                "internal_id", List.of(userEntity.getId()),
-                "username_app", List.of(userEntity.getUsername())
+                INTERNAL_ID, List.of(userEntity.getId()),
+                USERNAME_APP, List.of(userEntity.getUsername())
         );
 
         var body = Map.of(
-                "email", userEntity.getEmail(), //Needed for keycloak
-                "attributes", attributes
+                EMAIL, userEntity.getEmail(), //Needed for keycloak
+                ATTRIBUTES, attributes
         );
 
         try {

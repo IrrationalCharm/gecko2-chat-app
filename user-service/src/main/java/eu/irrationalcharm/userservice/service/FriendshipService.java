@@ -50,19 +50,27 @@ public class FriendshipService {
 
     @Transactional(readOnly = true)
     public Set<PublicUserResponseDto> getFriends(UserEntity userEntity) {
-        Set<UserEntity> userFriends = friendshipRepository.findAllFriendsByUserId(userEntity);
+        Set<UserEntity> userFriends = friendshipRepository.findAllFriendsByUserEntity(userEntity);
 
         if (userFriends.isEmpty())
             return Collections.emptySet();
 
         return userFriends.stream()
                 .map(user -> PublicUserResponseDto.builder()
+                        .userId(user.getId())
                         .displayName(user.getDisplayName())
                         .profileImageUrl(user.getProfileImageUrl())
                         .username(user.getUsername())
                         .profileBio(user.getProfileBio())
                         .build())
                 .collect(Collectors.toSet());
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public Set<UUID> getFriendsId(UserEntity userEntity) {
+        return friendshipRepository.findFriendsIdByUserEntity(userEntity);
     }
 
 

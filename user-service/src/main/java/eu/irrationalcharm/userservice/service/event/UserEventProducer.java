@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -18,10 +17,10 @@ public class UserEventProducer {
 
     private final KafkaTemplate<String, UserUpdateEvent> kafkaTemplate;
 
-    @Transactional(readOnly = true)
+
     public void publishUserUpdatedEvent(@NotNull UserUpdateEvent... userUpdateEvents) {
         for(UserUpdateEvent updateEvent : userUpdateEvents) {
-            kafkaTemplate.send(userUpdateTopic, updateEvent.username(), updateEvent);
+            kafkaTemplate.send(userUpdateTopic, updateEvent.userId(), updateEvent);
         }
     }
 }

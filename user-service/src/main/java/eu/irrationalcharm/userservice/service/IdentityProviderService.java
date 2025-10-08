@@ -18,6 +18,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Deprecated
 public class IdentityProviderService {
 
     private final UserIdentityProviderRepository userIdentityProviderRepository;
@@ -67,9 +68,6 @@ public class IdentityProviderService {
     }
 
 
-    @Transactional(readOnly = true)
-    public List<String> findProviderIdByUserId(UserEntity userEntity) {
-        return userIdentityProviderRepository.findProviderIdByUserEntity(userEntity);
-    }
+
 
 }

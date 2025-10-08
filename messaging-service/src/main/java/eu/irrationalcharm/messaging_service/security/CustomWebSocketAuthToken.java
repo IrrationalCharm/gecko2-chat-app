@@ -1,5 +1,6 @@
 package eu.irrationalcharm.messaging_service.security;
 
+import lombok.Getter;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
 
@@ -13,10 +14,17 @@ import java.util.Map;
 public class CustomWebSocketAuthToken extends AbstractOAuth2TokenAuthenticationToken<Jwt> {
 
     private final WebSocketPrincipal webSocketPrincipal;
+    @Getter
+    private final String username;
 
-    public CustomWebSocketAuthToken(WebSocketPrincipal webSocketPrincipal, Jwt jwt) {
+    @Getter
+    private final String email;
+
+    public CustomWebSocketAuthToken(WebSocketPrincipal webSocketPrincipal, String username, String email, Jwt jwt) {
         super(jwt); //TODO maybe implement authorities eventually
         this.webSocketPrincipal = webSocketPrincipal;
+        this.username = username;
+        this.email = email;
     }
 
     @Override
@@ -32,5 +40,9 @@ public class CustomWebSocketAuthToken extends AbstractOAuth2TokenAuthenticationT
     @Override
     public Object getPrincipal() {
         return this.webSocketPrincipal;
+    }
+
+    public String getProviderId() {
+        return webSocketPrincipal.getProviderId();
     }
 }

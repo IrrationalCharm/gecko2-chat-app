@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -20,9 +19,9 @@ public class ChatController {
 
 
     @MessageMapping("/chat")
-    public void sendMessage(@Payload @Valid ChatMessageDto message) throws JsonProcessingException {
+    public void sendMessage(@Payload @Valid ChatMessageDto message,
+                            Authentication authentication) throws JsonProcessingException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         chatServiceOrchestrator.sendMessage(message, authentication);
 
     }

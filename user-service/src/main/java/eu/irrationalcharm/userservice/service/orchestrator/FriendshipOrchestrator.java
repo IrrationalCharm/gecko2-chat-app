@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -27,7 +26,6 @@ public class FriendshipOrchestrator {
     private final UserFriendshipPreferenceService friendPreferenceService;
     private final UserService userService;
     private final UserEventProducer userEventProducer;
-    private final IdentityProviderService idpService;
 
 
     @Transactional(readOnly = true)
@@ -105,12 +103,13 @@ public class FriendshipOrchestrator {
     /**
      * Sends an update event to messaging service to evict outdated cached data
      */
-    private void publishFriendshipChangeEvents(UserEntity userFriendA, UserEntity userFriendB) {
-        List<String> userFriendBProvidersId = idpService.findProviderIdByUserId(userFriendB);
-        List<String> userFriendAProvidersId = idpService.findProviderIdByUserId(userFriendA);
-        var recipientUserUpdateEvent = new UserUpdateEvent(userFriendA.getUsername(), userFriendAProvidersId.getFirst());
-        var updaterUserUpdateEvent = new UserUpdateEvent(userFriendB.getUsername(), userFriendBProvidersId.getFirst());
+    private void publishFriendshipChangeEvents(UserEntity userA, UserEntity userB) {
+        String userIdA = userA.getId().toString();
+        String userIdB = userB.getId().toString();
 
-        userEventProducer.publishUserUpdatedEvent(recipientUserUpdateEvent, updaterUserUpdateEvent);
+        var userAUpdateEvent = new UserUpdateEvent(userIdA);
+        var userBUpdateEvent = new UserUpdateEvent(userIdB);
+
+        userEventProducer.publishUserUpdatedEvent(userAUpdateEvent, userBUpdateEvent);
     }
 }

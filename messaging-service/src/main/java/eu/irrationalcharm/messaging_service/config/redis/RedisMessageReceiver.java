@@ -31,7 +31,7 @@ public class RedisMessageReceiver implements MessageListener {
             var json = new String(message.getBody());
             ChatMessageDto messageDto = objectMapper.readValue(json, ChatMessageDto.class);
 
-            if (registry.getSession(messageDto.recipientUsername()).isPresent()) {
+            if (registry.getSession(messageDto.recipientId()).isPresent()) {
                 chatService.internalSendPrivateMessage(messageDto);
             }
 

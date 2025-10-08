@@ -35,10 +35,10 @@ public class ChatServiceOrchestrator {
         var senderSocialGraph = internalUserService.getUserSocialGraphByProviderId(authentication.getName());
         validateMessageOrThrow(message, authentication, senderSocialGraph);
 
-        Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientUsername());
+        Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientId());
         if ( sessionIdOptional.isEmpty() ) { //Send to redis to fanout
 
-            if(userPresenceService.isUserOnline(message.recipientUsername())) {
+            if(userPresenceService.isUserOnline(message.recipientId())) {
                 String payload = objectMapper.writeValueAsString(message);
                 redisTemplate.convertAndSend("queue/private/messages", payload);
             } else
@@ -53,7 +53,7 @@ public class ChatServiceOrchestrator {
 
 
     public void internalSendPrivateMessage(ChatMessageDto messageDto) {
-        simpMessagingTemplate.convertAndSendToUser(messageDto.recipientUsername(), "/private", messageDto);
+        simpMessagingTemplate.convertAndSendToUser(messageDto.recipientId(), "/private", messageDto);
     }
 
 
@@ -62,19 +62,19 @@ public class ChatServiceOrchestrator {
      */
     private static void validateMessageOrThrow(ChatMessageDto message, Authentication senderAuth, UserSocialGraphDto senderSocialGraph) {
         //senderUsername same as authenticated?
-        if (!message.senderUsername().equals(senderAuth.getName())) {
+        if (!message.userId().equals(senderAuth.getName())) {
             throw new RuntimeException("senderUsername must be the same as the authenticated user");
         }
         //Sending message to himself?
-        if (message.senderUsername().equals(message.recipientUsername())) {
+        if (message.userId().equals(message.recipientId())) {
             throw new RuntimeException("Cant send message to yourself");
         }
         //Are friends?
-        Set<String> senderFriends = senderSocialGraph.friendsUsername();
+        Set<String> senderFriends = senderSocialGraph.friendsInternalId();
         boolean areFriends = senderFriends.stream()
-                .anyMatch(username -> username.equals(message.recipientUsername()));
+                .anyMatch(userId -> userId.equals(message.recipientId()));
         if(!areFriends) {
-            throw new RuntimeException("recipient isn't friends with " + message.senderUsername());
+            throw new RuntimeException("recipient isn't friends with " + message.userId());
         }
     }
 }

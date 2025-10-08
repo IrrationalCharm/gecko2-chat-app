@@ -1,4 +1,4 @@
-package eu.irrationalcharm.userservice.constants;
+package eu.irrationalcharm.messaging_service.security;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -14,5 +14,4 @@ public final class JwtClaims {
     //Added attributes after onBoarding
     public static final String USERNAME_APP = "username_app";
     public static final String INTERNAL_ID = "internal_id";
-    public static final String ATTRIBUTES = "attributes";
 }

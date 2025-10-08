@@ -6,17 +6,17 @@ import java.security.Principal;
 
 public class WebSocketPrincipal implements Principal {
 
-    private final String username;
+    private final String internalId;
     @Getter
     private final String providerId;
 
-    public WebSocketPrincipal(String username, String providerId) {
-        this.username = username;
+    public WebSocketPrincipal(String internalId, String providerId) {
+        this.internalId = internalId;
         this.providerId = providerId;
     }
 
     @Override
     public String getName() {
-        return username;
+        return internalId;
     }
 }

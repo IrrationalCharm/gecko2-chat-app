@@ -19,6 +19,7 @@ public interface UserRepository extends CrudRepository<UserEntity, UUID> {
 
     @Query("""
     select new eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto(
+        u.id,
         u.username,
         u.displayName,
         u.profileBio,
@@ -27,4 +28,5 @@ public interface UserRepository extends CrudRepository<UserEntity, UUID> {
     List<PublicUserResponseDto> findAllUsersByUserId(List<UUID> userFriends);
 
     boolean existsUserEntityByProviderId(String providerId);
+
 }

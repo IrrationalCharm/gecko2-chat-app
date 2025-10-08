@@ -22,6 +22,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequestEnti
 
     @Query("""
     select new eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto(
+        u.initiator.id,
         u.initiator.username,
         u.initiator.displayName,
         u.initiator.profileBio,

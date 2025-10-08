@@ -2,13 +2,11 @@ package eu.irrationalcharm.messaging_service.listener;
 
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.security.CustomWebSocketAuthToken;
-import eu.irrationalcharm.messaging_service.security.WebSocketPrincipal;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
@@ -28,17 +26,16 @@ public class WebsocketEventListener {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        Authentication authentication = (Authentication) accessor.getUser();
+        var authentication = (CustomWebSocketAuthToken) accessor.getUser();
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         if(authentication != null) {
-            WebSocketPrincipal principal = (WebSocketPrincipal) authentication.getPrincipal();
             String sessionId = accessor.getSessionId();
 
-            userPresenceService.refreshUserOnline(principal.getName(), sessionId);
-            sessionRegistry.registerSession(principal.getName(), sessionId);
+            userPresenceService.refreshUserOnline(authentication.getName(), sessionId);
+            sessionRegistry.registerSession(authentication.getName(), sessionId);
 
-            log.info("User connected: {}, session id: {}", principal.getName(), sessionId);
+            log.info("User connected: {}, session id: {}", authentication.getName(), sessionId);
 
         } else
             throw new RuntimeException("Something went wrong, user should be authenticated here!!");
@@ -48,7 +45,7 @@ public class WebsocketEventListener {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        CustomWebSocketAuthToken authentication = (CustomWebSocketAuthToken) accessor.getUser();
+        var authentication = (CustomWebSocketAuthToken) accessor.getUser();
 
         if (authentication != null) {
             userPresenceService.setUserOffline(authentication.getName());

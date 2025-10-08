@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,8 @@ public class InternalUserService {
      * providerId is just the key for the cache.
      * The reason we cache twice by different keys is that on CONNECT, the JWT only has the providerId and not the username.
      */
-    public UserSocialGraphDto getUserSocialGraphByProviderId(@NotNull String providerId){
-        UserSocialGraphDto userSocialGraphDto = userGraphCache.get(providerId, UserSocialGraphDto.class);
+    public UserSocialGraphDto getUserSocialGraphByProviderId(@NotNull String internalId){
+        UserSocialGraphDto userSocialGraphDto = userGraphCache.get(internalId, UserSocialGraphDto.class);
         if(userSocialGraphDto != null) {
             return userSocialGraphDto;
         }
@@ -44,13 +45,30 @@ public class InternalUserService {
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             UserSocialGraphDto userGraph = response.getBody();
 
-            userGraphCache.put(providerId, response.getBody());
-            userGraphCache.put(userGraph.username(), response.getBody());
+            //userGraphCache.put(providerId, response.getBody());
+            userGraphCache.put(userGraph.internalId(), response.getBody());
 
             return response.getBody();
         } else
             throw new RuntimeException("Something went wrong!!!");
     }
+
+
+    /**
+     * On cache miss, fetches the UserSocialGraph from user-service by using the Authentication from SecurityContextHolder
+     * @param internalId userId assigned by user-service
+     */
+    @Cacheable(value = "user-graph", key = "#internalId")
+    public UserSocialGraphDto getAuthenticatedUserSocialGraph(String internalId) {
+        ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
+
+        UserSocialGraphDto userSocialGraphDto = response.getBody();
+        if(response.getStatusCode().is2xxSuccessful() && userSocialGraphDto != null && userSocialGraphDto.internalId().equals(internalId)) {
+            return response.getBody();
+        } else
+            throw new RuntimeException("Something went wrong fetching UserSocialGraph from "+ internalId);
+    }
+
 
 
     /**

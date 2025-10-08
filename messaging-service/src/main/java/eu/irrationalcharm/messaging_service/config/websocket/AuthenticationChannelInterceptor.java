@@ -2,9 +2,8 @@ package eu.irrationalcharm.messaging_service.config.websocket;
 
 import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
 import eu.irrationalcharm.messaging_service.security.CustomWebSocketAuthToken;
-import eu.irrationalcharm.messaging_service.security.WebSocketPrincipal;
+import eu.irrationalcharm.messaging_service.security.JwtAuthenticationConverter;
 import eu.irrationalcharm.messaging_service.service.InternalUserService;
-import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -20,8 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -46,17 +44,16 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
         if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.CONNECT) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
-            JwtAuthenticationToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
+            CustomWebSocketAuthToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
 
-            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken); //Needed temporarily for the feign interceptor
-            var userSocialGraphDto = internalUserService.getUserSocialGraphByProviderId(jwtAuthToken.getName());
+            SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
+            var userSocialGraphDto = internalUserService.getAuthenticatedUserSocialGraph(jwtAuthToken.getName());
 
             validateUserOrThrow(userSocialGraphDto);
 
-            var principal = new WebSocketPrincipal(userSocialGraphDto.username(), jwtAuthToken.getName());
-            var customAuthToken = new CustomWebSocketAuthToken(principal, jwtAuthToken.getToken());
-            customAuthToken.setAuthenticated(true);
-            accessor.setUser(customAuthToken);
+
+            jwtAuthToken.setAuthenticated(true);
+            accessor.setUser(jwtAuthToken);
         }
 
 
@@ -82,11 +79,11 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
 
     private void validateUserOrThrow(UserSocialGraphDto userSocialGraphDto) {
-        if(!userSocialGraphDto.isOnBoarded()) throw new RuntimeException("User cannot connect, hasn't completed OnBoarding");
+        if(!userSocialGraphDto.isOnBoarded()) throw new RuntimeException("User cannot connect, hasn't completed OnBoarding!");
     }
 
 
-    private JwtAuthenticationToken getValidAuthenticationOrThrow(String authHeader) {
+    private CustomWebSocketAuthToken getValidAuthenticationOrThrow(String authHeader) {
         if (authHeader == null || !authHeader.startsWith(BEARER)) {
             throw new BadCredentialsException("Missing or invalid Authorization header");
         }
@@ -94,7 +91,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
         String token = authHeader.substring(BEARER.length());
         try {
             Jwt jwt = jwtDecoder.decode(token);
-            return (JwtAuthenticationToken) authenticationConverter.convert(jwt);
+            return authenticationConverter.convert(jwt);
 
         } catch (JwtException jwtException) {
             log.warn("Invalid JWT token: {}", jwtException.getMessage());

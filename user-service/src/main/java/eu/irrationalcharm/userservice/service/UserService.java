@@ -5,12 +5,9 @@ import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.entity.UserIdentityProviderEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
-import eu.irrationalcharm.userservice.enums.IdentityProviderType;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
-import eu.irrationalcharm.userservice.repository.UserIdentityProviderRepository;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,14 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserIdentityProviderRepository userIdpRepository;
-
 
 
     @Transactional(readOnly = true)
@@ -45,37 +41,33 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<UserDto> getAuthenticatedDto(Jwt authJwt) {
-        String authId = authJwt.getClaims().get(JwtClaims.SUBJECT).toString();
-        Optional<UserIdentityProviderEntity> userIdpEntity = userIdpRepository.findByProviderUserId(authId);
+        Optional<UserEntity> optionalUser = getAuthenticatedEntity(authJwt);
 
-        if (userIdpEntity.isPresent()) {
-            UserEntity userEntity = userIdpEntity.get().getUserEntity();
-            return Optional.of(UserMapper.mapToUserDto(userEntity));
-        }
-
-        return Optional.empty();
+        return optionalUser.map(UserMapper::mapToUserDto);
     }
 
 
     @Transactional(readOnly = true)
     public UserEntity getAuthenticatedEntityOrThrow(Jwt authJwt) {
-        String authId = authJwt.getClaimAsString(JwtClaims.SUBJECT);
-        IdentityProviderType idpType = IdentityProviderType.fromIssuer(authJwt.getClaimAsString(JwtClaims.ISSUER));
+        String userId = authJwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        if(userId == null)
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.ON_BOARDING_REQUIRED, "Empty internal_id in claim");
 
-        return userIdpRepository.findUserIdByProviderAndProviderUserId(idpType, authId)
+        return userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.BAD_REQUEST,
                         ErrorCode.ON_BOARDING_REQUIRED,
-                        String.format("Could not find account with this user id: %s", authId)));
+                        String.format("Could not find account with this user id: %s", userId)));
     }
 
 
     @Transactional(readOnly = true)
     public Optional<UserEntity> getAuthenticatedEntity(Jwt authJwt) {
-        String authId = authJwt.getClaimAsString(JwtClaims.SUBJECT);
-        IdentityProviderType idpType = IdentityProviderType.fromIssuer(authJwt.getClaimAsString(JwtClaims.ISSUER));
+        String userId = authJwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        if(userId == null)
+            return Optional.empty();
 
-        return userIdpRepository.findUserIdByProviderAndProviderUserId(idpType, authId);
+        return userRepository.findById(UUID.fromString(userId));
     }
 
 
