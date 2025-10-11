@@ -1,7 +1,8 @@
 package eu.irrationalcharm.messagepersistenceservice.model;
 
-import eu.irrationalcharm.messagepersistenceservice.enums.TextType;
+import eu.irrationalcharm.enums.TextType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -12,9 +13,13 @@ public class Message {
 
     @Id
     private String id;
+    @Indexed
     private String conversationId;
+
     private String senderId;
     private String content;
+
+    @Indexed
     private LocalDateTime timestamp;
     private TextType textType;
 

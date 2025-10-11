@@ -18,24 +18,7 @@ spring:
       port: 6379
       cache:
         user-graph: "user-graph"
-  kafka:
-    consumer:
-      bootstrap-servers: localhost:9092 #,localhost:9093... for more kafka brokers
-      group-id: messaging-service-group
-      auto-offset-reset: earliest #If no committed offset exists for this consumer group, start consuming from the beginning of the topic.
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      properties:
-        spring:
-          json:
-            default:
-              type: eu.irrationalcharm.messagingservice.event.UserUpdateEvent
-            trusted:
-              packages: eu.irrationalcharm.userservice.event
-            type:
-              mapping: "eu.irrationalcharm.userservice.event.UserUpdateEvent:eu.irrationalcharm.messaging_service.event.UserUpdateEvent"
-    topic:
-      user-updates: "user-updates-topic"
+
 logging:
   level:
     org.springframework.security: INFO
