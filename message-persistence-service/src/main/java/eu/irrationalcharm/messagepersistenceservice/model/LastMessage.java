@@ -1,12 +1,16 @@
 package eu.irrationalcharm.messagepersistenceservice.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter @Setter
+@AllArgsConstructor
 public class LastMessage {
 
     private String senderId;
     private String content;
-    private String timestamp;
+    private LocalDateTime timestamp;
 }

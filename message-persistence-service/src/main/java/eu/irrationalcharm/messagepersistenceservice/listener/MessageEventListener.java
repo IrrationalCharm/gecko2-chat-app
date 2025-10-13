@@ -3,6 +3,7 @@ package eu.irrationalcharm.messagepersistenceservice.listener;
 
 import eu.irrationalcharm.events.MessageEvent;
 import eu.irrationalcharm.messagepersistenceservice.service.PersistMessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,7 +17,7 @@ public class MessageEventListener {
     private final PersistMessageService persistMessageService;
 
     @KafkaListener(topics = "${spring.kafka.topic.user-messages}")
-    public void userMessageConsumerListener(MessageEvent messageEvent) {
+    public void userMessageConsumerListener(@Valid MessageEvent messageEvent) {
         log.info("Message received: {}", messageEvent);
 
         persistMessageService.persistMessage(messageEvent);
