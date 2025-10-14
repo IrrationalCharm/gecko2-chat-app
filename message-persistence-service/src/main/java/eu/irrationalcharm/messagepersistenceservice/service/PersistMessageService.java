@@ -21,7 +21,6 @@ public class PersistMessageService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
 
-
     public void persistMessage(MessageEvent messageEvent) {
         Message message = MessageMapper.mapToMessage(messageEvent);
 

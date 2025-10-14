@@ -1,4 +1,32 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
+import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
 public class MessageEventProducer {
+
+    @Value("${spring.kafka.topic.user-messages}")
+    private String userMessageTopic;
+
+    private final KafkaTemplate<String, MessageEvent> kafkaTemplate;
+
+    public void produceMessageEvent(MessageEvent messageEvent) {
+        kafkaTemplate.send(userMessageTopic, messageEvent);
+    }
+
+    public void produceMessageEvent(ChatMessageDto chatMessageDto) {
+        MessageEvent messageEvent = MessageMapper.mapToMessageEvent(chatMessageDto);
+        kafkaTemplate.send(userMessageTopic, messageEvent);
+    }
+
+
+
+
 }
