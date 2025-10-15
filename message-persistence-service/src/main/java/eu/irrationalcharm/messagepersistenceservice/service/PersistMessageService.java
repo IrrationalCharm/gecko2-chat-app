@@ -1,8 +1,8 @@
 package eu.irrationalcharm.messagepersistenceservice.service;
 
 
-import eu.irrationalcharm.kafka.events.MessageEvent;
-import eu.irrationalcharm.messagepersistenceservice.mapper.MessageMapper;
+import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.messagepersistenceservice.mapper.MessageEventMapper;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
 import eu.irrationalcharm.messagepersistenceservice.model.LastMessage;
 import eu.irrationalcharm.messagepersistenceservice.model.Message;
@@ -22,7 +22,7 @@ public class PersistMessageService {
     private final ConversationRepository conversationRepository;
 
     public void persistMessage(MessageEvent messageEvent) {
-        Message message = MessageMapper.mapToMessage(messageEvent);
+        Message message = MessageEventMapper.mapToMessage(messageEvent);
 
         Conversation conversation = conversationRepository.findById(messageEvent.conversationId()).orElseGet(() -> {
             var newConversation = new Conversation();

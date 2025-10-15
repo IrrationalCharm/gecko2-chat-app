@@ -22,7 +22,10 @@ public class JwtAuthenticationConverter implements Converter<Jwt, CustomWebSocke
             throw new BadJwtException("Invalid JWT, Missing claims in Jwt");
 
         WebSocketPrincipal webSocketPrincipal = new WebSocketPrincipal(internalId, providerId);
+        var authentication = new CustomWebSocketAuthToken(webSocketPrincipal, username, email, source);
 
-        return new CustomWebSocketAuthToken(webSocketPrincipal, username, email, source);
+        authentication.setAuthenticated(true);
+
+        return authentication;
     }
 }

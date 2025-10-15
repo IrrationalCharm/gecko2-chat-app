@@ -1,13 +1,15 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
-import eu.irrationalcharm.kafka.events.MessageEvent;
+import eu.irrationalcharm.events.MessageEvent;
 import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageEventProducer {
@@ -19,6 +21,7 @@ public class MessageEventProducer {
 
     public void produceMessageEvent(MessageEvent messageEvent) {
         kafkaTemplate.send(userMessageTopic, messageEvent);
+        log.info("A message has been sent to kafka");
     }
 
     public void produceMessageEvent(ChatMessageDto chatMessageDto) {

@@ -1,4 +1,4 @@
-package eu.irrationalcharm.kafka.enums;
+package eu.irrationalcharm.enums;
 
 public enum TextType {
     TEXT,

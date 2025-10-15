@@ -1,6 +1,6 @@
 package eu.irrationalcharm.messagepersistenceservice.model;
 
-import eu.irrationalcharm.kafka.enums.TextType;
+import eu.irrationalcharm.enums.TextType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;

@@ -1,18 +1,17 @@
 package eu.irrationalcharm.messagepersistenceservice.mapper;
 
-import eu.irrationalcharm.kafka.events.MessageEvent;
+import eu.irrationalcharm.messagepersistenceservice.dto.MessageDto;
 import eu.irrationalcharm.messagepersistenceservice.model.Message;
 
 public final class MessageMapper {
 
-    public static Message mapToMessage(MessageEvent messageEvent) {
-        var message = new Message();
-        message.setConversationId(messageEvent.conversationId());
-        message.setSenderId(messageEvent.senderId());
-        message.setContent(messageEvent.content());
-        message.setTimestamp(messageEvent.timestamp());
-        message.setTextType(messageEvent.textType());
-
-        return message;
+    public static MessageDto mapToDto(Message message) {
+        return new MessageDto(
+                message.getConversationId(),
+                message.getSenderId(),
+                message.getContent(),
+                message.getTimestamp(),
+                message.getTextType()
+        );
     }
 }

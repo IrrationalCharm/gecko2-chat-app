@@ -1,6 +1,6 @@
-package eu.irrationalcharm.kafka.events;
+package eu.irrationalcharm.events;
 
-import eu.irrationalcharm.kafka.enums.TextType;
+import eu.irrationalcharm.enums.TextType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
