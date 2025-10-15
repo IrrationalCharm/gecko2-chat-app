@@ -1,6 +1,6 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.kafka.events.MessageEvent;
 import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;

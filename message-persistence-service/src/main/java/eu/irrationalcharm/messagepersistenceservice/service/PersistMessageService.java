@@ -1,7 +1,7 @@
 package eu.irrationalcharm.messagepersistenceservice.service;
 
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.kafka.events.MessageEvent;
 import eu.irrationalcharm.messagepersistenceservice.mapper.MessageMapper;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
 import eu.irrationalcharm.messagepersistenceservice.model.LastMessage;

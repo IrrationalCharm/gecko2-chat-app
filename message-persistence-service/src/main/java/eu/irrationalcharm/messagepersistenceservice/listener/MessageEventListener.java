@@ -1,7 +1,7 @@
 package eu.irrationalcharm.messagepersistenceservice.listener;
 
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.kafka.events.MessageEvent;
 import eu.irrationalcharm.messagepersistenceservice.service.PersistMessageService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;

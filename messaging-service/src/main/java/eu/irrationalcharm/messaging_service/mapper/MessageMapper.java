@@ -1,8 +1,8 @@
 package eu.irrationalcharm.messaging_service.mapper;
 
 
-import eu.irrationalcharm.enums.TextType;
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.kafka.enums.TextType;
+import eu.irrationalcharm.kafka.events.MessageEvent;
 import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 
 import java.time.LocalDateTime;

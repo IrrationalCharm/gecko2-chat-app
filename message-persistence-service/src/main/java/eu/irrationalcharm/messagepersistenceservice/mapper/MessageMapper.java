@@ -1,6 +1,6 @@
 package eu.irrationalcharm.messagepersistenceservice.mapper;
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.kafka.events.MessageEvent;
 import eu.irrationalcharm.messagepersistenceservice.model.Message;
 
 public final class MessageMapper {
