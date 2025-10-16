@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+import static eu.irrationalcharm.messagepersistenceservice.utils.ConversationUtils.generateConversationId;
+
 @Service
 @RequiredArgsConstructor
 public class PersistMessageService {
@@ -41,16 +43,7 @@ public class PersistMessageService {
     }
 
 
-    public String generateConversationId(String userIdOne, String userIdTwo) {
-        String conversationId;
-        if (userIdOne.compareTo(userIdTwo) > 0) {
-            conversationId = String.format("%s:%s", userIdOne, userIdTwo);
-        } else {
-            conversationId = String.format("%s:%s", userIdTwo, userIdOne);
-        }
 
-        return conversationId;
-    }
 
 
 

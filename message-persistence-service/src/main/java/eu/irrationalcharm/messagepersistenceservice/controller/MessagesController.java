@@ -64,15 +64,15 @@ public class MessagesController {
 
 
     @GetMapping("/conversation/{friendId}")
-    public ResponseEntity<SuccessResponseDto<List<MessageHistoryDto>>> getConversation(
+    public ResponseEntity<SuccessResponseDto<MessageHistoryDto>> getConversation(
             @RequestParam(defaultValue = "0") @Min(value = 0) int page,
-            @RequestParam(defaultValue = "10") @Min(value = 1) @Max(value = 100) int size,
+            @RequestParam(defaultValue = "10") @Min(value = 1) @Max(value = 50, message = "Maximum messages is 50 at a time") int size,
             @PathVariable String friendId,
             Authentication authentication,
             HttpServletRequest request) {
 
 
-        List<MessageHistoryDto> chatHistorySet = retrieveHistoryService.getConversation(page, size, friendId, authentication);
+        MessageHistoryDto chatHistorySet = retrieveHistoryService.getConversation(page, size, friendId, authentication);
 
         return ApiResponse.success(
                 HttpStatus.OK,

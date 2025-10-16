@@ -18,9 +18,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static eu.irrationalcharm.messagepersistenceservice.utils.ConversationUtils.generateConversationId;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +36,9 @@ public class RetrieveChatHistoryService {
         if (conversations.isEmpty())
             return Collections.emptyList();
 
-        List<ConversationSummaryDto> conversationDto = new ArrayList<>(conversations.size());
-
-        conversations.forEach(conv ->
-            conversationDto.add(ConversationMapper.mapToDto(conv)));
-
-        return conversationDto;
+        return conversations.stream()
+                .map(ConversationMapper::mapToDto)
+                .toList();
     }
 
 
@@ -53,33 +51,37 @@ public class RetrieveChatHistoryService {
         if(conversations.isEmpty())
             return Collections.emptyList();
 
-
         PageRequest messagePageRequest = PageRequest.of(0, 20, Sort.by("timestamp").descending());
-        List<MessageHistoryDto> paginatedConversations = new ArrayList<>();
 
-        for (Conversation conv : conversations) {
-            Page<Message> messagesPage = messageRepository.findByConversationIdOrderByTimestampDesc(conv.getId(), messagePageRequest);
-            List<MessageDto> messageDtoList = new ArrayList<>();
-            messagesPage.getContent().forEach(message ->
-                    messageDtoList.add(MessageMapper.mapToDto(message)));
-
-            var messageHistoryDto = MessageHistoryDto.builder()
-                    .conversationId(conv.getId())
-                    .messages(messageDtoList)
-                    .pageNumber(messagesPage.getNumber())
-                    .totalPages(messagesPage.getTotalPages())
-                    .isLastPage(messagesPage.isLast())
-                    .build();
-
-            paginatedConversations.add(messageHistoryDto);
-        }
-
-        return paginatedConversations;
+        return conversations.stream()
+                .map(conv -> fetchMessageAndMapToDto(conv.getId(), messagePageRequest))
+                .toList();
     }
 
-    public List<MessageHistoryDto> getConversation(int page, int size, String friendId, Authentication authentication) {
-        //Page<Message> messagesPage = messageRepository.findByConversationIdOrderByTimestampDesc(conv.getId(), messagePageRequest);
 
-        return null;
+    @PreAuthorize("authenticated()")
+    public MessageHistoryDto getConversation(int page, int size, String friendId, Authentication authentication) {
+        String conversationId = generateConversationId(authentication.getName(), friendId);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("timestamp").descending());
+
+        return fetchMessageAndMapToDto(conversationId, pageRequest);
+    }
+
+
+
+    private MessageHistoryDto fetchMessageAndMapToDto(String conversationId, PageRequest pageRequest) {
+        Page<Message> messagePage = messageRepository.findByConversationIdOrderByTimestampDesc(conversationId, pageRequest);
+
+        List<MessageDto> messageDtoList = messagePage.getContent().stream()
+                .map(MessageMapper::mapToDto)
+                .toList();
+
+        return new MessageHistoryDto(
+                conversationId,
+                messageDtoList,
+                messagePage.getNumber(),
+                messagePage.getTotalPages(),
+                messagePage.isLast()
+        );
     }
 }
