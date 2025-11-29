@@ -9,6 +9,5 @@ public class UsernameValidator implements ConstraintValidator<UsernameValid, Str
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return value.matches("^[a-zA-Z0-9_-]{3,20}$");
-
     }
 }

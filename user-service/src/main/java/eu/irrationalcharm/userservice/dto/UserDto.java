@@ -27,8 +27,9 @@ public record UserDto(
         @NotBlank(message = "Display Name cannot be empty")
         String displayName,
 
-        @Email(message = "This field has to be a well formed email")
+
         @NotBlank
+        @Email(message = "This field has to be a well formed email")
         String email,
 
         String mobileNumber,

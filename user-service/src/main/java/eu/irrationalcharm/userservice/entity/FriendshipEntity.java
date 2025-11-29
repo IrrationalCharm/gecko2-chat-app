@@ -40,7 +40,7 @@ public class FriendshipEntity {
         UUID friendA_id = friendA.getId();
         UUID friendB_id = friendB.getId();
 
-        if (friendA_id == null || friendB.getId() == null)
+        if (friendA_id == null || friendB_id == null)
             return;
 
         if (friendA_id.compareTo(friendB_id) < 0) {

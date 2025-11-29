@@ -29,7 +29,7 @@ public class ChatServiceOrchestrator {
 
         Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientId());
 
-        if( sessionIdOptional.isPresent()) {
+        if (sessionIdOptional.isPresent()) {
             internalSendPrivateMessage(message);
             System.out.println("message sent!");
         }
