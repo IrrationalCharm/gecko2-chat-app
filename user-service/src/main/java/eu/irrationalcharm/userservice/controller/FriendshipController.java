@@ -12,7 +12,7 @@ import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +29,7 @@ import java.util.Set;
 @Validated
 @RestController
 @RequestMapping("/api/v1/friends")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FriendshipController {
 
     private final FriendRequestService friendRequestService;
@@ -52,7 +52,8 @@ public class FriendshipController {
 
 
     @GetMapping("/requests")
-    public ResponseEntity<SuccessResponseDto< List<PublicUserResponseDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
+    public ResponseEntity<SuccessResponseDto< List<PublicUserResponseDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt,
+                                                                                                   HttpServletRequest request) {
 
         List<PublicUserResponseDto> pendingFriendRequests = friendRequestService.getPendingFriendRequests(jwt);
 
@@ -89,7 +90,7 @@ public class FriendshipController {
         friendshipOrchestrator.removeFriend(jwt, username);
 
         return ApiResponse.success(
-                HttpStatus.CREATED,
+                HttpStatus.OK,
                 SuccessfulCode.FRIEND_REMOVED,
                 String.format("Successfully removed %s as friend", username),
                 null,
@@ -98,13 +99,12 @@ public class FriendshipController {
     }
 
 
-    @PatchMapping("/requests/{username}")
-    public ResponseEntity<SuccessResponseDto<Object>> updateFriendRequest(@PathVariable @UsernameValid String username,
-                                                                          @RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
+    @PatchMapping("/requests")
+    public ResponseEntity<SuccessResponseDto<Object>> updateFriendRequest(@RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
                                                                           @AuthenticationPrincipal Jwt jwt,
                                                                           HttpServletRequest request) {
 
-        SuccessfulCode successfulCode = friendshipOrchestrator.updateFriendRequest(jwt, friendRequestDto, username);
+        SuccessfulCode successfulCode = friendshipOrchestrator.updateFriendRequest(jwt, friendRequestDto);
 
         return ApiResponse.success(
                 HttpStatus.OK,

@@ -65,9 +65,9 @@ public class FriendshipOrchestrator {
 
 
     @Transactional
-    public SuccessfulCode updateFriendRequest(Jwt jwt, UpdateFriendRequestDto friendRequestDto, String username) {
+    public SuccessfulCode updateFriendRequest(Jwt jwt, UpdateFriendRequestDto friendRequestDto) {
         UserEntity requestUpdater = userService.getAuthenticatedEntityOrThrow(jwt);
-        UserEntity requestRecipient = userService.getEntityByUsernameOrThrow(username);
+        UserEntity requestRecipient = userService.getEntityByUsernameOrThrow(friendRequestDto.username());
 
         return switch (friendRequestDto.action()) {
             case ACCEPT_REQUEST -> handleAcceptRequest(requestRecipient, requestUpdater);
