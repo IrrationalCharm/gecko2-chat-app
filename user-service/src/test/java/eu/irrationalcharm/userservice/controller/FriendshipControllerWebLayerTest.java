@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
 import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
@@ -8,12 +9,17 @@ import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.enums.UpdateFriendRequestStatus;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -21,12 +27,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
 
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,13 +47,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(value = FriendshipController.class)
 @TestPropertySource(locations = {"/application-test.yml"})
+@Import(SecurityConfig.class)
 @ActiveProfiles("test")
 class FriendshipControllerWebLayerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
@@ -54,6 +61,14 @@ class FriendshipControllerWebLayerTest {
 
     @MockitoBean
     private FriendshipOrchestrator friendshipOrchestrator;
+
+    private static final String baseFriendsUrl = "/api/v1/friends";
+
+
+    @BeforeEach
+    void setup() {
+        objectMapper = new ObjectMapper();
+    }
 
 
     @Test
@@ -93,6 +108,33 @@ class FriendshipControllerWebLayerTest {
                 .andExpect(jsonPath("$.data[*].displayName", containsInAnyOrder(friend.displayName(), friend2.displayName())));
 
         verify(friendshipOrchestrator).getFriends(any(Jwt.class));
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("publicEndpointsProvider")
+    @DisplayName("Test all endpoints returns 401 when no Authorization header provided")
+    void testGetFriends_whenNoAuthenticationProvided_shouldReturn401UnauthorizedError(HttpMethod method, String endpoint) throws Exception {
+        // Arrange
+        RequestBuilder request = request(method, endpoint)
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // Act & Assert
+        mockMvc.perform(request)
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(friendRequestService, friendshipOrchestrator);
+
+    }
+
+    private static Stream<Arguments> publicEndpointsProvider() {
+        return Stream.of(
+                Arguments.of(HttpMethod.GET, baseFriendsUrl),
+                Arguments.of(HttpMethod.GET, baseFriendsUrl + "/requests"),
+                Arguments.of(HttpMethod.POST, baseFriendsUrl + "/requests/kaylin"),
+                Arguments.of(HttpMethod.DELETE, baseFriendsUrl + "/kaylinita123"),
+                Arguments.of(HttpMethod.PATCH, baseFriendsUrl + "/requests")
+        );
     }
 
 

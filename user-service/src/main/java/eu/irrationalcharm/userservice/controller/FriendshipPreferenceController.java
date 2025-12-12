@@ -13,9 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @AllArgsConstructor
 @RequestMapping("/api/v1/friend-preference")
 public class FriendshipPreferenceController {
@@ -27,6 +29,7 @@ public class FriendshipPreferenceController {
                                                                                        @AuthenticationPrincipal Jwt jwt,
                                                                                        HttpServletRequest request) {
         var friendPreferenceDto = ufpOrchestrator.getFriendPreferenceOrThrow(jwt, username);
+
 
         return ApiResponse.success(
                 HttpStatus.OK,
@@ -42,13 +45,13 @@ public class FriendshipPreferenceController {
                                                                                               @RequestBody PatchFriendPreferenceDto friendPreference,
                                                                                               @AuthenticationPrincipal Jwt jwt,
                                                                                               HttpServletRequest request) {
-        var patchFriendPreferenceDto = ufpOrchestrator.updateFriendPreference(jwt, username, friendPreference);
+        var patchedFriendPreferenceDto = ufpOrchestrator.updateFriendPreference(jwt, username, friendPreference);
 
         return ApiResponse.success(
                 HttpStatus.OK,
                 SuccessfulCode.FRIEND_PREFERENCE_UPDATED,
                 "Users friend preference updated successfully",
-                patchFriendPreferenceDto,
+                patchedFriendPreferenceDto,
                 request
         );
     }

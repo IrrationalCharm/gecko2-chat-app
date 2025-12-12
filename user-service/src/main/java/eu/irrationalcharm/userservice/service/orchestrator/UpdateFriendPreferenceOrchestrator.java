@@ -9,6 +9,7 @@ import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.FriendshipService;
 import eu.irrationalcharm.userservice.service.UserFriendshipPreferenceService;
 import eu.irrationalcharm.userservice.service.UserService;
+
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,6 @@ public class UpdateFriendPreferenceOrchestrator {
 
         friendRequestService.removeFriendRequestBetweenUsers(userEntity.getId(), toBeBlocked.getId());
     }
-
 
     @Transactional(readOnly = true)
     public FriendPreferenceDto getFriendPreferenceOrThrow(Jwt jwt, String friendUsername) {

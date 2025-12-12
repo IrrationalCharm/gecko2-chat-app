@@ -25,7 +25,9 @@ public class RegistrationController {
 
     @PostMapping("/onboard")
     public ResponseEntity<SuccessResponseDto<UserDto>> completeOnBoarding(
-            @RequestBody @Valid OnBoardingRequestDto boardingResponseDto, @AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
+                                                                        @RequestBody @Valid OnBoardingRequestDto boardingResponseDto,
+                                                                        @AuthenticationPrincipal Jwt jwt,
+                                                                        HttpServletRequest request) {
 
         UserDto userDto = registrationOrchestrator.onBoarding(boardingResponseDto, jwt);
 
