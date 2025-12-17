@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/v1/register")
+@RequestMapping("/api/register")
 @AllArgsConstructor
 public class RegistrationController {
 
     private final RegistrationOrchestrator registrationOrchestrator;
 
-    @PostMapping("/onboard")
+    @PostMapping(path = "/onboard")
     public ResponseEntity<SuccessResponseDto<UserDto>> completeOnBoarding(
                                                                         @RequestBody @Valid OnBoardingRequestDto boardingResponseDto,
                                                                         @AuthenticationPrincipal Jwt jwt,

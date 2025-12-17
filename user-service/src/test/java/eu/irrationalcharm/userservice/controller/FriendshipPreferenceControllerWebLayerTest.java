@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.userservice.dto.response.FriendPreferenceDto;
 import eu.irrationalcharm.userservice.dto.response.PatchFriendPreferenceDto;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {FriendshipPreferenceController.class})
+@Import(SecurityConfig.class)
 @ActiveProfiles("test")
 class FriendshipPreferenceControllerWebLayerTest {
 

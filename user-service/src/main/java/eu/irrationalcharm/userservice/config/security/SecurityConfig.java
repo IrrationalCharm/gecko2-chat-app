@@ -20,7 +20,10 @@ public class SecurityConfig {
         http.oauth2ResourceServer(oauth2 -> oauth2
                 .jwt( jwtConfigurer -> jwtConfigurer.jwkSetUri(jwkSetUri)));
 
-        http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
+        http.authorizeHttpRequests(requests -> requests
+                .requestMatchers("/api/v1/users/me").authenticated()
+                .requestMatchers("/api/v1/users/{username}").permitAll()
+                .anyRequest().authenticated());
 
         http.csrf(CsrfConfigurer::disable);
 
