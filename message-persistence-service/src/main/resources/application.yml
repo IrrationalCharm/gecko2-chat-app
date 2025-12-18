@@ -1,0 +1,17 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: message-persistence-service
+  config:
+    import: configserver:http://localhost:8888
+  mvc:
+    servlet:
+      path: "/message-persistence-service"
+  data:
+    mongodb:
+      auto-index-creation: false
+mongock:
+  migration-scan-package: eu.irrationalcharm.messagepersistenceservice.migration
+  enabled: true
+  index-creation: true
