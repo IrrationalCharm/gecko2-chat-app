@@ -17,6 +17,7 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
 
     boolean existsByFriendAAndFriendB(UserEntity friendA, UserEntity friendB);
 
+    //Returns Friendship entity of two users, HAS to be ordered by UUID size, friendA Bigger!!!
     Optional<FriendshipEntity> findByFriendAAndFriendB(UserEntity friendA, UserEntity friendB);
 
     @Query("""
