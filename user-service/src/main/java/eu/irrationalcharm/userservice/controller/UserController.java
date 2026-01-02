@@ -1,26 +1,30 @@
 package eu.irrationalcharm.userservice.controller;
 
 
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
+import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.userservice.annotation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
-import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Optional;
 
 
+@Slf4j
 @RestController
 @Validated
 @RequestMapping("/api/v1/users")
@@ -62,7 +66,7 @@ public class UserController {
 
         return ApiResponse.success(HttpStatus.OK,
                 successfulCode,
-                "Successfully determined user status",
+                "Successfully retrieved user status",
                 userDto,
                 request);
     }
@@ -73,11 +77,25 @@ public class UserController {
                                                                          @AuthenticationPrincipal Jwt jwt,
                                                                          HttpServletRequest request) {
         UserDto userDto = userService.updateUserDetails(userProfileRequestDto, jwt);
-
         return ApiResponse.success(HttpStatus.OK,
                 SuccessfulCode.USER_UPDATED,
                 "Updated Successfully",
                 userDto,
+                request);
+    }
+
+
+    @PutMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SuccessResponseDto<Void>> uploadProfileImage(@RequestPart MultipartFile image,
+                                                                       @AuthenticationPrincipal Jwt jwt,
+                                                                       HttpServletRequest request){
+        if (image != null)
+            log.info("Image received: {}", image.getOriginalFilename());
+
+        return ApiResponse.success(HttpStatus.OK,
+                SuccessfulCode.USER_PROFILE_IMAGE_UPLOADED,
+                "Updated Successfully",
+                null,
                 request);
     }
 }

@@ -1,9 +1,9 @@
 package eu.irrationalcharm.userservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.enums.UpdateFriendRequestStatus;

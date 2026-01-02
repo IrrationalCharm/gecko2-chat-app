@@ -1,6 +1,6 @@
 package eu.irrationalcharm.userservice.service;
 
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.FriendshipEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.exception.BusinessException;

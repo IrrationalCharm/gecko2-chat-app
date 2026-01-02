@@ -1,9 +1,9 @@
 package eu.irrationalcharm.userservice.service.orchestrator;
 
+import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.client.KeycloakAdminClient;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
@@ -55,5 +55,9 @@ public class RegistrationOrchestrator {
         keycloakAdminClient.addUserAttributes(providerId, savedUser);
 
         return UserMapper.mapToUserDto(savedUser);
+    }
+
+    public boolean checkUsernameAvailability(String username) {
+        return userValidatorService.isUsernameTaken(username);
     }
 }

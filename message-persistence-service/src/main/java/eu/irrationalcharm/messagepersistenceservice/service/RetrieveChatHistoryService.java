@@ -1,9 +1,9 @@
 package eu.irrationalcharm.messagepersistenceservice.service;
 
 
-import eu.irrationalcharm.messagepersistenceservice.dto.ConversationSummaryDto;
-import eu.irrationalcharm.messagepersistenceservice.dto.MessageDto;
-import eu.irrationalcharm.messagepersistenceservice.dto.MessageHistoryDto;
+import eu.irrationalcharm.dto.persistence_service.ConversationSummaryDto;
+import eu.irrationalcharm.dto.persistence_service.MessageDto;
+import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
 import eu.irrationalcharm.messagepersistenceservice.mapper.ConversationMapper;
 import eu.irrationalcharm.messagepersistenceservice.mapper.MessageMapper;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;

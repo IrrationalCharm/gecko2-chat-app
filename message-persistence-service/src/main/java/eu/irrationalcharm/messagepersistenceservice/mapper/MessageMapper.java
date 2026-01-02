@@ -1,6 +1,6 @@
 package eu.irrationalcharm.messagepersistenceservice.mapper;
 
-import eu.irrationalcharm.messagepersistenceservice.dto.MessageDto;
+import eu.irrationalcharm.dto.persistence_service.MessageDto;
 import eu.irrationalcharm.messagepersistenceservice.model.Message;
 
 public final class MessageMapper {

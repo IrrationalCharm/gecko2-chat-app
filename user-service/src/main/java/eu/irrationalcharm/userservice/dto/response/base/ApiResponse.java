@@ -1,5 +1,7 @@
 package eu.irrationalcharm.userservice.dto.response.base;
 
+import eu.irrationalcharm.dto.response.ErrorResponseDto;
+import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

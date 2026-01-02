@@ -1,11 +1,9 @@
 package eu.irrationalcharm.userservice.controller;
 
 
+import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
-import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
-import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.orchestrator.RegistrationOrchestrator;
@@ -13,8 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.MockMvcBuilderCustomizer;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -22,12 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.json.JsonPathValueAssert;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
-import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
-import org.springframework.web.client.ApiVersionInserter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
@@ -37,7 +29,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @WebMvcTest(RegistrationController.class)
 @Import(SecurityConfig.class)

@@ -1,7 +1,7 @@
 package eu.irrationalcharm.messagepersistenceservice.mapper;
 
-import eu.irrationalcharm.messagepersistenceservice.dto.ConversationSummaryDto;
-import eu.irrationalcharm.messagepersistenceservice.dto.LastMessageDto;
+import eu.irrationalcharm.dto.persistence_service.ConversationSummaryDto;
+import eu.irrationalcharm.dto.persistence_service.LastMessageDto;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
 import eu.irrationalcharm.messagepersistenceservice.model.LastMessage;
 import org.springframework.lang.NonNull;

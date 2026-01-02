@@ -40,7 +40,7 @@ class FriendshipRepositoryTest {
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest");
 
     @BeforeEach
-    void setPostgres() {
+    void setUp() {
         user1 = new UserEntity();
         user1.setProviderId(UUID.randomUUID().toString());
         user1.setUsername("irrational_charm");

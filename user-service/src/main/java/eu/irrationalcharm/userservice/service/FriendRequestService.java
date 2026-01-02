@@ -1,6 +1,6 @@
 package eu.irrationalcharm.userservice.service;
 
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
@@ -50,7 +50,7 @@ public class FriendRequestService {
     public List<PublicUserResponseDto> getPendingFriendRequests(Jwt jwt) {
         UserEntity userEntity = userService.getAuthenticatedEntityOrThrow(jwt);
 
-        return friendRequestRepository.findInitiatorAsDtoByReceiver(userEntity.getId());
+        return friendRequestRepository.findPendingFriendRequestsAsDto(userEntity.getId());
     }
 
 

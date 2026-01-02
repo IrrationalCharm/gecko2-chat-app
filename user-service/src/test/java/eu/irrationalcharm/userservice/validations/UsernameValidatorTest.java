@@ -1,5 +1,6 @@
 package eu.irrationalcharm.userservice.validations;
 
+import eu.irrationalcharm.validation.UsernameValidator;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;

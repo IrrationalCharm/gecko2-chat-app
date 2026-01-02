@@ -1,7 +1,8 @@
 package eu.irrationalcharm.userservice.annotation;
 
 
-import eu.irrationalcharm.userservice.validations.UsernameValidator;
+
+import eu.irrationalcharm.validation.UsernameValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

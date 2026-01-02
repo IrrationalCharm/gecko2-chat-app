@@ -2,10 +2,10 @@ package eu.irrationalcharm.userservice.controller;
 
 
 
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.UserService;

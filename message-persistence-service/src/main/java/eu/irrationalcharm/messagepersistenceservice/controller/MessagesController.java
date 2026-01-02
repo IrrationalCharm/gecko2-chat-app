@@ -1,11 +1,11 @@
 package eu.irrationalcharm.messagepersistenceservice.controller;
 
 
-import eu.irrationalcharm.messagepersistenceservice.dto.ConversationSummaryDto;
+import eu.irrationalcharm.dto.response.SuccessResponseDto;
+import eu.irrationalcharm.dto.persistence_service.ConversationSummaryDto;
 
-import eu.irrationalcharm.messagepersistenceservice.dto.MessageHistoryDto;
+import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
 import eu.irrationalcharm.messagepersistenceservice.dto.response.ApiResponse;
-import eu.irrationalcharm.messagepersistenceservice.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.messagepersistenceservice.enums.SuccessfulCode;
 import eu.irrationalcharm.messagepersistenceservice.service.RetrieveChatHistoryService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,9 +1,9 @@
 package eu.irrationalcharm.userservice.service;
 
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;

@@ -1,8 +1,8 @@
 package eu.irrationalcharm.messagepersistenceservice.exception;
 
 
+import eu.irrationalcharm.dto.response.ErrorResponseDto;
 import eu.irrationalcharm.messagepersistenceservice.dto.response.ApiResponse;
-import eu.irrationalcharm.messagepersistenceservice.dto.response.ErrorResponseDto;
 import eu.irrationalcharm.messagepersistenceservice.enums.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.MessageSourceResolvable;

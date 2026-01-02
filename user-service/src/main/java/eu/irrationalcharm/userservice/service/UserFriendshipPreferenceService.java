@@ -41,14 +41,20 @@ public class UserFriendshipPreferenceService {
     }
 
 
-    @Transactional(readOnly = true)
-    public UserFriendshipPreferenceEntity getFriendshipPreferenceOrCreate(UUID userId, UUID friendId) {
+    /**
+     *
+     * @param userId
+     * @param friendId
+     * @return returns a managed entity if found in the DB, if not, it creates on, persists it and also returns a managed entity
+     */
+    @Transactional
+    public UserFriendshipPreferenceEntity getOrCreateFriendshipPreference(UUID userId, UUID friendId) {
         return userFriendshipPreferenceRepository.findByUserIdAndFriendId(userId, friendId)
                 .orElseGet(() -> {
                     var fpEntity = new UserFriendshipPreferenceEntity();
                     fpEntity.setUserId(userId);
                     fpEntity.setFriendId(friendId);
-                    return fpEntity;
+                    return userFriendshipPreferenceRepository.save(fpEntity);
                 });
     }
 }

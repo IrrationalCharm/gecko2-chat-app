@@ -31,7 +31,7 @@ public class UpdateFriendPreferenceOrchestrator {
         UserEntity principalEntity = userService.getAuthenticatedEntityOrThrow(jwt);
         UserEntity friendEntity = userService.getEntityByUsernameOrThrow(friendUsername);
 
-        var friendPreferenceEntity = friendPreferenceService.getFriendshipPreferenceOrCreate(principalEntity.getId(), friendEntity.getId());
+        var friendPreferenceEntity = friendPreferenceService.getOrCreateFriendshipPreference(principalEntity.getId(), friendEntity.getId());
 
 
         if (friendPreference.isBlocked() != null && friendPreference.isBlocked() != friendPreferenceEntity.isBlocked()) {

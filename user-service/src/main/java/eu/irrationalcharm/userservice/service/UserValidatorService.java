@@ -39,7 +39,8 @@ public class UserValidatorService {
         return userRepository.existsUserEntityByEmail(email);
     }
 
-    private boolean isUsernameTaken(String username) {
+    @Transactional(readOnly = true)
+    public boolean isUsernameTaken(String username) {
         return userRepository.existsUserEntityByUsername(username);
     }
 }

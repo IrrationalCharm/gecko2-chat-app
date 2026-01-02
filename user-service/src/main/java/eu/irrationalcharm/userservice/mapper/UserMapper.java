@@ -1,6 +1,6 @@
 package eu.irrationalcharm.userservice.mapper;
 
-import eu.irrationalcharm.userservice.dto.UserDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import jakarta.validation.constraints.NotNull;
 

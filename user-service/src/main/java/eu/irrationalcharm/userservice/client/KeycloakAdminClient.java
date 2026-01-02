@@ -1,6 +1,5 @@
 package eu.irrationalcharm.userservice.client;
 
-import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
@@ -58,6 +57,8 @@ public class KeycloakAdminClient {
                     .body(body)
                     .retrieve()
                     .toBodilessEntity();
+
+            log.info("Successfully added internal_id and username_app to token");
         } catch (Exception e) {
             log.error("Failed to update Keycloak user attributes for user {}: {}", keycloakUserId, e.getMessage());
             throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.KEYCLOAK_API_ERROR, "An internal error occurred while finalizing user registration.");
