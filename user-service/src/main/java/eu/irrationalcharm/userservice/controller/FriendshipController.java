@@ -4,10 +4,10 @@ package eu.irrationalcharm.userservice.controller;
 
 import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.annotation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
-import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,11 +1,15 @@
-package eu.irrationalcharm.userservice.enums;
+package eu.irrationalcharm.enums;
 
 public enum ErrorCode {
+
+    // --- message-persistence-service ---
+    VALIDATION_ERROR,
+
+
+    // --- user-service ---
+
     //Friend Preference domain
     FRIEND_PREFERENCE_NOT_FOUND,
-
-    //Hibernate validation
-    VALIDATION_ERROR,
 
     //Friend Request domain
     FRIEND_REQUEST_SELF,
@@ -30,5 +34,4 @@ public enum ErrorCode {
 
     //Internal
     UNAUTHORIZED_ACCESS, KEYCLOAK_API_ERROR,
-
 }

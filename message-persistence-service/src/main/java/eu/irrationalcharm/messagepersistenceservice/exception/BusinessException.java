@@ -1,6 +1,6 @@
 package eu.irrationalcharm.messagepersistenceservice.exception;
 
-import eu.irrationalcharm.messagepersistenceservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

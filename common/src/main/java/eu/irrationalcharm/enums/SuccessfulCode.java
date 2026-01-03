@@ -1,6 +1,11 @@
-package eu.irrationalcharm.userservice.enums;
+package eu.irrationalcharm.enums;
 
 public enum SuccessfulCode {
+
+    // ---message-persistence-service ---
+    CHATS_FOUND,
+
+    // ---user-service ---
 
     //User domain
     USER_CREATED,

@@ -2,7 +2,7 @@ package eu.irrationalcharm.messagepersistenceservice.dto.response;
 
 import eu.irrationalcharm.dto.response.ErrorResponseDto;
 import eu.irrationalcharm.dto.response.SuccessResponseDto;
-import eu.irrationalcharm.messagepersistenceservice.enums.SuccessfulCode;
+import eu.irrationalcharm.enums.SuccessfulCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

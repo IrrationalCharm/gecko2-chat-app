@@ -3,7 +3,7 @@ package eu.irrationalcharm.userservice.service;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.userservice.entity.FriendshipEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.repository.FriendshipRepository;
 import lombok.AllArgsConstructor;

@@ -3,7 +3,7 @@ package eu.irrationalcharm.userservice.service;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.UserIdentityProviderDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.enums.IdentityProviderType;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserIdentityProviderMapper;
@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @AllArgsConstructor

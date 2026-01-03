@@ -1,7 +1,7 @@
 package eu.irrationalcharm.userservice.client;
 
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -2,10 +2,10 @@ package eu.irrationalcharm.userservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.enums.ErrorCode;
+import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
-import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.enums.UpdateFriendRequestStatus;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;

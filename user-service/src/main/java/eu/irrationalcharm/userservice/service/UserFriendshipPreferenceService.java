@@ -1,7 +1,7 @@
 package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.userservice.entity.UserFriendshipPreferenceEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.repository.UserFriendshipPreferenceRepository;
 import lombok.AllArgsConstructor;

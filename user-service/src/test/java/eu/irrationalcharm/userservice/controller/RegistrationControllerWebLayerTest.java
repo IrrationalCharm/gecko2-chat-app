@@ -2,10 +2,10 @@ package eu.irrationalcharm.userservice.controller;
 
 
 import eu.irrationalcharm.dto.user_service.UserDto;
+import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
-import eu.irrationalcharm.userservice.enums.SuccessfulCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.service.orchestrator.RegistrationOrchestrator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;

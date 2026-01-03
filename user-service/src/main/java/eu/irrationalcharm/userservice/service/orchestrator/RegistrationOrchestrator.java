@@ -5,7 +5,7 @@ import eu.irrationalcharm.userservice.client.KeycloakAdminClient;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
 import eu.irrationalcharm.userservice.repository.UserRepository;

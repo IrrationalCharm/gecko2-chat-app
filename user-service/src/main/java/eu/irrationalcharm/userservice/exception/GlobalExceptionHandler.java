@@ -2,7 +2,7 @@ package eu.irrationalcharm.userservice.exception;
 
 import eu.irrationalcharm.dto.response.ErrorResponseDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
