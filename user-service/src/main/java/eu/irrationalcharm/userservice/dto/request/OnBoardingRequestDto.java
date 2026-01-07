@@ -1,7 +1,7 @@
 package eu.irrationalcharm.userservice.dto.request;
 
 
-import eu.irrationalcharm.userservice.annotation.UsernameValid;
+import eu.irrationalcharm.validation.UsernameValid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -2,7 +2,7 @@ package eu.irrationalcharm.userservice.controller;
 
 import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.annotation.UsernameValid;
+import eu.irrationalcharm.validation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.response.FriendPreferenceDto;
 import eu.irrationalcharm.userservice.dto.response.PatchFriendPreferenceDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;

@@ -5,7 +5,7 @@ import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.annotation.UsernameValid;
+import eu.irrationalcharm.validation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.service.UserService;

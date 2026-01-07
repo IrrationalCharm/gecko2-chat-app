@@ -9,3 +9,6 @@ spring:
   threads:
     virtual:
       enabled: true
+  mvc:
+    servlet:
+      path: "/mobile-bff"
