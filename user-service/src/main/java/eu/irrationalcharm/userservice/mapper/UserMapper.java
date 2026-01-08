@@ -22,6 +22,7 @@ public final class UserMapper {
 
     public static UserDto mapToUserDto(@NotNull UserEntity userEntity) {
         return UserDto.builder()
+                .internalId(userEntity.getId().toString())
                 .providerId(userEntity.getProviderId())
                 .username(userEntity.getUsername())
                 .displayName(userEntity.getDisplayName())

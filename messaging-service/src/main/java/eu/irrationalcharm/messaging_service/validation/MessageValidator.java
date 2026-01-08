@@ -34,7 +34,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, ChatM
         //Sender id same as authenticated user?
         if (!value.userId().equals(auth.getName())) {
             context.buildConstraintViolationWithTemplate("Sender's user ID doest not match the authenticated user.")
-                    .addPropertyNode("userId")
+                    .addPropertyNode("internalId")
                     .addConstraintViolation();
             return false;
         }

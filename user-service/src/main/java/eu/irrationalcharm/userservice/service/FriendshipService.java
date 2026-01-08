@@ -57,7 +57,7 @@ public class FriendshipService {
 
         return userFriends.stream()
                 .map(user -> PublicUserResponseDto.builder()
-                        .userId(user.getId())
+                        .internalId(user.getId())
                         .displayName(user.getDisplayName())
                         .profileImageUrl(user.getProfileImageUrl())
                         .username(user.getUsername())

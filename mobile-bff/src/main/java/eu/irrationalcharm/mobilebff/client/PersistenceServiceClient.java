@@ -8,9 +8,9 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 import java.util.List;
 
-@HttpExchange(url = "/message-persistence-service", accept = "application/json")
+@HttpExchange(url = "${url.persistence-service}", accept = "application/json")
 public interface PersistenceServiceClient {
 
-    @GetExchange("/last-messages")
+    @GetExchange("/chat/last-messages")
     ResponseEntity<SuccessResponseDto<List<ConversationSummaryDto>>> getSummaryMessages();
 }

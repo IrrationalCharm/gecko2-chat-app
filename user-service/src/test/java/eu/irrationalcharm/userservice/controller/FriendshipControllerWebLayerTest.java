@@ -74,7 +74,7 @@ class FriendshipControllerWebLayerTest {
     void testGetFriends_whenFriendsListRequested_shouldReturn200WithUsersFriends() throws Exception {
         // Arrange
         var friend = PublicUserResponseDto.builder()
-                .userId(UUID.randomUUID())
+                .internalId(UUID.randomUUID())
                 .username("dominik.fitz")
                 .displayName("Dominik Fitz")
                 .profileBio("The best")
@@ -82,7 +82,7 @@ class FriendshipControllerWebLayerTest {
                 .build();
 
         var friend2 = PublicUserResponseDto.builder()
-                .userId(UUID.randomUUID())
+                .internalId(UUID.randomUUID())
                 .username("kaylinita")
                 .displayName("Kaylin Fitz")
                 .profileBio("The second best")
@@ -141,7 +141,7 @@ class FriendshipControllerWebLayerTest {
     void testPendingFriendRequests_whenRequestedPendingFriendRequest_shouldReturn200WithPendingFriendRequests() throws Exception {
         // Arrange
         var friend = PublicUserResponseDto.builder()
-                .userId(UUID.randomUUID())
+                .internalId(UUID.randomUUID())
                 .username("dominik.fitz")
                 .displayName("Dominik Fitz")
                 .profileBio("The best")
@@ -149,7 +149,7 @@ class FriendshipControllerWebLayerTest {
                 .build();
 
         var friend2 = PublicUserResponseDto.builder()
-                .userId(UUID.randomUUID())
+                .internalId(UUID.randomUUID())
                 .username("kaylinita")
                 .displayName("Kaylin Fitz")
                 .profileBio("The second best")

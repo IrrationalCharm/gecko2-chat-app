@@ -1,13 +1,20 @@
 package eu.irrationalcharm.mobilebff.config;
 
+import eu.irrationalcharm.mobilebff.client.PersistenceServiceClient;
+import eu.irrationalcharm.mobilebff.client.UserServiceClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.support.RestClientAdapter;
+import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+@Slf4j
 @Configuration
 public class ClientConfig {
 
@@ -20,6 +27,9 @@ public class ClientConfig {
             if (authentication instanceof JwtAuthenticationToken jwtToken) {
                 String tokenValue = jwtToken.getToken().getTokenValue();
                 request.getHeaders().setBearerAuth(tokenValue);
+
+                if (!tokenValue.isEmpty())
+                    log.info("Successfully injected token to request");
             }
 
             return execution.execute(request, body);
@@ -30,25 +40,23 @@ public class ClientConfig {
                 .build();
     }
 
-    /**
+
+    //Allows environment variables for HttpExchange
     @Bean
-    HttpServiceProxyFactory proxyFactory(RestClient restClient) {
-        return HttpServiceProxyFactory.builder()
-                .exchangeAdapter(RestClientAdapter.create(restClient))
+    public HttpServiceProxyFactory httpServiceProxyFactory(RestClient restClient, ConfigurableEnvironment env) {
+        return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClient))
+                .embeddedValueResolver(env::resolvePlaceholders)
                 .build();
     }
 
-
-    //Clients
-
     @Bean
-    UserService userService(HttpServiceProxyFactory proxyFactory) {
-        return proxyFactory.createClient(UserService.class);
+    public UserServiceClient userServiceClient(HttpServiceProxyFactory factory) {
+        return factory.createClient(UserServiceClient.class);
     }
 
     @Bean
-    PersistenceService persistenceService(HttpServiceProxyFactory proxyFactory) {
-        return proxyFactory.createClient(PersistenceService.class);
+    public PersistenceServiceClient persistenceServiceClient(HttpServiceProxyFactory factory) {
+        return factory.createClient(PersistenceServiceClient.class);
     }
-    **/
+
 }

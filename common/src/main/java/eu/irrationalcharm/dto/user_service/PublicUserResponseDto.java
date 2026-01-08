@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Builder
 public record PublicUserResponseDto(
-        UUID userId,
+        UUID internalId,
         String username,
         String displayName,
         String profileBio,

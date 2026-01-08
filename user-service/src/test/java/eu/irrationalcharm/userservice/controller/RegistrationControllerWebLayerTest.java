@@ -60,7 +60,7 @@ class RegistrationControllerWebLayerTest {
         String email = "example@gmail.com";
 
         var onBoardingRequest = new OnBoardingRequestDto(username, displayName, phoneNumber, "", "");
-        var userDto = new UserDto(providerId, username, displayName, email, phoneNumber, "", "");
+        var userDto = new UserDto(providerId, providerId, username, displayName, email, phoneNumber, "", "");
 
         when(registrationOrchestrator.onBoarding(eq(onBoardingRequest), any(Jwt.class))).thenReturn(userDto);
 
@@ -103,7 +103,7 @@ class RegistrationControllerWebLayerTest {
         String email = "example@gmail.com";
 
         var onBoardingRequest = new OnBoardingRequestDto(username, displayName, phoneNumber, "", "");
-        var userDto = new UserDto(providerId, username, displayName, email, phoneNumber, "", "");
+        var userDto = new UserDto(providerId, providerId, username, displayName, email, phoneNumber, "", "");
 
         when(registrationOrchestrator.onBoarding(eq(onBoardingRequest), any(Jwt.class))).thenReturn(userDto);
 

@@ -8,7 +8,7 @@ import org.springframework.web.service.registry.ImportHttpServices;
 
 
 @SpringBootApplication
-@ImportHttpServices(basePackageClasses = {UserServiceClient.class, PersistenceServiceClient.class})
+//@ImportHttpServices(basePackageClasses = {UserServiceClient.class, PersistenceServiceClient.class})
 public class MobileBffApplication {
 
     void main(String[] args) {

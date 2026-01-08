@@ -56,7 +56,7 @@ public class InternalUserService {
 
     /**
      * On cache miss, fetches the UserSocialGraph from user-service by using the Authentication from SecurityContextHolder
-     * @param internalId userId assigned by user-service
+     * @param internalId internalId assigned by user-service
      */
     @Cacheable(value = "user-graph", key = "#internalId")
     public UserSocialGraphDto getAuthenticatedUserSocialGraph(String internalId) {

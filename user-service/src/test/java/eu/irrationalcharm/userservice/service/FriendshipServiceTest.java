@@ -121,7 +121,7 @@ class FriendshipServiceTest {
 
         var friend = friendsDto.stream().findFirst().orElseThrow();
 
-        assertEquals(friendEntity.getId(), friend.userId());
+        assertEquals(friendEntity.getId(), friend.internalId());
         assertEquals(friendEntity.getDisplayName() , friend.displayName());
         assertEquals(friendEntity.getProfileImageUrl() , friend.profileImageUrl());
         assertEquals(friendEntity.getUsername() , friend.username());

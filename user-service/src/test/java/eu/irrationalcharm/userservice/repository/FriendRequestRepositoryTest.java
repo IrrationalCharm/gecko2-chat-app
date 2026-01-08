@@ -135,7 +135,7 @@ class FriendRequestRepositoryTest {
         assertThat(friendRequestInitiatorList)
                 .hasSize(expectedSize)
                 .extracting(
-                        PublicUserResponseDto::userId,
+                        PublicUserResponseDto::internalId,
                         PublicUserResponseDto::username,
                         PublicUserResponseDto::displayName,
                         PublicUserResponseDto::profileBio,

@@ -12,6 +12,8 @@ import java.io.Serializable;
 @Builder
 public record UserDto(
 
+        String internalId,
+
         @NotNull
         String providerId,
 

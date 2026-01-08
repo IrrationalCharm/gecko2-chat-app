@@ -51,8 +51,11 @@ public class StartupService {
 
     private UserDto fetchUserData() {
         try {
-            return userServiceClient.fetchMe().getBody().data();
+            var response = userServiceClient.fetchMe().getBody().data();
+            if (response != null)
+                log.info("Successfully retrieved User data from user-service");
 
+            return response;
         } catch (Exception e) {
             log.error("Failed to fetch user profile from user-service", e);
             throw new RuntimeException(e);
@@ -62,19 +65,26 @@ public class StartupService {
 
     private List<ConversationSummaryDto> fetchLastMessages() {
         try {
-            return persistenceServiceClient.getSummaryMessages().getBody().data();
+            var response = persistenceServiceClient.getSummaryMessages().getBody().data();
+            if (response != null)
+                log.info("Successfully retrieved last messages from message-persistence-service");
 
+            return response;
         } catch (Exception e) {
             log.error("Failed to fetch last messages from message-persitence-service", e);
-            throw new RuntimeException(e);
+            //throw new RuntimeException(e);
+            return null;
         }
     }
 
 
     private Set<PublicUserResponseDto> fetchUserFriends() {
         try {
-            return userServiceClient.getFriends().getBody().data();
+            var response = userServiceClient.getFriends().getBody().data();
+            if (response != null)
+                log.info("Successfully retrieved users friends from user-service");
 
+            return response;
         } catch (Exception e) {
             log.error("Failed to fetch user friends list from user-service", e);
             throw new RuntimeException(e);
