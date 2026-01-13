@@ -32,7 +32,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, ChatM
         context.disableDefaultConstraintViolation();
 
         //Sender id same as authenticated user?
-        if (!value.userId().equals(auth.getName())) {
+        if (!value.senderId().equals(auth.getName())) {
             context.buildConstraintViolationWithTemplate("Sender's user ID doest not match the authenticated user.")
                     .addPropertyNode("internalId")
                     .addConstraintViolation();
@@ -40,7 +40,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, ChatM
         }
 
         //Sending message to himself?
-        if (value.userId().equals(value.recipientId())) {
+        if (value.senderId().equals(value.recipientId())) {
             context.buildConstraintViolationWithTemplate("Cannot send a message to yourself")
                     .addPropertyNode("recipientId")
                     .addConstraintViolation();

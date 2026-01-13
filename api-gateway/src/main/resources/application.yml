@@ -23,3 +23,11 @@ spring:
               uri: http://localhost:8087
               predicates:
                 - Path=/mobile-bff/**
+            - id: messaging-service-ws
+              uri: ws://localhost:8084
+              predicates:
+                - Path=/ws/**
+            - id: messaging-service-http
+              uri: http://localhost:8084
+              predicates:
+                - Path=/ws/**

@@ -11,6 +11,11 @@ spring:
   data:
     mongodb:
       auto-index-creation: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
 mongock:
   migration-scan-package: eu.irrationalcharm.messagepersistenceservice.migration
   enabled: true

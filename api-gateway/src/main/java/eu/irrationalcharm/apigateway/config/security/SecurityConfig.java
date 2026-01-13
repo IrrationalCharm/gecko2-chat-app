@@ -20,8 +20,10 @@ public class SecurityConfig {
         httpSecurity.oauth2ResourceServer(oAuth2 ->
                 oAuth2.jwt(jwtSpec -> jwtSpec.jwkSetUri(jwkSetUri)));
 
-        httpSecurity.authorizeExchange(authorize ->
-           authorize.anyExchange().authenticated());
+        httpSecurity.authorizeExchange(authorize -> { authorize
+                .pathMatchers("/ws/**").permitAll() //TODO can maybe be changed to verify token before websocket upgrade
+                .anyExchange().authenticated();
+        });
 
         httpSecurity.csrf(ServerHttpSecurity.CsrfSpec::disable);
         return httpSecurity.build();

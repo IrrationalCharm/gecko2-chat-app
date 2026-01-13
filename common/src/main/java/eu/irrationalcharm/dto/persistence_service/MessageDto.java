@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record MessageDto(
 
+        String id,
         String conversationId,
         String senderId,
         String content,

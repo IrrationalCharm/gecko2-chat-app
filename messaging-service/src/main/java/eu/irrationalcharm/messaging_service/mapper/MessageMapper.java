@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 public final class MessageMapper {
 
     public static MessageEvent mapToMessageEvent(ChatMessageDto messageDto) {
-        String conversationId = generateConversationId(messageDto.userId(), messageDto.recipientId());
+        String conversationId = generateConversationId(messageDto.senderId(), messageDto.recipientId());
         return new MessageEvent(
                 conversationId,
-                messageDto.userId(),
+                messageDto.senderId(),
                 messageDto.recipientId(),
                 messageDto.content(),
                 LocalDateTime.now(),

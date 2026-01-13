@@ -7,6 +7,7 @@ public final class MessageMapper {
 
     public static MessageDto mapToDto(Message message) {
         return new MessageDto(
+                message.getId(),
                 message.getConversationId(),
                 message.getSenderId(),
                 message.getContent(),

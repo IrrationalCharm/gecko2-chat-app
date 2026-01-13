@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public record ChatMessageDto(
         @NotBlank(message = "internalId cannot be empty")
         @Size(message = "Please provide a valid Internal User Id", max = 36)
-        String userId,
+        String senderId,
 
         @NotBlank(message = "recipientId cannot be empty")
         @Size(message = "Please provide a valid Internal User I", max = 36)
