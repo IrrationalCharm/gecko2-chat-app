@@ -16,8 +16,10 @@ public class Message {
 
     @Id
     private String id;
+
+    private String clientMsgId; //ID assigned by client
     @Indexed
-    private String conversationId;
+    private String conversationId; // combination of two uuid separated by ":", uuid ordered by size.
 
     private String senderId;
     private String content;

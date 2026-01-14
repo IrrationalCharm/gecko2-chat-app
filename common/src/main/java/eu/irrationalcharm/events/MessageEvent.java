@@ -8,6 +8,10 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 public record MessageEvent(
+
+        @NotNull
+        String clientMsgId,
+
         @NotNull
         String conversationId,
 

@@ -12,6 +12,7 @@ public final class MessageMapper {
     public static MessageEvent mapToMessageEvent(ChatMessageDto messageDto) {
         String conversationId = generateConversationId(messageDto.senderId(), messageDto.recipientId());
         return new MessageEvent(
+                messageDto.clientMsgId(),
                 conversationId,
                 messageDto.senderId(),
                 messageDto.recipientId(),
