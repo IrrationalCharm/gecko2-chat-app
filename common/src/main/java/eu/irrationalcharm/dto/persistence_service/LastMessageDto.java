@@ -3,12 +3,12 @@ package eu.irrationalcharm.dto.persistence_service;
 
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder
 public record LastMessageDto(
         String senderId,
         String content,
-        LocalDateTime timestamp
+        Instant timestamp
 ) {
 }

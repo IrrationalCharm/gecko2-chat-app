@@ -5,7 +5,7 @@ import eu.irrationalcharm.enums.TextType;
 import eu.irrationalcharm.events.MessageEvent;
 import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public final class MessageMapper {
 
@@ -17,7 +17,7 @@ public final class MessageMapper {
                 messageDto.senderId(),
                 messageDto.recipientId(),
                 messageDto.content(),
-                LocalDateTime.now(),
+                Instant.now(), //TODO fix this?
                 TextType.TEXT
         );
     }

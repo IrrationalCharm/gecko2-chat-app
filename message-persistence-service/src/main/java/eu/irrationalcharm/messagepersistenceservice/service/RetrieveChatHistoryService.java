@@ -11,13 +11,12 @@ import eu.irrationalcharm.messagepersistenceservice.model.Message;
 import eu.irrationalcharm.messagepersistenceservice.repository.ConversationRepository;
 import eu.irrationalcharm.messagepersistenceservice.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,7 +57,7 @@ public class RetrieveChatHistoryService {
                 .toList();
     }
 
-
+    @Deprecated
     @PreAuthorize("authenticated()")
     public MessageHistoryDto getConversation(int page, int size, String friendId, Authentication authentication) {
         String conversationId = generateConversationId(authentication.getName(), friendId);
@@ -67,8 +66,43 @@ public class RetrieveChatHistoryService {
         return fetchMessageAndMapToDto(conversationId, pageRequest);
     }
 
+    /**
+     * @param before epoch time, fetch messages before given epoch time
+     * @param size number of messages to be retrieved
+     * @param friendId chat to be retrieved
+     * @param authentication authentication
+     * @return messages
+     */
+    @PreAuthorize("authenticated()")
+    public MessageHistoryDto getConversation(long before, int size, String friendId, Authentication authentication) {
+        String conversationId = generateConversationId(authentication.getName(), friendId);
+        Instant dateBefore = Instant.ofEpochMilli(before);
+
+        Pageable pageable = PageRequest.of(0, size);
+
+        return fetchMessageAndMapToDto(conversationId, dateBefore, pageable);
+    }
 
 
+
+    private MessageHistoryDto fetchMessageAndMapToDto(String conversationId, Instant dateBefore, Pageable pageable) {
+        Slice<Message> messageSlice = messageRepository.findByConversationIdAndTimestampLessThanOrderByTimestampDesc(conversationId, dateBefore, pageable);
+
+        List<MessageDto> messageDtoList = messageSlice.getContent().stream()
+                .map(MessageMapper::mapToDto)
+                .toList();
+
+        return new MessageHistoryDto(
+                conversationId,
+                messageDtoList,
+                messageSlice.getNumber(),
+                0,
+                messageSlice.isLast()
+        );
+    }
+
+
+    @Deprecated
     private MessageHistoryDto fetchMessageAndMapToDto(String conversationId, PageRequest pageRequest) {
         Page<Message> messagePage = messageRepository.findByConversationIdOrderByTimestampDesc(conversationId, pageRequest);
 

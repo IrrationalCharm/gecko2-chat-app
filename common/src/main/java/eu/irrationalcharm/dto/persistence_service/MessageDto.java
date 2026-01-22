@@ -2,7 +2,7 @@ package eu.irrationalcharm.dto.persistence_service;
 
 import eu.irrationalcharm.enums.TextType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record MessageDto(
 
@@ -10,7 +10,7 @@ public record MessageDto(
         String conversationId,
         String senderId,
         String content,
-        LocalDateTime timestamp,
+        Instant timestamp,
         TextType textType
 ) {
 }

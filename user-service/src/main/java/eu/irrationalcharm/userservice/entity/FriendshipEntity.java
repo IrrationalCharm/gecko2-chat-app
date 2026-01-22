@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 
@@ -29,7 +29,7 @@ public class FriendshipEntity {
     private UserEntity friendB;
 
     @CreatedDate
-    private LocalDateTime created_at;
+    private Instant created_at;
 
     /**
      * Makes sure friendA UUID has a higher value than friendB.

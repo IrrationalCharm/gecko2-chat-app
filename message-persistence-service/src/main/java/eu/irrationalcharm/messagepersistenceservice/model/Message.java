@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 
 @Getter @Setter
@@ -25,7 +25,7 @@ public class Message {
     private String content;
 
     @Indexed
-    private LocalDateTime timestamp;
+    private Instant timestamp;
     private TextType textType;
 
 }

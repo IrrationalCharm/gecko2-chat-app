@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 
 @Entity
@@ -29,6 +29,6 @@ public class FriendRequestEntity {
     private UserEntity receiver;
 
     @CreatedDate
-    private LocalDateTime created_at;
+    private Instant created_at;
 
 }

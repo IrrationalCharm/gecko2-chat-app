@@ -1,10 +1,9 @@
 package eu.irrationalcharm.messagepersistenceservice.controller;
 
 
-import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.dto.persistence_service.ConversationSummaryDto;
-
 import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
+import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.messagepersistenceservice.dto.response.ApiResponse;
 import eu.irrationalcharm.messagepersistenceservice.service.RetrieveChatHistoryService;
@@ -20,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/v2/chat")
 @RequiredArgsConstructor
-public class MessagesController {
+public class MessagesControllerV2 {
 
     private final RetrieveChatHistoryService retrieveHistoryService;
 
@@ -63,17 +62,17 @@ public class MessagesController {
     }
 
 
-    @Deprecated
+    //Get messages by epoch time and not by page
     @GetMapping("/conversation/{friendId}")
     public ResponseEntity<SuccessResponseDto<MessageHistoryDto>> getConversation(
-            @RequestParam(defaultValue = "0") @Min(value = 0) int page,
-            @RequestParam(defaultValue = "10") @Min(value = 1) @Max(value = 50, message = "Maximum messages is 50 at a time") int size,
+            @RequestParam long before,
+            @RequestParam(defaultValue = "1") @Min(value = 1) int size,
             @PathVariable String friendId,
             Authentication authentication,
             HttpServletRequest request) {
 
 
-        MessageHistoryDto chatHistorySet = retrieveHistoryService.getConversation(page, size, friendId, authentication);
+        MessageHistoryDto chatHistorySet = retrieveHistoryService.getConversation(before, size, friendId, authentication);
 
         return ApiResponse.success(
                 HttpStatus.OK,
@@ -83,7 +82,5 @@ public class MessagesController {
                 request
         );
     }
-
-
 
 }
