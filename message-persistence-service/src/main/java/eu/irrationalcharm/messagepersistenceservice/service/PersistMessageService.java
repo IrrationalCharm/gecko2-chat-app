@@ -35,7 +35,12 @@ public class PersistMessageService {
             return newConversation;
         });
 
-        conversation.setLastMessage( new LastMessage(messageEvent.senderId(), messageEvent.content(), messageEvent.timestamp()) );
+        conversation.setLastMessage(new LastMessage(
+                                        messageEvent.clientMsgId(),
+                                        messageEvent.senderId(),
+                                        messageEvent.content(),
+                                        messageEvent.timestamp(),
+                                        messageEvent.textType()));
 
         conversationRepository.save(conversation);
 

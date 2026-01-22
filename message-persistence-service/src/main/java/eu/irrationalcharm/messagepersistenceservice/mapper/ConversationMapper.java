@@ -10,7 +10,15 @@ public final class ConversationMapper {
 
     public static ConversationSummaryDto mapToDto(@NonNull Conversation conv) {
         LastMessage lastMessage = conv.getLastMessage();
-        LastMessageDto lastMessageDto = new LastMessageDto(lastMessage.getSenderId(), lastMessage.getContent(), lastMessage.getTimestamp());
+
+        var lastMessageDto = LastMessageDto.builder()
+                .clientMsgId(lastMessage.getClientMsgId())
+                .conversationId(conv.getId())
+                .senderId(lastMessage.getSenderId())
+                .content(lastMessage.getContent())
+                .timestamp(lastMessage.getTimestamp())
+                .textType(lastMessage.getTextType())
+                .build();
 
         return new ConversationSummaryDto(
                 conv.getId(),
