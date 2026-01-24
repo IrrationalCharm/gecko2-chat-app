@@ -35,7 +35,7 @@ public record ChatMessageDto(
         @Size(max = 3000)
         String content,
 
-        String timestamp
+        @With String timestamp
 ) implements PrivateMessage {
 
 }

@@ -43,6 +43,39 @@ public class MessagesControllerV2 {
     }
 
 
+    /**
+     * Returns a list of conversations with messages starting from timestamp since onwards, if no value is provided, it
+     * fetches the 20 most recent conversations with 20 messages per conversation
+     * @param sinceTimestamp messages to return from this timestamp
+     */
+    @GetMapping("/sync")
+    public ResponseEntity<SuccessResponseDto<List<MessageHistoryDto>>> syncMessages(
+            @RequestParam(required = false) Long sinceTimestamp,
+            Authentication authentication,
+            HttpServletRequest request) {
+
+        List<MessageHistoryDto> messageHistoryList;
+
+        if(sinceTimestamp != null && sinceTimestamp > 0) {
+            messageHistoryList = retrieveHistoryService.syncMessages(sinceTimestamp, authentication);
+        } else
+            messageHistoryList = retrieveHistoryService.fetchRecentMessages(0, 20, authentication);
+
+        return ApiResponse.success(
+                HttpStatus.OK,
+                SuccessfulCode.CHATS_FOUND,
+                "Successfully retrieve last messages from friends",
+                messageHistoryList,
+                request
+        );
+    }
+
+
+    /**
+     * @param page page of the conversations
+     * @param size number of conversations per page
+     * @return This returns a list of conversations, 20 messages per conversation
+     */
     @GetMapping("/conversations/hydrated")
     public ResponseEntity<SuccessResponseDto<List<MessageHistoryDto>>> getHydratedConversations(
             @RequestParam(defaultValue = "0") @Min(value = 0) int page,
@@ -50,13 +83,13 @@ public class MessagesControllerV2 {
             Authentication authentication,
             HttpServletRequest request) {
 
-        List<MessageHistoryDto> chatHistorySet = retrieveHistoryService.fetchRecentMessages(page, size, authentication);
+        List<MessageHistoryDto> chatHistoryList = retrieveHistoryService.fetchRecentMessages(page, size, authentication);
 
         return ApiResponse.success(
                 HttpStatus.OK,
                 SuccessfulCode.CHATS_FOUND,
                 "Successfully retrieved recent messages from recent conversations",
-                chatHistorySet,
+                chatHistoryList,
                 request
         );
     }

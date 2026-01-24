@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,7 +31,8 @@ public class ChatServiceOrchestrator {
 
     public void sendMessage(ChatMessageDto message) throws JsonProcessingException {
         if (message.clientMsgId() == null)
-            message = message.withClientMsgId(UUID.randomUUID().toString()); //temporary
+            message = message.withClientMsgId(UUID.randomUUID().toString())
+                    .withTimestamp(Instant.now().toString()); //temporary
 
 
         messageEventProducer.produceMessageEvent(message);
