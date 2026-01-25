@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.FriendRequestReceivedDto;
 import eu.irrationalcharm.messaging_service.dto.MessageReceivedDto;
 import eu.irrationalcharm.messaging_service.dto.PrivateMessage;
 import eu.irrationalcharm.messaging_service.enums.PrivateMessageType;
@@ -63,6 +64,8 @@ public class ChatServiceOrchestrator {
         switch(message) {
             case ChatMessageDto messageDto -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", messageDto);
             case MessageReceivedDto ackMessage -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", ackMessage);
+            case FriendRequestReceivedDto friendRequestReceivedDto -> {
+            }
         }
     }
 

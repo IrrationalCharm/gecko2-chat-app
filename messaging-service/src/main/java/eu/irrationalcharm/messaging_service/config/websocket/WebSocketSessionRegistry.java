@@ -18,14 +18,14 @@ public class WebSocketSessionRegistry {
     /**
      * Removes both the user Session and subscribed sessions
      */
-    public void userDisconnected(String username, String sessionId) {
+    public void userDisconnected(String userId, String sessionId) {
         removeSession(sessionId);
-        removeAllSubscribedSessions(username);
+        removeAllSubscribedSessions(userId);
     }
 
 
-    public void registerSession(String username, String sessionId) {
-        userSessionMap.put(username, sessionId);
+    public void registerSession(String userId, String sessionId) {
+        userSessionMap.put(userId, sessionId);
     }
 
     public void removeSession(String sessionId) {
@@ -35,32 +35,40 @@ public class WebSocketSessionRegistry {
                 .ifPresent(entry -> userSessionMap.remove(entry.getKey()));
     }
 
-    public Optional<String> getSession(String username) {
-        return Optional.ofNullable(userSessionMap.get(username));
+
+    //Returns session id if found, otherwise returns empty Optional
+    public Optional<String> getSession(String userId) {
+        return Optional.ofNullable(userSessionMap.get(userId));
     }
 
 
-    public boolean isSubscribed(String username, String destination) {
-        return subscribedSessionMap.getOrDefault(username, ConcurrentHashMap.newKeySet())
+    //Find out if the user is connected to this websocket
+    public boolean isRegistered(String userId) {
+        return userSessionMap.get(userId) != null;
+    }
+
+
+    public boolean isSubscribed(String userId, String destination) {
+        return subscribedSessionMap.getOrDefault(userId, ConcurrentHashMap.newKeySet())
                 .stream().anyMatch(destination::equals);
 
     }
 
-    public void addSubscribedSession(String username, String destination) {
-        subscribedSessionMap.computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
+    public void addSubscribedSession(String userId, String destination) {
+        subscribedSessionMap.computeIfAbsent(userId, _ -> ConcurrentHashMap.newKeySet())
                 .add(destination);
     }
 
 
-    public void removeSubscribedSession(String username, String destination) {
-        subscribedSessionMap.computeIfPresent(username, (key, destinations) -> {
+    public void removeSubscribedSession(String userId, String destination) {
+        subscribedSessionMap.computeIfPresent(userId, (_, destinations) -> {
             destinations.remove(destination);
             return destinations.isEmpty() ? null : destinations;
         });
     }
 
 
-    public void removeAllSubscribedSessions(String username) {
-        subscribedSessionMap.remove(username);
+    public void removeAllSubscribedSessions(String userId) {
+        subscribedSessionMap.remove(userId);
     }
 }

@@ -1,13 +1,18 @@
 package eu.irrationalcharm.userservice.service.orchestrator;
 
+import eu.irrationalcharm.events.FriendRequestEvent;
+import eu.irrationalcharm.enums.NotificationType;
+import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.enums.SuccessfulCode;
-import eu.irrationalcharm.userservice.event.UserUpdateEvent;
+import eu.irrationalcharm.events.UserUpdateEvent;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.service.*;
+import eu.irrationalcharm.userservice.service.event.NotificationProducer;
 import eu.irrationalcharm.userservice.service.event.UserEventProducer;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +31,7 @@ public class FriendshipOrchestrator {
     private final UserFriendshipPreferenceService friendPreferenceService;
     private final UserService userService;
     private final UserEventProducer userEventProducer;
+    private final NotificationProducer notificationProducer;
 
 
     @Transactional(readOnly = true)
@@ -47,7 +53,24 @@ public class FriendshipOrchestrator {
         if (friendshipService.areFriends(requestInitiator, requestReceiver))
             throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.FRIEND_REQUEST_ALREADY_FRIENDS, "Cannot send friend request. The recipient is already your friend");
 
-        friendRequestService.sendFriendRequestOrThrow(requestInitiator, requestReceiver);
+        FriendRequestEntity savedFriendRequest = friendRequestService.sendFriendRequestOrThrow(requestInitiator, requestReceiver);
+
+        //Publish event to Kafka
+        var friendRequestEvent = new FriendRequestEvent(
+            requestInitiator.getId().toString(),
+                requestInitiator.getUsername(),
+                requestInitiator.getDisplayName(),
+                requestInitiator.getProfileImageUrl(),
+                savedFriendRequest.getCreated_at().toEpochMilli()
+        );
+
+        var notificationEvent = new NotificationEvent(
+                NotificationType.FRIEND_REQUEST_RECEIVED,
+                requestReceiver.getId().toString(),
+                friendRequestEvent
+                );
+
+        notificationProducer.publishNotificationEvent(notificationEvent);
     }
 
 

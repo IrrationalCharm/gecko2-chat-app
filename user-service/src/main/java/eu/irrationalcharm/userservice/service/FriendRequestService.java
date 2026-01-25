@@ -24,7 +24,7 @@ public class FriendRequestService {
 
 
     @Transactional
-    public void sendFriendRequestOrThrow(UserEntity requestInitiator, UserEntity requestReceiver) {
+    public FriendRequestEntity sendFriendRequestOrThrow(UserEntity requestInitiator, UserEntity requestReceiver) {
 
         validateFriendRequestOrThrow(requestInitiator.getId(), requestReceiver.getId());
 
@@ -32,7 +32,7 @@ public class FriendRequestService {
         friendRequest.setInitiator(requestInitiator);
         friendRequest.setReceiver(requestReceiver);
 
-        friendRequestRepository.save(friendRequest);
+        return friendRequestRepository.save(friendRequest);
     }
 
 

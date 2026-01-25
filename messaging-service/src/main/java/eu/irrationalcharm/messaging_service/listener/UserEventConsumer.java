@@ -1,9 +1,9 @@
 package eu.irrationalcharm.messaging_service.listener;
 
 
-import eu.irrationalcharm.messaging_service.event.UserUpdateEvent;
 import eu.irrationalcharm.messaging_service.service.UserUpdateService;
 import lombok.RequiredArgsConstructor;
+import eu.irrationalcharm.events.UserUpdateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;

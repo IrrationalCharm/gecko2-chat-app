@@ -1,6 +1,6 @@
 package eu.irrationalcharm.userservice.service.event;
 
-import eu.irrationalcharm.userservice.event.UserUpdateEvent;
+import eu.irrationalcharm.events.UserUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +18,7 @@ public class UserEventProducer {
     private final KafkaTemplate<String, UserUpdateEvent> kafkaTemplate;
 
 
+    //Used to notify messaging-service to evict the cache as the user has been updated
     public void publishUserUpdatedEvent(@NotNull UserUpdateEvent... userUpdateEvents) {
         for(UserUpdateEvent updateEvent : userUpdateEvents) {
             kafkaTemplate.send(userUpdateTopic, updateEvent.userId(), updateEvent);

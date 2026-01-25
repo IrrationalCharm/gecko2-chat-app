@@ -68,7 +68,7 @@ public class FriendshipController {
 
 
     @PostMapping("/requests/{username}")
-    public ResponseEntity<SuccessResponseDto<Object>> sendFriendRequest(@PathVariable @UsernameValid String username,
+    public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable @UsernameValid String username,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
         friendshipOrchestrator.sendFriendRequest(jwt, username);
@@ -84,7 +84,7 @@ public class FriendshipController {
 
 
     @DeleteMapping("/{username}")
-    public ResponseEntity<SuccessResponseDto<Object>> removeFriend(@PathVariable @UsernameValid String username,
+    public ResponseEntity<SuccessResponseDto<Void>> removeFriend(@PathVariable @UsernameValid String username,
                                                                    @AuthenticationPrincipal Jwt jwt,
                                                                    HttpServletRequest request) {
         friendshipOrchestrator.removeFriend(jwt, username);
@@ -100,7 +100,7 @@ public class FriendshipController {
 
 
     @PatchMapping("/requests")
-    public ResponseEntity<SuccessResponseDto<Object>> updateFriendRequest(@RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
+    public ResponseEntity<SuccessResponseDto<Void>> updateFriendRequest(@RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
                                                                           @AuthenticationPrincipal Jwt jwt,
                                                                           HttpServletRequest request) {
 

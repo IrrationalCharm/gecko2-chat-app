@@ -1,4 +1,4 @@
-package eu.irrationalcharm.userservice.event;
+package eu.irrationalcharm.events;
 
 
 public record UserUpdateEvent(String userId) {
