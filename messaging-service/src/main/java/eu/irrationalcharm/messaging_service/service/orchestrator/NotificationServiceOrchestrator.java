@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 
 @Slf4j
 @Service
@@ -51,6 +50,8 @@ public class NotificationServiceOrchestrator {
                 if (isConnected) {
                     internalSendPrivateMessage(notificationEvent.requestReceiverId(), friendRequestReceivedDto);
                 }
+
+                //TODO fan out to redis to find websocket
             }
             case FRIEND_REQUEST_ACCEPTED -> {
 

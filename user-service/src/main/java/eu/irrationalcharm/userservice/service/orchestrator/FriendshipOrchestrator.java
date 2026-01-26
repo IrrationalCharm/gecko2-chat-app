@@ -142,6 +142,8 @@ public class FriendshipOrchestrator {
         friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userReceiver.getId(), userInitiator.getId());
         friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userInitiator.getId(), userReceiver.getId());
 
+        publishFriendshipChangeEvents(userReceiver, userInitiator);
+
         return SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
     }
 

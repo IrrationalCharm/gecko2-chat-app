@@ -115,4 +115,11 @@ public class UserService {
     }
 
 
+    public UserEntity getEntityByIdOrThrow(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        ErrorCode.USERNAME_NOT_FOUND,
+                        String.format("User with id %s not found.", userId)));
+    }
 }

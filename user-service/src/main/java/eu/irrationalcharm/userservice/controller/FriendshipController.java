@@ -69,7 +69,7 @@ public class FriendshipController {
 
 
     @PostMapping("/requests/{username}")
-    public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable @UsernameValid String username,
+    public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable String username,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
         friendshipOrchestrator.sendFriendRequest(jwt, username);
