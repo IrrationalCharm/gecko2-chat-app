@@ -48,16 +48,23 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public UserEntity getAuthenticatedEntityOrThrow(Jwt authJwt) {
-        String userId = authJwt.getClaimAsString(JwtClaims.INTERNAL_ID);
-        if(userId == null)
-            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.ON_BOARDING_REQUIRED, "Empty internal_id in claim");
+    public UserEntity getAuthenticatedEntityOrThrow(Jwt jwt) {
+        String userId = jwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        isAuthenticatedOnBoardedOrThrow(jwt);
 
         return userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.BAD_REQUEST,
                         ErrorCode.ON_BOARDING_REQUIRED,
                         String.format("Could not find account with this user id: %s", userId)));
+    }
+
+
+    public void isAuthenticatedOnBoardedOrThrow(Jwt jwt) {
+        String userId = jwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        if(userId == null)
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.ON_BOARDING_REQUIRED, "Empty internal_id in claim");
+
     }
 
 
