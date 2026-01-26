@@ -20,11 +20,11 @@ public class FriendRequestEntity {
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "initiator", referencedColumnName = "id")
     private UserEntity initiator;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "receiver", referencedColumnName = "id")
     private UserEntity receiver;
 

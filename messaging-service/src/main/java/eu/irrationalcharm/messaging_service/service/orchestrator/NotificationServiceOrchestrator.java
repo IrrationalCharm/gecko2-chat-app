@@ -1,5 +1,6 @@
 package eu.irrationalcharm.messaging_service.service.orchestrator;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
@@ -22,19 +23,26 @@ public class NotificationServiceOrchestrator {
 
     private final WebSocketSessionRegistry sessionRegistry;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final ObjectMapper objectMapper;
 
 
     public void receivedNotification(NotificationEvent notificationEvent) {
 
         switch(notificationEvent.type()) {
             case FRIEND_REQUEST_RECEIVED -> {
-                var dto = (FriendRequestEvent) notificationEvent.payload();
+                //Internally payload is a LinkedHashMap since jackson didn't know to what to convert this into
+                var event = objectMapper.convertValue(
+                        notificationEvent.payload(),
+                        FriendRequestEvent.class
+                );
                 var friendRequestReceivedDto = new FriendRequestReceivedDto(
                         PrivateMessageType.FRIEND_REQUEST_RECEIVED,
-                        dto.initiatorId(),
-                        dto.initiatorUsername(),
-                        dto.initiatorProfileImageUrl(),
-                        Instant.ofEpochMilli(dto.createdAt())
+                        event.requestId(),
+                        event.initiatorId(),
+                        event.initiatorUsername(),
+                        event.initiatorDisplayName(),
+                        event.initiatorProfileImageUrl(),
+                        event.createdAt()
                 );
 
                 //Is the user connected to this messaging-service

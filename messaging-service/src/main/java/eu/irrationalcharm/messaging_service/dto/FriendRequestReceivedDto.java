@@ -6,9 +6,11 @@ import java.time.Instant;
 
 public record FriendRequestReceivedDto(
         PrivateMessageType type,
+        String friendRequestId,
         String senderId,
         String senderUsername,
+        String senderDisplayName,
         String senderProfileImageUrl,
-        Instant createdAt
+        long createdAt
 
 ) implements PrivateMessage { }

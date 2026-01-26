@@ -6,6 +6,7 @@ import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
+import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
@@ -52,10 +53,10 @@ public class FriendshipController {
 
 
     @GetMapping("/requests")
-    public ResponseEntity<SuccessResponseDto< List<PublicUserResponseDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt,
+    public ResponseEntity<SuccessResponseDto< List<FriendRequestDto> >> pendingFriendRequests(@AuthenticationPrincipal Jwt jwt,
                                                                                                    HttpServletRequest request) {
 
-        List<PublicUserResponseDto> pendingFriendRequests = friendRequestService.getPendingFriendRequests(jwt);
+        List<FriendRequestDto> pendingFriendRequests = friendRequestService.getPendingFriendRequests(jwt);
 
         return ApiResponse.success(
                 HttpStatus.OK,
@@ -99,12 +100,13 @@ public class FriendshipController {
     }
 
 
-    @PatchMapping("/requests")
-    public ResponseEntity<SuccessResponseDto<Void>> updateFriendRequest(@RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
-                                                                          @AuthenticationPrincipal Jwt jwt,
-                                                                          HttpServletRequest request) {
+    @PatchMapping("/requests/{requestId}")
+    public ResponseEntity<SuccessResponseDto<Void>> updateFriendRequest(@PathVariable Long requestId,
+                                                                        @RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
+                                                                        @AuthenticationPrincipal Jwt jwt,
+                                                                        HttpServletRequest request) {
 
-        SuccessfulCode successfulCode = friendshipOrchestrator.updateFriendRequest(jwt, friendRequestDto);
+        SuccessfulCode successfulCode = friendshipOrchestrator.updateFriendRequest(jwt, requestId, friendRequestDto);
 
         return ApiResponse.success(
                 HttpStatus.OK,

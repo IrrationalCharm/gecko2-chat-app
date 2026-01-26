@@ -2,6 +2,7 @@ package eu.irrationalcharm.userservice.repository;
 
 
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,15 +24,17 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequestEnti
 
     //Returns list of friend requests from a given user (receiver)
     @Query("""
-    select new eu.irrationalcharm.dto.user_service.PublicUserResponseDto(
+    select new eu.irrationalcharm.userservice.dto.response.FriendRequestDto(
+        u.id,
         u.initiator.id,
+        u.receiver.id,
         u.initiator.username,
         u.initiator.displayName,
-        u.initiator.profileBio,
-        u.initiator.profileImageUrl)
+        u.initiator.profileImageUrl,
+        u.created_at)
         from FriendRequestEntity u where u.receiver.id = :receiver
     """)
-    List<PublicUserResponseDto> findPendingFriendRequestsAsDto(UUID receiver);
+    List<FriendRequestDto> findPendingFriendRequestsAsDto(UUID receiver);
 
     @Query("select u from FriendRequestEntity u where u.initiator = :initiator and u.receiver = :receiver")
     Optional<FriendRequestEntity> findByInitiatorAndReceiver(UserEntity initiator, UserEntity receiver);

@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.enums.ErrorCode;
@@ -47,7 +48,7 @@ public class FriendRequestService {
 
 
     @Transactional(readOnly = true)
-    public List<PublicUserResponseDto> getPendingFriendRequests(Jwt jwt) {
+    public List<FriendRequestDto> getPendingFriendRequests(Jwt jwt) {
         UserEntity userEntity = userService.getAuthenticatedEntityOrThrow(jwt);
 
         return friendRequestRepository.findPendingFriendRequestsAsDto(userEntity.getId());
@@ -57,6 +58,12 @@ public class FriendRequestService {
     @Transactional(readOnly = true)
     public FriendRequestEntity getFriendRequestOrThrow(UserEntity requestInitiator, UserEntity requestReceiver) {
         return friendRequestRepository.findByInitiatorAndReceiver(requestInitiator, requestReceiver)
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, "Friend request doesn't exist"));
+    }
+
+
+    public FriendRequestEntity getFriendRequestOrThrow(Long friendRequestId) {
+        return friendRequestRepository.findById(friendRequestId)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, "Friend request doesn't exist"));
     }
 
@@ -74,6 +81,11 @@ public class FriendRequestService {
     public void deleteFriendRequestOrThrow(UserEntity requestCanceler, UserEntity requestRecipient) {
         FriendRequestEntity friendRequest = getFriendRequestOrThrow(requestCanceler, requestRecipient);
 
+        friendRequestRepository.delete(friendRequest);
+    }
+
+    @Transactional
+    public void deleteFriendRequestOrThrow(FriendRequestEntity friendRequest) {
         friendRequestRepository.delete(friendRequest);
     }
 }

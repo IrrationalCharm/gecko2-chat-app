@@ -15,6 +15,7 @@ import eu.irrationalcharm.userservice.service.*;
 import eu.irrationalcharm.userservice.service.event.NotificationProducer;
 import eu.irrationalcharm.userservice.service.event.UserEventProducer;
 import lombok.AllArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -57,7 +58,8 @@ public class FriendshipOrchestrator {
 
         //Publish event to Kafka
         var friendRequestEvent = new FriendRequestEvent(
-            requestInitiator.getId().toString(),
+                savedFriendRequest.getId().toString(),
+                requestInitiator.getId().toString(),
                 requestInitiator.getUsername(),
                 requestInitiator.getDisplayName(),
                 requestInitiator.getProfileImageUrl(),
@@ -88,18 +90,37 @@ public class FriendshipOrchestrator {
 
 
     @Transactional
-    public SuccessfulCode updateFriendRequest(Jwt jwt, UpdateFriendRequestDto friendRequestDto) {
-        UserEntity requestUpdater = userService.getAuthenticatedEntityOrThrow(jwt);
-        UserEntity requestRecipient = userService.getEntityByUsernameOrThrow(friendRequestDto.username());
+    public SuccessfulCode updateFriendRequest(Jwt jwt, Long requestId, UpdateFriendRequestDto friendRequestDto) {
+        FriendRequestEntity friendRequest = friendRequestService.getFriendRequestOrThrow(requestId);
+
+        String receiverId = friendRequest.getReceiver().getId().toString();
+        String initiatorId = friendRequest.getInitiator().getId().toString();
+
+        if (!receiverId.equals(jwt.getId()) || !initiatorId.equals(jwt.getId())) {
+            throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, String.format("Could not find friend request with id: %s", requestId));
+        }
 
         return switch (friendRequestDto.action()) {
-            case ACCEPT_REQUEST -> handleAcceptRequest(requestRecipient, requestUpdater);
+            case ACCEPT_REQUEST -> {
+                if (initiatorId.equals(jwt.getId()))
+                    throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, "Cannot accept your own friend request");
+
+                yield handleAcceptRequest(friendRequest);
+            }
+
             case DECLINE_REQUEST -> {
-                friendRequestService.deleteFriendRequestOrThrow(requestRecipient, requestUpdater);
+                if (initiatorId.equals(jwt.getId()))
+                    throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, "Cannot decline your own friend request, you must CANCEL request");
+
+                friendRequestService.deleteFriendRequestOrThrow(friendRequest); //We have to validate it belongs to user
                 yield SuccessfulCode.FRIEND_REQUEST_DECLINED;
             }
+
             case CANCEL_REQUEST -> {
-                friendRequestService.deleteFriendRequestOrThrow(requestUpdater, requestRecipient);
+                if (!initiatorId.equals(jwt.getId()))
+                    throw new BusinessException(HttpStatus.NOT_FOUND, ErrorCode.FRIEND_REQUEST_NOT_FOUND, "Cannot cancel this friend request, you must DENY request");
+
+                friendRequestService.deleteFriendRequestOrThrow(friendRequest);
                 yield SuccessfulCode.FRIEND_REQUEST_CANCELLED;
             }
         };
@@ -108,8 +129,20 @@ public class FriendshipOrchestrator {
 
 
     //  PRIVATE HELPER METHODS  \\
+    private SuccessfulCode handleAcceptRequest(FriendRequestEntity friendRequest) {
+        UserEntity userReceiver = friendRequest.getReceiver();
+        UserEntity userInitiator = friendRequest.getInitiator();
 
+        friendRequestService.deleteFriendRequestOrThrow(friendRequest);
+        friendshipService.addFriendOrThrow(userReceiver, userInitiator);
 
+        friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userReceiver.getId(), userInitiator.getId());
+        friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userInitiator.getId(), userReceiver.getId());
+
+        return SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
+    }
+
+    @Deprecated
     private SuccessfulCode handleAcceptRequest(UserEntity requestRecipient, UserEntity requestUpdater) {
         friendRequestService.deleteFriendRequestOrThrow(requestRecipient, requestUpdater);
         friendshipService.addFriendOrThrow(requestRecipient, requestUpdater);
