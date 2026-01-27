@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -23,9 +24,11 @@ public class StartupController {
     private final StartupService startupService;
 
     @GetMapping
-    public ResponseEntity<SuccessResponseDto<StartupDataDto>> getStartupData(HttpServletRequest request) {
+    public ResponseEntity<SuccessResponseDto<StartupDataDto>> getStartupData(
+            @RequestParam(defaultValue = "0") Long sinceTimestamp,
+            HttpServletRequest request) {
 
-        StartupDataDto startupDataDto = startupService.getStartupData();
+        StartupDataDto startupDataDto = startupService.getStartupData(sinceTimestamp);
 
         return ApiResponse.success(
                 HttpStatus.OK,

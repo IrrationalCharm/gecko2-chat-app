@@ -1,7 +1,6 @@
 package eu.irrationalcharm.userservice.service;
 
-import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
+import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.enums.ErrorCode;

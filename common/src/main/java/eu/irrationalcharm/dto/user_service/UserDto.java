@@ -34,4 +34,5 @@ public record UserDto(
         String mobileNumber,
         String profileBio,
         String profileImageUrl) implements Serializable {
+
 }

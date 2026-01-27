@@ -1,8 +1,7 @@
 package eu.irrationalcharm.userservice.repository;
 
 
-import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
+import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,7 +23,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequestEnti
 
     //Returns list of friend requests from a given user (receiver)
     @Query("""
-    select new eu.irrationalcharm.userservice.dto.response.FriendRequestDto(
+    select new eu.irrationalcharm.dto.user_service.FriendRequestDto(
         u.id,
         u.initiator.id,
         u.receiver.id,

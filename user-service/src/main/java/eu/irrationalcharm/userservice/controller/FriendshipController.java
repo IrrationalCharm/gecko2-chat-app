@@ -6,7 +6,7 @@ import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
-import eu.irrationalcharm.userservice.dto.response.FriendRequestDto;
+import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;

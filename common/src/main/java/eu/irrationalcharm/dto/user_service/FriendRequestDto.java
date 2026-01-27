@@ -1,4 +1,4 @@
-package eu.irrationalcharm.userservice.dto.response;
+package eu.irrationalcharm.dto.user_service;
 
 import lombok.Builder;
 
