@@ -1,6 +1,8 @@
 package eu.irrationalcharm.messaging_service.validation;
 
-import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.request.ClientMessage;
+import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
+import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
 import eu.irrationalcharm.messaging_service.service.InternalUserService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -16,7 +18,7 @@ import java.util.Set;
  */
 @Component
 @RequiredArgsConstructor
-public class MessageValidator implements ConstraintValidator<MessageValid, ChatMessageDto> {
+public class MessageValidator implements ConstraintValidator<MessageValid, ClientMessage> {
 
     private final InternalUserService internalUserService;
 
@@ -26,7 +28,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, ChatM
     }
 
     @Override
-    public boolean isValid(ChatMessageDto value, ConstraintValidatorContext context) {
+    public boolean isValid(ClientMessage value, ConstraintValidatorContext context) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         context.disableDefaultConstraintViolation();

@@ -25,24 +25,6 @@ public class MessagesControllerV2 {
 
     private final RetrieveChatHistoryService retrieveHistoryService;
 
-
-    @GetMapping("/last-messages")
-    public ResponseEntity<SuccessResponseDto<List<ConversationSummaryDto>>> lastMessages(
-            Authentication authentication,
-            HttpServletRequest request) {
-
-        List<ConversationSummaryDto> chatHistorySet = retrieveHistoryService.fetchLastMessages(authentication);
-
-        return ApiResponse.success(
-                HttpStatus.OK,
-                SuccessfulCode.CHATS_FOUND,
-                "Successfully retrieve last messages from friends",
-                chatHistorySet,
-                request
-        );
-    }
-
-
     /**
      * Returns a list of conversations with messages starting from timestamp since onwards, if no value is provided, it
      * fetches the 20 most recent conversations with 20 messages per conversation
@@ -66,30 +48,6 @@ public class MessagesControllerV2 {
                 SuccessfulCode.CHATS_FOUND,
                 "Successfully retrieve last messages from friends",
                 messageHistoryList,
-                request
-        );
-    }
-
-
-    /**
-     * @param page page of the conversations
-     * @param size number of conversations per page
-     * @return This returns a list of conversations, 20 messages per conversation
-     */
-    @GetMapping("/conversations/hydrated")
-    public ResponseEntity<SuccessResponseDto<List<MessageHistoryDto>>> getHydratedConversations(
-            @RequestParam(defaultValue = "0") @Min(value = 0) int page,
-            @RequestParam(defaultValue = "10") @Min(value = 1) @Max(value = 50) int size,
-            Authentication authentication,
-            HttpServletRequest request) {
-
-        List<MessageHistoryDto> chatHistoryList = retrieveHistoryService.fetchRecentMessages(page, size, authentication);
-
-        return ApiResponse.success(
-                HttpStatus.OK,
-                SuccessfulCode.CHATS_FOUND,
-                "Successfully retrieved recent messages from recent conversations",
-                chatHistoryList,
                 request
         );
     }

@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
-import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
-import eu.irrationalcharm.messaging_service.dto.FriendRequestReceivedDto;
-import eu.irrationalcharm.messaging_service.dto.MessageReceivedDto;
-import eu.irrationalcharm.messaging_service.dto.PrivateMessage;
-import eu.irrationalcharm.messaging_service.enums.PrivateMessageType;
+import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
+import eu.irrationalcharm.messaging_service.dto.response.FriendRequestPayload;
+import eu.irrationalcharm.messaging_service.dto.response.MessageSentPayload;
+import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
+import eu.irrationalcharm.messaging_service.enums.MessageType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -34,8 +34,8 @@ public class NotificationServiceOrchestrator {
                         notificationEvent.payload(),
                         FriendRequestEvent.class
                 );
-                var friendRequestReceivedDto = new FriendRequestReceivedDto(
-                        PrivateMessageType.FRIEND_REQUEST_RECEIVED,
+                var friendRequestReceivedDto = new FriendRequestPayload(
+                        MessageType.FRIEND_REQUEST_SERVER,
                         event.requestId(),
                         event.initiatorId(),
                         event.initiatorUsername(),
@@ -62,13 +62,13 @@ public class NotificationServiceOrchestrator {
 
     }
 
-    private void internalSendPrivateMessage(String recipientId, PrivateMessage message) {
+    private void internalSendPrivateMessage(String recipientId, ServerMessage message) {
         log.debug("Sending internal message to: {}", recipientId);
 
         switch(message) {
-            case FriendRequestReceivedDto friendRequestReceivedDto -> simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", friendRequestReceivedDto);
+            case FriendRequestPayload friendRequestPayload -> simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", friendRequestPayload);
 
-            case ChatMessageDto _, MessageReceivedDto _ -> log.error("Not a valid notification message");
+            case ChatMessagePayload _, MessageSentPayload _ -> log.error("Not a valid notification message");
 
 
         }

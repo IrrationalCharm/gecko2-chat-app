@@ -3,14 +3,17 @@ package eu.irrationalcharm.messaging_service.service.orchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
-import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
-import eu.irrationalcharm.messaging_service.dto.FriendRequestReceivedDto;
-import eu.irrationalcharm.messaging_service.dto.MessageReceivedDto;
-import eu.irrationalcharm.messaging_service.dto.PrivateMessage;
-import eu.irrationalcharm.messaging_service.enums.PrivateMessageType;
+import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
+import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
+import eu.irrationalcharm.messaging_service.dto.response.FriendRequestPayload;
+import eu.irrationalcharm.messaging_service.dto.response.MessageSentPayload;
+import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
+import eu.irrationalcharm.messaging_service.enums.MessageType;
+import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import eu.irrationalcharm.messaging_service.service.event.MessageEventProducer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceOrchestrator {
@@ -30,7 +34,7 @@ public class ChatServiceOrchestrator {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageEventProducer messageEventProducer;
 
-    public void sendMessage(ChatMessageDto message) throws JsonProcessingException {
+    public void sendMessage(SendMessageRequest message) throws JsonProcessingException {
         if (message.clientMsgId() == null)
             message = message.withClientMsgId(UUID.randomUUID().toString())
                     .withTimestamp(Instant.now().toString()); //temporary
@@ -41,11 +45,12 @@ public class ChatServiceOrchestrator {
         Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientId());
 
         if (sessionIdOptional.isPresent()) {
-            internalSendPrivateMessage(message.recipientId(), message);
-            System.out.println("message sent!");
+            ChatMessagePayload messagePayload = MessageMapper.mapToChatMessagePayload(message); //Exactly the same, just to keep with naming
+            internalSendPrivateMessage(message.recipientId(), messagePayload);
+            log.info("Message has been sent");
         }
 
-        var ackMessage = new MessageReceivedDto(PrivateMessageType.MESSAGE_RECEIVED, message.clientMsgId());
+        var ackMessage = new MessageSentPayload(MessageType.MESSAGE_SENT_SERVER, message.clientMsgId());
         internalSendPrivateMessage(message.senderId(), ackMessage);
 
         if ( sessionIdOptional.isEmpty() ) {
@@ -60,11 +65,11 @@ public class ChatServiceOrchestrator {
     }
 
 
-    public void internalSendPrivateMessage(String recipientId, PrivateMessage message) {
+    public void internalSendPrivateMessage(String recipientId, ServerMessage message) {
         switch(message) {
-            case ChatMessageDto messageDto -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", messageDto);
-            case MessageReceivedDto ackMessage -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", ackMessage);
-            case FriendRequestReceivedDto friendRequestReceivedDto -> {
+            case ChatMessagePayload messageDto -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", messageDto);
+            case MessageSentPayload ackMessage -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", ackMessage);
+            case FriendRequestPayload friendRequestPayload -> {
             }
         }
     }

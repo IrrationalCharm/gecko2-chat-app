@@ -1,10 +1,9 @@
 package eu.irrationalcharm.messagepersistenceservice.service;
 
 
-import eu.irrationalcharm.dto.persistence_service.ConversationSummaryDto;
 import eu.irrationalcharm.dto.persistence_service.MessageDto;
 import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
-import eu.irrationalcharm.messagepersistenceservice.mapper.ConversationMapper;
+import eu.irrationalcharm.enums.MessageStatus;
 import eu.irrationalcharm.messagepersistenceservice.mapper.MessageMapper;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
 import eu.irrationalcharm.messagepersistenceservice.model.Message;
@@ -17,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,20 +29,6 @@ public class RetrieveChatHistoryService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
 
-    /**
-     * Finds all conversations and returns ConversationSummaryDto, which contains the last message sent in the conversation
-     */
-    @PreAuthorize("authenticated()")
-    public List<ConversationSummaryDto> fetchLastMessages(Authentication authentication) {
-        List<Conversation> conversations = conversationRepository.findByParticipantsContainsOrderByUpdatedAtDesc(authentication.getName());
-        if (conversations.isEmpty())
-            return Collections.emptyList();
-
-        return conversations.stream()
-                .map(ConversationMapper::mapToDto)
-                .toList();
-    }
-
 
     /**
      * @param before epoch time, fetch messages before given epoch time
@@ -53,107 +39,114 @@ public class RetrieveChatHistoryService {
      */
     @PreAuthorize("authenticated()")
     public MessageHistoryDto getConversation(long before, int size, String friendId, Authentication authentication) {
-        String conversationId = generateConversationId(authentication.getName(), friendId);
+        String currentUserId = authentication.getName();
+        String conversationId = generateConversationId(currentUserId, friendId);
+        Conversation conv = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new IllegalArgumentException("Conversation not found for ID: " + conversationId));
+
         Instant dateBefore = Instant.ofEpochMilli(before);
-
         Pageable pageable = PageRequest.of(0, size);
-
-        return fetchMessageAndMapToDto(conversationId, dateBefore, pageable);
-    }
-
-
-
-    private MessageHistoryDto fetchMessageAndMapToDto(String conversationId, Instant dateBefore, Pageable pageable) {
         Slice<Message> messageSlice = messageRepository.findByConversationIdAndTimestampLessThanOrderByTimestampDesc(conversationId, dateBefore, pageable);
 
-        List<MessageDto> messageDtoList = messageSlice.getContent().stream()
-                .map(MessageMapper::mapToDto)
-                .toList();
 
-        return new MessageHistoryDto(
-                conversationId,
-                messageDtoList,
-                messageSlice.getNumber(),
-                0,
-                messageSlice.isLast()
-        );
-    }
-
-
-    private MessageHistoryDto fetchMessageAndMapToDto(String conversationId, Pageable pageRequest) {
-        Page<Message> messagePage = messageRepository.findByConversationIdOrderByTimestampDesc(conversationId, pageRequest);
-
-        List<MessageDto> messageDtoList = messagePage.getContent().stream()
-                .map(MessageMapper::mapToDto)
-                .toList();
-
-        return new MessageHistoryDto(
-                conversationId,
-                messageDtoList,
-                messagePage.getNumber(),
-                messagePage.getTotalPages(),
-                messagePage.isLast()
-        );
+        return buildHistoryDto(conv, messageSlice.getContent(), currentUserId, messageSlice.isLast(), 0);
     }
 
 
     @PreAuthorize("authenticated()")
     public List<MessageHistoryDto> fetchRecentMessages(int page, int size, Authentication authentication) {
-
+        String currentUserId = authentication.getName();
         PageRequest conversationPage = PageRequest.of(page, size, Sort.by("updatedAt").descending());
         List<Conversation> conversations = conversationRepository.findByParticipantsContainsOrderByUpdatedAtDesc(authentication.getName(), conversationPage);
 
         if(conversations.isEmpty())
             return Collections.emptyList();
 
-        PageRequest messagePageRequest = PageRequest.of(0, 20, Sort.by("timestamp").descending());
+        // Logic: For every conversation found, fetch the recent X messages
+        return conversations.stream().map(conversation -> {
+            Pageable messagePage = PageRequest.of(0, 20, Sort.by("timestamp").descending());
+            Slice<Message> messageSlice = messageRepository.findByConversationIdOrderByTimestampDesc(
+                    conversation.getId(), messagePage
+            );
 
-        return conversations.stream()
-                .map(conv -> fetchMessageAndMapToDto(conv.getId(), messagePageRequest))
-                .toList();
+            return buildHistoryDto(conversation, messageSlice.getContent(), currentUserId, messageSlice.isLast(), messageSlice.getNumber());
+        }).toList();
     }
+
 
 
     @PreAuthorize("authenticated()")
     public List<MessageHistoryDto> syncMessages(Long sinceTimestamp, Authentication authentication) {
+        String currentUserId = authentication.getName();
         Instant sinceInstant = Instant.ofEpochMilli(sinceTimestamp);
-        List<Conversation> conversations = conversationRepository.findByParticipantsContainsAndUpdatedAtAfter(authentication.getName(), sinceInstant);
+
+        List<Conversation> conversations = conversationRepository.findByParticipantsContainsAndUpdatedAtAfter(currentUserId, sinceInstant);
 
         if (conversations.isEmpty())
             return Collections.emptyList();
 
-        return conversations.stream()
-                .map(conv -> fetchMessagesAfterTimestampAndMapToDto(conv.getId(), sinceInstant))
-                .toList();
+        return conversations.stream().map(conversation -> {
+            List<Message> messages = messageRepository.findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(
+                    conversation.getId(), sinceInstant
+            );
+
+            return buildHistoryDto(conversation, messages, currentUserId, true, 0);
+        }).toList();
     }
 
 
-    //Returns all messages after the timestamp in descending order and maps to Dto
-    private MessageHistoryDto fetchMessagesAfterTimestampAndMapToDto(String conversationId, Instant sinceInstant) {
+    // PRIVATE HELPER METHODS
 
-        List<Message> messages = messageRepository.findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(conversationId, sinceInstant);
+
+    private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
+        String otherUserId = getPartnerId(conversation, currentUserId);
+
+        // We look for the cursor of the *other* user to see if they read *our* messages
+        Instant readCursor = conversation.getLastReadTimestamps().get(otherUserId);
+        Instant deliveredCursor = conversation.getLastReceivedTimestamps().get(otherUserId);
 
         List<MessageDto> messageDtos = messages.stream()
-                .map(MessageMapper::mapToDto)
+                .map(msg -> {
+                    MessageStatus status = determineMessageStatus(msg, currentUserId, readCursor, deliveredCursor);
+                    return MessageMapper.mapToDto(msg, status);
+                })
                 .toList();
 
         return new MessageHistoryDto(
-                conversationId,
+                conversation.getId(),
                 messageDtos,
+                pageNumber,
                 0,
-                0,
-                true
+                isLast
         );
     }
 
 
-    @Deprecated
-    @PreAuthorize("authenticated()")
-    public MessageHistoryDto getConversation(int page, int size, String friendId, Authentication authentication) {
-        String conversationId = generateConversationId(authentication.getName(), friendId);
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("timestamp").descending());
+    private String getPartnerId(Conversation conversation, String currentUserId) {
+        return conversation.getParticipants().stream()
+                .filter(id -> !id.equals(currentUserId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Conversation " + conversation.getId() + " has invalid participants."));
+    }
 
-        return fetchMessageAndMapToDto(conversationId, pageRequest);
+
+    //Determines if a given message is SENT, DELIVERED and/or READ
+    private MessageStatus determineMessageStatus(Message msg, String currentUserId, Instant readCursor, Instant deliveredCursor) {
+        // If the current user is NOT the sender, the message is effectively "READ"
+        if (!msg.getSenderId().equals(currentUserId)) {
+            return MessageStatus.READ;
+        }
+
+        // Logic for messages SENT by the current user
+        if (readCursor != null && !msg.getTimestamp().isAfter(readCursor)) {
+            return MessageStatus.READ;
+        }
+
+        if (deliveredCursor != null && !msg.getTimestamp().isAfter(deliveredCursor)) {
+            return MessageStatus.DELIVERED;
+        }
+
+        return MessageStatus.SENT;
     }
 
 

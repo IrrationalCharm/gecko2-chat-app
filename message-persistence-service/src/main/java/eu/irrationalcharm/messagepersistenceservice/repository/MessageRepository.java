@@ -15,7 +15,7 @@ public interface MessageRepository extends MongoRepository<Message, String> {
     //Returns all messages after the timestamp in descending order
     List<Message> findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(String conversationId, Instant timestamp);
 
-    Page<Message> findByConversationIdOrderByTimestampDesc(String conversationId, Pageable pageable);
+    Slice<Message> findByConversationIdOrderByTimestampDesc(String conversationId, Pageable pageable);
 
     Slice<Message> findByConversationIdAndTimestampLessThanOrderByTimestampDesc(String conversationId, Instant timestamp, Pageable pageable);
 }

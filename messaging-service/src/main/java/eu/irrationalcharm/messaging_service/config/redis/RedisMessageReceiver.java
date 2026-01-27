@@ -3,7 +3,7 @@ package eu.irrationalcharm.messaging_service.config.redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
-import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
 import eu.irrationalcharm.messaging_service.service.orchestrator.ChatServiceOrchestrator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
@@ -29,7 +29,7 @@ public class RedisMessageReceiver implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         try {
             var json = new String(message.getBody());
-            ChatMessageDto messageDto = objectMapper.readValue(json, ChatMessageDto.class);
+            ChatMessagePayload messageDto = objectMapper.readValue(json, ChatMessagePayload.class);
 
             if (registry.getSession(messageDto.recipientId()).isPresent()) {
                 chatService.internalSendPrivateMessage(messageDto.recipientId(), messageDto);

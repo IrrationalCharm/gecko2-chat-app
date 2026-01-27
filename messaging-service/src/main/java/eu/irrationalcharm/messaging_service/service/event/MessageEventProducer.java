@@ -1,7 +1,7 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
 import eu.irrationalcharm.events.MessageEvent;
-import eu.irrationalcharm.messaging_service.dto.ChatMessageDto;
+import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class MessageEventProducer {
         log.info("A message has been sent to kafka");
     }
 
-    public void produceMessageEvent(ChatMessageDto chatMessageDto) {
+    public void produceMessageEvent(SendMessageRequest chatMessageDto) {
         MessageEvent messageEvent = MessageMapper.mapToMessageEvent(chatMessageDto);
         kafkaTemplate.send(userMessageTopic, messageEvent);
     }
