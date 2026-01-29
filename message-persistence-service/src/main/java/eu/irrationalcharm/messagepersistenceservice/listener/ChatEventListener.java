@@ -1,7 +1,10 @@
 package eu.irrationalcharm.messagepersistenceservice.listener;
 
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.events.chat.ChatEvent;
+import eu.irrationalcharm.events.chat.MessageEvent;
+import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
+import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messagepersistenceservice.service.PersistMessageService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -19,7 +22,7 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 @RequiredArgsConstructor
-public class MessageEventListener {
+public class ChatEventListener {
 
     private final PersistMessageService persistMessageService;
 
@@ -28,11 +31,15 @@ public class MessageEventListener {
             exclude = {ConstraintViolationException.class},
             backoff = @Backoff(delay = 1000, multiplier = 2.0)
     )
-    @KafkaListener(topics = "${spring.kafka.topic.user-messages}")
-    public void userMessageConsumerListener(@Valid MessageEvent messageEvent) {
-        log.info("Message received: {}", messageEvent);
+    @KafkaListener(topics = "${spring.kafka.topic.chat-events}")
+    public void userMessageConsumerListener(@Valid ChatEvent event) {
+        log.info("Chat event received: {}", event);
 
-        persistMessageService.persistMessage(messageEvent);
+        switch (event) {
+            case MessageEvent messageEvent ->  persistMessageService.persistMessage(messageEvent);
+            case MsgDeliveredEvent msgDeliveredEvent -> persistMessageService.updateDeliveryStatus(msgDeliveredEvent);
+            case MsgReadEvent msgReadEvent -> persistMessageService.updateReadStatus(msgReadEvent);
+        }
 
     }
 

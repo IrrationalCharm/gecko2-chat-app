@@ -1,6 +1,7 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.events.chat.ChatEvent;
+import eu.irrationalcharm.events.chat.MessageEvent;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,22 +15,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageEventProducer {
 
-    @Value("${spring.kafka.topic.user-messages}")
-    private String userMessageTopic;
+    @Value("${spring.kafka.topic.chat-events}")
+    private String chatEventsTopic;
 
-    private final KafkaTemplate<String, MessageEvent> kafkaTemplate;
+    private final KafkaTemplate<String, ChatEvent> kafkaTemplate;
 
-    public void produceMessageEvent(MessageEvent messageEvent) {
-        kafkaTemplate.send(userMessageTopic, messageEvent);
-        log.info("A message has been sent to kafka");
+    public void produceMessageEvent(ChatEvent event) {
+        kafkaTemplate.send(chatEventsTopic, event.conversationId(), event); //THe second field guarantees order for each conversation
+
+        log.info("A Chat event has been sent to Kafka");
     }
-
-    public void produceMessageEvent(SendMessageRequest chatMessageDto) {
-        MessageEvent messageEvent = MessageMapper.mapToMessageEvent(chatMessageDto);
-        kafkaTemplate.send(userMessageTopic, messageEvent);
-    }
-
-
-
 
 }

@@ -9,10 +9,13 @@ import eu.irrationalcharm.messaging_service.service.orchestrator.ChatServiceOrch
 import eu.irrationalcharm.messaging_service.service.orchestrator.MessageStatusServiceOrchestrator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
@@ -34,6 +37,13 @@ public class ChatController {
     @MessageMapping("/read-receipt")
     public void readReceipt(@Payload @Valid ReadReceiptRequest message) throws JsonProcessingException {
         messageStatusService.messageReadReceipt(message);
+    }
+
+    @MessageMapping("/ping")
+    @SendToUser("/private")
+    public String handlePing(String payload) {
+        log.info("Ping received, returning pong...");
+        return "PONG";
     }
 
     @MessageMapping("/typing")

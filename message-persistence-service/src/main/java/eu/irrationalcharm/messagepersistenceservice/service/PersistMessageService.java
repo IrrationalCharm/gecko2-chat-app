@@ -1,7 +1,9 @@
 package eu.irrationalcharm.messagepersistenceservice.service;
 
 
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.events.chat.MessageEvent;
+import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
+import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messagepersistenceservice.mapper.MessageEventMapper;
 import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
 import eu.irrationalcharm.messagepersistenceservice.model.LastMessage;
@@ -48,8 +50,22 @@ public class PersistMessageService {
     }
 
 
+    public void updateDeliveryStatus(MsgDeliveredEvent msgDeliveredEvent) {
+        Conversation conversation = conversationRepository.findById(msgDeliveredEvent.conversationId())
+                .orElseThrow();
+
+        conversation.getLastReceivedTimestamps().put(msgDeliveredEvent.recipientId(), msgDeliveredEvent.timestamp());
+
+        conversationRepository.save(conversation);
+    }
 
 
+    public void updateReadStatus(MsgReadEvent msgReadEvent) {
+        Conversation conversation = conversationRepository.findById(msgReadEvent.conversationId())
+                .orElseThrow();
 
+        conversation.getLastReadTimestamps().put(msgReadEvent.recipientId(), msgReadEvent.timestamp());
 
+        conversationRepository.save(conversation);
+    }
 }

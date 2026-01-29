@@ -2,13 +2,12 @@ package eu.irrationalcharm.messaging_service.service.orchestrator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.irrationalcharm.events.chat.MessageEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
-import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
-import eu.irrationalcharm.messaging_service.dto.response.FriendRequestPayload;
-import eu.irrationalcharm.messaging_service.dto.response.MessageSentPayload;
-import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
+import eu.irrationalcharm.messaging_service.dto.response.*;
 import eu.irrationalcharm.messaging_service.enums.MessageType;
+import eu.irrationalcharm.messaging_service.mapper.ChatEventMapper;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import eu.irrationalcharm.messaging_service.service.event.MessageEventProducer;
@@ -35,22 +34,20 @@ public class ChatServiceOrchestrator {
     private final MessageEventProducer messageEventProducer;
 
     public void sendMessage(SendMessageRequest message) throws JsonProcessingException {
-        if (message.clientMsgId() == null)
-            message = message.withClientMsgId(UUID.randomUUID().toString())
-                    .withTimestamp(Instant.now().toString()); //temporary
-
-
-        messageEventProducer.produceMessageEvent(message);
+        Instant now = Instant.now();
+        MessageEvent event = ChatEventMapper.toMessageEvent(message, now);
+        //Push to Kafka
+        messageEventProducer.produceMessageEvent(event);
 
         Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientId());
 
         if (sessionIdOptional.isPresent()) {
-            ChatMessagePayload messagePayload = MessageMapper.mapToChatMessagePayload(message); //Exactly the same, just to keep with naming
+            ChatMessagePayload messagePayload = MessageMapper.mapToChatMessagePayload(message, now); //Exactly the same, just to keep with naming
             internalSendPrivateMessage(message.recipientId(), messagePayload);
             log.info("Message has been sent");
         }
 
-        var ackMessage = new MessageSentPayload(MessageType.MESSAGE_SENT_SERVER, message.clientMsgId());
+        var ackMessage = new MessageSentPayload(MessageType.MESSAGE_SENT_SERVER, message.clientMsgId(), now.toString());
         internalSendPrivateMessage(message.senderId(), ackMessage);
 
         if ( sessionIdOptional.isEmpty() ) {
@@ -70,6 +67,8 @@ public class ChatServiceOrchestrator {
             case ChatMessagePayload messageDto -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", messageDto);
             case MessageSentPayload ackMessage -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", ackMessage);
             case FriendRequestPayload friendRequestPayload -> {
+            }
+            case MessageDeliveredPayload messageDeliveredPayload -> {
             }
         }
     }

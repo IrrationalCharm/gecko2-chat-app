@@ -1,37 +1,35 @@
 package eu.irrationalcharm.messaging_service.mapper;
 
 
-import eu.irrationalcharm.enums.TextType;
-import eu.irrationalcharm.events.MessageEvent;
+import eu.irrationalcharm.messaging_service.dto.request.DeliveredReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
 import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
+import eu.irrationalcharm.messaging_service.dto.response.MessageDeliveredPayload;
+import eu.irrationalcharm.messaging_service.enums.MessageType;
 
 import java.time.Instant;
 
 public final class MessageMapper {
 
-    public static MessageEvent mapToMessageEvent(SendMessageRequest messageRequest) {
-        String conversationId = generateConversationId(messageRequest.senderId(), messageRequest.recipientId());
-        return new MessageEvent(
-                messageRequest.clientMsgId(),
-                conversationId,
-                messageRequest.senderId(),
-                messageRequest.recipientId(),
-                messageRequest.content(),
-                Instant.now(), //TODO fix this?
-                TextType.TEXT
-        );
-    }
-
-    public static ChatMessagePayload mapToChatMessagePayload(SendMessageRequest msg) {
+    public static ChatMessagePayload mapToChatMessagePayload(SendMessageRequest msg, Instant timestamp) {
         return new ChatMessagePayload(
-                msg.type(),
+                MessageType.CHAT_MESSAGE_SERVER,
                 msg.clientMsgId(),
                 msg.senderId(),
                 msg.recipientId(),
                 msg.textType(),
                 msg.content(),
-                msg.timestamp());
+                timestamp.toString());
+    }
+
+
+    public static MessageDeliveredPayload mapToMessageDeliveredPayload(DeliveredReceiptRequest msg, Instant timestamp) {
+        return new MessageDeliveredPayload(
+                MessageType.MESSAGE_DELIVERED_SERVER,
+                msg.messageId(),
+                msg.senderId(),
+                msg.recipientId(),
+                timestamp.toString());
     }
 
     private static String generateConversationId(String senderId, String recipientId) {

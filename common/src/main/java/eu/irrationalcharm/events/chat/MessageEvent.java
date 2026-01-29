@@ -1,4 +1,4 @@
-package eu.irrationalcharm.events;
+package eu.irrationalcharm.events.chat;
 
 import eu.irrationalcharm.enums.TextType;
 import jakarta.validation.constraints.NotEmpty;
@@ -30,5 +30,5 @@ public record MessageEvent(
 
         @NotNull
         TextType textType
-) {
+) implements ChatEvent {
 }

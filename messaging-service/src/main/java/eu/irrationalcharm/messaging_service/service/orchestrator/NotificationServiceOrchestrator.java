@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
-import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
-import eu.irrationalcharm.messaging_service.dto.response.FriendRequestPayload;
-import eu.irrationalcharm.messaging_service.dto.response.MessageSentPayload;
-import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
+import eu.irrationalcharm.messaging_service.dto.response.*;
 import eu.irrationalcharm.messaging_service.enums.MessageType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,9 +65,7 @@ public class NotificationServiceOrchestrator {
         switch(message) {
             case FriendRequestPayload friendRequestPayload -> simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", friendRequestPayload);
 
-            case ChatMessagePayload _, MessageSentPayload _ -> log.error("Not a valid notification message");
-
-
+            case ChatMessagePayload _, MessageSentPayload _, MessageDeliveredPayload _ -> log.error("Not a valid notification message");
         }
     }
 }
