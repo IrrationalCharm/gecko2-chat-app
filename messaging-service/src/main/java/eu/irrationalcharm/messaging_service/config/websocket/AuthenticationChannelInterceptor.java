@@ -42,6 +42,9 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
     public Message<?> preSend(@NotNull Message<?> message, @NotNull MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        if(accessor == null || accessor.getCommand() == null )
+            return message;
+
         if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.CONNECT) {
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             CustomWebSocketAuthToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
