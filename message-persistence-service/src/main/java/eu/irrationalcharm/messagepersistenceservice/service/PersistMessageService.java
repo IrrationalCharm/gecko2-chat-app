@@ -51,30 +51,38 @@ public class PersistMessageService {
     }
 
 
-    public void updateDeliveryStatus(MsgDeliveredEvent msgDeliveredEvent) {
-        Conversation conversation = conversationRepository.findById(msgDeliveredEvent.conversationId())
+    /**
+     * ReceiverId refers to the user who got the message on their phone and confirmed delivery.
+     */
+    public void updateDeliveryStatus(MsgDeliveredEvent event) {
+        Conversation conversation = conversationRepository.findById(event.conversationId())
                 .orElseThrow();
 
-        Instant lastDeliveredMessage = conversation.getLastDeliveredTimestamps().get(msgDeliveredEvent.recipientId());
+        String receiverId = event.receiverId();
+        Instant deliveredCursor = conversation.getDeliveryCursors().get(receiverId);
 
-        if(lastDeliveredMessage != null && lastDeliveredMessage.isAfter(msgDeliveredEvent.timestamp()))
+        if(deliveredCursor != null && deliveredCursor.isAfter(event.deliveryTimestamp()))
             return;
 
-        conversation.getLastDeliveredTimestamps().put(msgDeliveredEvent.recipientId(), msgDeliveredEvent.timestamp());
+        conversation.getDeliveryCursors().put(receiverId, event.deliveryTimestamp());
         conversationRepository.save(conversation);
     }
 
 
-    public void updateReadStatus(MsgReadEvent msgReadEvent) {
-        Conversation conversation = conversationRepository.findById(msgReadEvent.conversationId())
+    /**
+     * ReaderId refers to the user who read the message
+     */
+    public void updateReadStatus(MsgReadEvent event) {
+        Conversation conversation = conversationRepository.findById(event.conversationId())
                 .orElseThrow();
 
-        Instant lastReadMessage = conversation.getLastDeliveredTimestamps().get(msgReadEvent.recipientId());
+        String readerId = event.readerId();
+        Instant readCursor = conversation.getDeliveryCursors().get(readerId);
 
-        if(lastReadMessage != null && lastReadMessage.isAfter(msgReadEvent.timestamp()))
+        if(readCursor != null && readCursor.isAfter(event.readTimestamp()))
             return;
 
-        conversation.getLastReadTimestamps().put(msgReadEvent.recipientId(), msgReadEvent.timestamp());
+        conversation.getReadCursors().put(readerId, event.readTimestamp());
 
         conversationRepository.save(conversation);
     }

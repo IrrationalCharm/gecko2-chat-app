@@ -44,7 +44,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, Clien
         //Sending message to himself?
         if (value.senderId().equals(value.recipientId())) {
             context.buildConstraintViolationWithTemplate("Cannot send a message to yourself")
-                    .addPropertyNode("recipientId")
+                    .addPropertyNode("receiverId")
                     .addConstraintViolation();
             return false;
         }
@@ -57,7 +57,7 @@ public class MessageValidator implements ConstraintValidator<MessageValid, Clien
 
         if(!areFriends) {
             context.buildConstraintViolationWithTemplate("You can only send messages to users on your friends list.")
-                    .addPropertyNode("recipientId")
+                    .addPropertyNode("receiverId")
                     .addConstraintViolation();
             return false;
         }

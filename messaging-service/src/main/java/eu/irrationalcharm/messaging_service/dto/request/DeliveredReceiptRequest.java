@@ -4,8 +4,6 @@ import eu.irrationalcharm.messaging_service.enums.MessageType;
 import eu.irrationalcharm.messaging_service.validation.MessageValid;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.Instant;
-
 @MessageValid
 public record DeliveredReceiptRequest(
         @NotNull
@@ -19,7 +17,7 @@ public record DeliveredReceiptRequest(
         @NotNull
         String conversationId,
         @NotNull
-        String timestamp
+        String deliveredTimestamp
 
 ) implements ClientMessage {
 }

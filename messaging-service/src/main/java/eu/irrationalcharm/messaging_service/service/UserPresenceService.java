@@ -22,7 +22,7 @@ public class UserPresenceService {
         // 1. Add this specific session to the set of active sessions
         redisTemplate.opsForSet().add(sessionsKey, sessionId);
 
-        // 2. Update the global last seen timestamp for the user
+        // 2. Update the global last seen deliveryTimestamp for the user
         redisTemplate.opsForValue().set(lastSeenKey, String.valueOf(System.currentTimeMillis()));
 
         // Optional: Set a TTL on the set as a safety net (e.g., 24 hours)

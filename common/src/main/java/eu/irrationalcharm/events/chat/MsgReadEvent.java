@@ -8,9 +8,9 @@ public record MsgReadEvent(
         @NotNull
         String conversationId,
         @NotNull
-        String recipientId, //User that confirmed message was read
+        String readerId, //UserId of user who just read the message they received.
         @NotNull
-        Instant timestamp
+        Instant readTimestamp
 ) implements ChatEvent {
 
 }

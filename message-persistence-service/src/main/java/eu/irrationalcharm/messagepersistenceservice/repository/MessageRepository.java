@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface MessageRepository extends MongoRepository<Message, String> {
 
-    //Returns all messages after the timestamp in descending order
+    //Returns all messages after the deliveryTimestamp in descending order
     List<Message> findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(String conversationId, Instant timestamp);
 
     Slice<Message> findByConversationIdOrderByTimestampDesc(String conversationId, Pageable pageable);

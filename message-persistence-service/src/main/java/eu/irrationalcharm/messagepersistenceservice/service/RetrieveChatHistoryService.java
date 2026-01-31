@@ -63,7 +63,7 @@ public class RetrieveChatHistoryService {
 
         // Logic: For every conversation found, fetch the recent X messages
         return conversations.stream().map(conversation -> {
-            Pageable messagePage = PageRequest.of(0, 20, Sort.by("timestamp").descending());
+            Pageable messagePage = PageRequest.of(0, 20, Sort.by("deliveryTimestamp").descending());
             Slice<Message> messageSlice = messageRepository.findByConversationIdOrderByTimestampDesc(
                     conversation.getId(), messagePage
             );
@@ -98,11 +98,8 @@ public class RetrieveChatHistoryService {
 
 
     private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
-        String otherUserId = getPartnerId(conversation, currentUserId);
-
-
-        Instant readCursor = conversation.getLastReadTimestamps().get(currentUserId);
-        Instant deliveredCursor = conversation.getLastDeliveredTimestamps().get(currentUserId);
+        Instant readCursor = conversation.getReadCursors().get(currentUserId); //Get readTimestamp of last message this user sent and was read.
+        Instant deliveredCursor = conversation.getDeliveryCursors().get(currentUserId); //Get last readTimestamp of message this user sent and was delivered
 
         List<MessageDto> messageDtos = messages.stream()
                 .map(msg -> {
@@ -133,16 +130,18 @@ public class RetrieveChatHistoryService {
 
     //Determines if a given message is SENT, DELIVERED and/or READ
     private MessageStatus determineMessageStatus(Message msg, String currentUserId, Instant readCursor, Instant deliveredCursor) {
-        // If the current user is NOT the sender, the message is effectively "READ"
+        //If i sent the message, for me, its already read.
         if (!msg.getSenderId().equals(currentUserId)) {
             return MessageStatus.READ;
         }
 
-        // Logic for messages SENT by the current user
+        //i sent this message. Has my partner read it?
+        //Check if message time is BEFORE my partner's read cursor.
         if (readCursor != null && !msg.getTimestamp().isAfter(readCursor)) {
             return MessageStatus.READ;
         }
 
+        //i sent this message. has my partner received it?
         if (deliveredCursor != null && !msg.getTimestamp().isAfter(deliveredCursor)) {
             return MessageStatus.DELIVERED;
         }

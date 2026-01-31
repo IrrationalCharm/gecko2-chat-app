@@ -4,13 +4,12 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
-//To update lastDeliveredTimestamp in Conversation table
 public record MsgDeliveredEvent(
         @NotNull
         String conversationId,
         @NotNull
-        String recipientId, //The original sender of the message
+        String receiverId, //UserId of who confirmed message was delivered
         @NotNull
-        Instant timestamp
+        Instant deliveryTimestamp
 ) implements ChatEvent{
 }

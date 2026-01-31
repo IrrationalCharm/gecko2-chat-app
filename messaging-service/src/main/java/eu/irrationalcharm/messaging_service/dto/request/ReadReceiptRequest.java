@@ -9,9 +9,15 @@ public record ReadReceiptRequest(
         @NotNull
         MessageType type,
         @NotNull
-        String senderId,
+        String senderId, //Sender of reques
         @NotNull
-        String recipientId
+        String recipientId, //Recipient of request
+        @NotNull
+        String messageId,
+        @NotNull
+        String conversationId,
+        @NotNull
+        String readTimestamp
 
 ) implements ClientMessage {
 }

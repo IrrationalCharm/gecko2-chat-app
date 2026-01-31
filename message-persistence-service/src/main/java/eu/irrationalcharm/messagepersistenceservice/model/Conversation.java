@@ -18,15 +18,17 @@ import java.util.Set;
 public class Conversation {
 
     @Id
-    private String id;
+    private String id; //user id of the two participants of the conversation separated by :
 
     private Set<String> participants = new HashSet<>();
 
-    // Key: UserId, Value: MessageId of the last message they READ
-    private Map<String, Instant> lastReadTimestamps = new HashMap<>();
+    //Key = UserID of the person who READ the messages.
+    //Value = Timestamp of the last message they read.
+    private Map<String, Instant> readCursors = new HashMap<>();
 
-    // Key: UserId, Value: MessageId of the last message they DELIVERED. User sends a message, when the message was finally delivered. the recipient of the message updates this with the id of the sender of the message
-    private Map<String, Instant> lastDeliveredTimestamps = new HashMap<>();
+    //Key = UserID of the person who RECEIVED the messages.
+    //Value = Timestamp of the last message delivered to their device.
+    private Map<String, Instant> deliveryCursors = new HashMap<>();
 
     @CreatedDate
     private Instant createdAt;

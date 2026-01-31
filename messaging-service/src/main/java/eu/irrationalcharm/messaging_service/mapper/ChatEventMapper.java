@@ -3,7 +3,9 @@ package eu.irrationalcharm.messaging_service.mapper;
 import eu.irrationalcharm.enums.TextType;
 import eu.irrationalcharm.events.chat.MessageEvent;
 import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
+import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messaging_service.dto.request.DeliveredReceiptRequest;
+import eu.irrationalcharm.messaging_service.dto.request.ReadReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
 
 import java.time.Instant;
@@ -24,16 +26,22 @@ public class ChatEventMapper {
     }
 
 
-    public static MsgDeliveredEvent toMsgDeliveredEvent(DeliveredReceiptRequest request, Instant timestamp) {
+    public static MsgDeliveredEvent toMsgDeliveredEvent(DeliveredReceiptRequest request, Instant deliveryTimestamp) {
         return new MsgDeliveredEvent(
                 request.conversationId(),
-                request.recipientId(),
-                timestamp
+                request.senderId(),
+                deliveryTimestamp
         );
     }
 
 
-
+    public static MsgReadEvent toMsgReadEvent(ReadReceiptRequest request, Instant readTimestamp) {
+        return new MsgReadEvent(
+                request.conversationId(),
+                request.senderId(),
+                readTimestamp
+        );
+    }
 
 
     private static String generateConversationId(String senderId, String recipientId) {
@@ -43,4 +51,6 @@ public class ChatEventMapper {
             return String.format("%s:%s", recipientId, senderId);
         }
     }
+
+
 }

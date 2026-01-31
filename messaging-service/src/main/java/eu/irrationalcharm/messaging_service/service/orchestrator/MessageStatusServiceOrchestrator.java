@@ -3,11 +3,13 @@ package eu.irrationalcharm.messaging_service.service.orchestrator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
+import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.request.DeliveredReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.ReadReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
 import eu.irrationalcharm.messaging_service.dto.response.MessageDeliveredPayload;
+import eu.irrationalcharm.messaging_service.dto.response.MessageReadPayload;
 import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
 import eu.irrationalcharm.messaging_service.mapper.ChatEventMapper;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
@@ -39,25 +41,25 @@ public class MessageStatusServiceOrchestrator {
     private final ObjectMapper objectMapper;
     private final WebSocketSessionRegistry sessionRegistry;
 
-    public void deliveredReceipt(DeliveredReceiptRequest message) throws JsonProcessingException {
+    public void deliveredReceipt(DeliveredReceiptRequest request) throws JsonProcessingException {
         Instant now = Instant.now();
-        MsgDeliveredEvent event = ChatEventMapper.toMsgDeliveredEvent(message, now);
+        MsgDeliveredEvent event = ChatEventMapper.toMsgDeliveredEvent(request, now);
 
         messageEventProducer.produceMessageEvent(event); //Push to Kafka
 
-        Optional<String> sessionIdOptional = sessionRegistry.getSession(message.recipientId());
+        Optional<String> sessionIdOptional = sessionRegistry.getSession(request.recipientId());
 
         if (sessionIdOptional.isPresent()) {
-            MessageDeliveredPayload messagePayload = MessageMapper.mapToMessageDeliveredPayload(message, now);
-            deliverMessageToWebsocket(message.recipientId(), messagePayload);
+            MessageDeliveredPayload messagePayload = MessageMapper.mapToMessageDeliveredPayload(request, now);
+            deliverMessageToWebsocket(request.recipientId(), messagePayload);
             log.info("Message has been sent to recipient");
         }
 
 
         if ( sessionIdOptional.isEmpty() ) {
             //Send to redis to fanout
-            if (userPresenceService.isUserOnline(message.recipientId())) { //Checks if user is connected at all on redis
-                String payload = objectMapper.writeValueAsString(message);
+            if (userPresenceService.isUserOnline(request.recipientId())) { //Checks if user is connected at all on redis
+                String payload = objectMapper.writeValueAsString(request);
                 redisTemplate.convertAndSend("queue/private/messages", payload);
             } else
                 System.out.println("Recipient is offline");
@@ -69,8 +71,28 @@ public class MessageStatusServiceOrchestrator {
         simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", payload);
     }
 
-    public void messageReadReceipt(ReadReceiptRequest message) {
+    public void messageReadReceipt(ReadReceiptRequest request) throws JsonProcessingException {
+        Instant readTimestamp = Instant.parse(request.readTimestamp());
+        MsgReadEvent event = ChatEventMapper.toMsgReadEvent(request, readTimestamp);
+
+        messageEventProducer.produceMessageEvent(event); //Push to Kafka
+
+        Optional<String> sessionIdOptional = sessionRegistry.getSession(request.recipientId());
+
+        if (sessionIdOptional.isPresent()) {
+            MessageReadPayload messagePayload = MessageMapper.mapToMessageReadPayload(request, readTimestamp);
+            deliverMessageToWebsocket(request.recipientId(), messagePayload);
+            log.info("Message has been sent to recipient");
+        }
 
 
+        if ( sessionIdOptional.isEmpty() ) {
+            //Send to redis to fanout
+            if (userPresenceService.isUserOnline(request.recipientId())) { //Checks if user is connected at all on redis
+                String payload = objectMapper.writeValueAsString(request);
+                redisTemplate.convertAndSend("queue/private/messages", payload);
+            } else
+                System.out.println("Recipient is offline");
+        }
     }
 }
