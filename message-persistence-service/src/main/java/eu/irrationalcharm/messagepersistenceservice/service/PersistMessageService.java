@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Set;
 
 import static eu.irrationalcharm.messagepersistenceservice.utils.ConversationUtils.generateConversationId;
@@ -54,8 +55,12 @@ public class PersistMessageService {
         Conversation conversation = conversationRepository.findById(msgDeliveredEvent.conversationId())
                 .orElseThrow();
 
-        conversation.getLastReceivedTimestamps().put(msgDeliveredEvent.recipientId(), msgDeliveredEvent.timestamp());
+        Instant lastDeliveredMessage = conversation.getLastDeliveredTimestamps().get(msgDeliveredEvent.recipientId());
 
+        if(lastDeliveredMessage != null && lastDeliveredMessage.isAfter(msgDeliveredEvent.timestamp()))
+            return;
+
+        conversation.getLastDeliveredTimestamps().put(msgDeliveredEvent.recipientId(), msgDeliveredEvent.timestamp());
         conversationRepository.save(conversation);
     }
 
@@ -63,6 +68,11 @@ public class PersistMessageService {
     public void updateReadStatus(MsgReadEvent msgReadEvent) {
         Conversation conversation = conversationRepository.findById(msgReadEvent.conversationId())
                 .orElseThrow();
+
+        Instant lastReadMessage = conversation.getLastDeliveredTimestamps().get(msgReadEvent.recipientId());
+
+        if(lastReadMessage != null && lastReadMessage.isAfter(msgReadEvent.timestamp()))
+            return;
 
         conversation.getLastReadTimestamps().put(msgReadEvent.recipientId(), msgReadEvent.timestamp());
 

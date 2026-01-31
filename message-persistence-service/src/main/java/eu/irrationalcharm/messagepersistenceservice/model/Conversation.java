@@ -25,8 +25,8 @@ public class Conversation {
     // Key: UserId, Value: MessageId of the last message they READ
     private Map<String, Instant> lastReadTimestamps = new HashMap<>();
 
-    // Key: UserId, Value: MessageId of the last message they RECEIVED
-    private Map<String, Instant> lastReceivedTimestamps = new HashMap<>();
+    // Key: UserId, Value: MessageId of the last message they DELIVERED. User sends a message, when the message was finally delivered. the recipient of the message updates this with the id of the sender of the message
+    private Map<String, Instant> lastDeliveredTimestamps = new HashMap<>();
 
     @CreatedDate
     private Instant createdAt;

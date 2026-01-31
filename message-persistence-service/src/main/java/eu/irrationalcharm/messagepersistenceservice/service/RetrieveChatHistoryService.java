@@ -16,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -101,9 +100,9 @@ public class RetrieveChatHistoryService {
     private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
         String otherUserId = getPartnerId(conversation, currentUserId);
 
-        // We look for the cursor of the *other* user to see if they read *our* messages
-        Instant readCursor = conversation.getLastReadTimestamps().get(otherUserId);
-        Instant deliveredCursor = conversation.getLastReceivedTimestamps().get(otherUserId);
+
+        Instant readCursor = conversation.getLastReadTimestamps().get(currentUserId);
+        Instant deliveredCursor = conversation.getLastDeliveredTimestamps().get(currentUserId);
 
         List<MessageDto> messageDtos = messages.stream()
                 .map(msg -> {
@@ -115,6 +114,8 @@ public class RetrieveChatHistoryService {
         return new MessageHistoryDto(
                 conversation.getId(),
                 messageDtos,
+                deliveredCursor,
+                readCursor,
                 pageNumber,
                 0,
                 isLast

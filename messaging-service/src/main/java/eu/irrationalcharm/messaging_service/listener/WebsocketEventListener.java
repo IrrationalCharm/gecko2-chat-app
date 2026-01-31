@@ -48,7 +48,7 @@ public class WebsocketEventListener {
         var authentication = (CustomWebSocketAuthToken) accessor.getUser();
 
         if (authentication != null) {
-            userPresenceService.setUserOffline(authentication.getName());
+            userPresenceService.setUserOffline(authentication.getName(), accessor.getSessionId());
             sessionRegistry.userDisconnected(authentication.getName(), accessor.getSessionId());
 
             log.info("User disconnected: {}, session id: {}", authentication.getName(), accessor.getSessionId());

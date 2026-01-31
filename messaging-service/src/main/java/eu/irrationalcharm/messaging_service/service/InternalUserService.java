@@ -30,29 +30,6 @@ public class InternalUserService {
         this.userGraphCache = cache.getCache(userGraphCacheName);
     }
 
-    /**
-     * Checks cache first, on miss it calls user-service and retrieves UserSocialGraphDto by JWT details.
-     * providerId is just the key for the cache.
-     * The reason we cache twice by different keys is that on CONNECT, the JWT only has the providerId and not the username.
-     */
-    public UserSocialGraphDto getUserSocialGraphByProviderId(@NotNull String internalId){
-        UserSocialGraphDto userSocialGraphDto = userGraphCache.get(internalId, UserSocialGraphDto.class);
-        if(userSocialGraphDto != null) {
-            return userSocialGraphDto;
-        }
-
-        ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            UserSocialGraphDto userGraph = response.getBody();
-
-            //userGraphCache.put(providerId, response.getBody());
-            userGraphCache.put(userGraph.internalId(), response.getBody());
-
-            return response.getBody();
-        } else
-            throw new RuntimeException("Something went wrong!!!");
-    }
-
 
     /**
      * On cache miss, fetches the UserSocialGraph from user-service by using the Authentication from SecurityContextHolder

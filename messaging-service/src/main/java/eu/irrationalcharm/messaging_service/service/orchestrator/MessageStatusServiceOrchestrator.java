@@ -50,7 +50,7 @@ public class MessageStatusServiceOrchestrator {
         if (sessionIdOptional.isPresent()) {
             MessageDeliveredPayload messagePayload = MessageMapper.mapToMessageDeliveredPayload(message, now);
             deliverMessageToWebsocket(message.recipientId(), messagePayload);
-            log.info("Message has been sent");
+            log.info("Message has been sent to recipient");
         }
 
 

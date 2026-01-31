@@ -9,7 +9,7 @@ public record MsgDeliveredEvent(
         @NotNull
         String conversationId,
         @NotNull
-        String recipientId, //User that confirmed message was delivered
+        String recipientId, //The original sender of the message
         @NotNull
         Instant timestamp
 ) implements ChatEvent{
