@@ -72,7 +72,7 @@ public class MessageStatusServiceOrchestrator {
     }
 
     public void messageReadReceipt(ReadReceiptRequest request) throws JsonProcessingException {
-        Instant readTimestamp = Instant.parse(request.readTimestamp());
+        Instant readTimestamp = Instant.now();
         MsgReadEvent event = ChatEventMapper.toMsgReadEvent(request, readTimestamp);
 
         messageEventProducer.produceMessageEvent(event); //Push to Kafka
@@ -82,7 +82,7 @@ public class MessageStatusServiceOrchestrator {
         if (sessionIdOptional.isPresent()) {
             MessageReadPayload messagePayload = MessageMapper.mapToMessageReadPayload(request, readTimestamp);
             deliverMessageToWebsocket(request.recipientId(), messagePayload);
-            log.info("Message has been sent to recipient");
+            log.info("Read receipt sent to the user!!!{}", messagePayload);
         }
 
 

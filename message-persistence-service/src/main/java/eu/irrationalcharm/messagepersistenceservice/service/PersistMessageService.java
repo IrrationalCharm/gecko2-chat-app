@@ -77,7 +77,7 @@ public class PersistMessageService {
                 .orElseThrow();
 
         String readerId = event.readerId();
-        Instant readCursor = conversation.getDeliveryCursors().get(readerId);
+        Instant readCursor = conversation.getReadCursors().get(readerId);
 
         if(readCursor != null && readCursor.isAfter(event.readTimestamp()))
             return;

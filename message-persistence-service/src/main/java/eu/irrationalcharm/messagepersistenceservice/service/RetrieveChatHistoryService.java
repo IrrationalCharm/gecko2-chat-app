@@ -98,12 +98,23 @@ public class RetrieveChatHistoryService {
 
 
     private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
-        Instant readCursor = conversation.getReadCursors().get(currentUserId); //Get readTimestamp of last message this user sent and was read.
-        Instant deliveredCursor = conversation.getDeliveryCursors().get(currentUserId); //Get last readTimestamp of message this user sent and was delivered
+        String partnerId = getPartnerId(conversation, currentUserId);
+
+        Instant partnerReadCursor = conversation.getReadCursors().get(partnerId); //We get the last timestamp of message partner read
+        Instant partnerDeliveryCursor = conversation.getDeliveryCursors().get(partnerId); //We get the last timestamp of message partner received. (delivered to him)
+
+        Instant myReadCursor = conversation.getReadCursors().get(currentUserId);
+        Instant myDeliveryCursor = conversation.getReadCursors().get(currentUserId);
 
         List<MessageDto> messageDtos = messages.stream()
                 .map(msg -> {
-                    MessageStatus status = determineMessageStatus(msg, currentUserId, readCursor, deliveredCursor);
+                    MessageStatus status;
+                    if (msg.getSenderId().equals(currentUserId)) {
+                        status = determineMessageStatus(msg, partnerReadCursor, partnerDeliveryCursor);
+                    } else {
+                        status = determineMessageStatus(msg, myReadCursor, myDeliveryCursor);
+                    }
+
                     return MessageMapper.mapToDto(msg, status);
                 })
                 .toList();
@@ -111,8 +122,8 @@ public class RetrieveChatHistoryService {
         return new MessageHistoryDto(
                 conversation.getId(),
                 messageDtos,
-                deliveredCursor,
-                readCursor,
+                partnerDeliveryCursor,
+                partnerReadCursor,
                 pageNumber,
                 0,
                 isLast
@@ -129,12 +140,7 @@ public class RetrieveChatHistoryService {
 
 
     //Determines if a given message is SENT, DELIVERED and/or READ
-    private MessageStatus determineMessageStatus(Message msg, String currentUserId, Instant readCursor, Instant deliveredCursor) {
-        //If i sent the message, for me, its already read.
-        if (!msg.getSenderId().equals(currentUserId)) {
-            return MessageStatus.READ;
-        }
-
+    private MessageStatus determineMessageStatus(Message msg, Instant readCursor, Instant deliveryCursor) {
         //i sent this message. Has my partner read it?
         //Check if message time is BEFORE my partner's read cursor.
         if (readCursor != null && !msg.getTimestamp().isAfter(readCursor)) {
@@ -142,12 +148,13 @@ public class RetrieveChatHistoryService {
         }
 
         //i sent this message. has my partner received it?
-        if (deliveredCursor != null && !msg.getTimestamp().isAfter(deliveredCursor)) {
+        if (deliveryCursor != null && !msg.getTimestamp().isAfter(deliveryCursor)) {
             return MessageStatus.DELIVERED;
         }
 
         return MessageStatus.SENT;
     }
+
 
 
 }

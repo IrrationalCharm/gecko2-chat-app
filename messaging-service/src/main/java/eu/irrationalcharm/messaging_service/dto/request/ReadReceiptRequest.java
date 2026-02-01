@@ -13,8 +13,6 @@ public record ReadReceiptRequest(
         @NotNull
         String recipientId, //Recipient of request
         @NotNull
-        String messageId,
-        @NotNull
         String conversationId,
         @NotNull
         String readTimestamp

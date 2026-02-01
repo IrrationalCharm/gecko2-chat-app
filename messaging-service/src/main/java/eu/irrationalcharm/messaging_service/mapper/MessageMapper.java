@@ -38,7 +38,6 @@ public final class MessageMapper {
     public static MessageReadPayload mapToMessageReadPayload(ReadReceiptRequest request, Instant readTimestamp) {
         return new MessageReadPayload(
                 MessageType.MESSAGE_READ_SERVER,
-                request.messageId(),
                 request.senderId(),
                 request.recipientId(),
                 readTimestamp.toString());

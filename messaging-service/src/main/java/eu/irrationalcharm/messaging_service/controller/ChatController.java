@@ -31,11 +31,13 @@ public class ChatController {
 
     @MessageMapping("/delivered-receipt")
     public void deliveryReceipt(@Payload @Valid DeliveredReceiptRequest message) throws JsonProcessingException {
+        log.debug("delivered-receipt received{}", message);
         messageStatusService.deliveredReceipt(message);
     }
 
     @MessageMapping("/read-receipt")
     public void readReceipt(@Payload @Valid ReadReceiptRequest message) throws JsonProcessingException {
+        log.debug("read-receipt received{}", message);
         messageStatusService.messageReadReceipt(message);
     }
 

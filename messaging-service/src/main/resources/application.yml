@@ -21,4 +21,5 @@ spring:
 
 logging:
   level:
+    eu.irrationalcharm.messaging_service: DEBUG
     org.springframework.security: INFO
