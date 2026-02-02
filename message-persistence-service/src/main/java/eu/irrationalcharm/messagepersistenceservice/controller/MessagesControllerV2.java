@@ -26,9 +26,9 @@ public class MessagesControllerV2 {
     private final RetrieveChatHistoryService retrieveHistoryService;
 
     /**
-     * Returns a list of conversations with messages starting from deliveryTimestamp since onwards, if no value is provided, it
+     * Returns a list of conversations with messages starting from timestamp since onwards, if no value is provided, it
      * fetches the 20 most recent conversations with 20 messages per conversation
-     * @param sinceTimestamp messages to return from this deliveryTimestamp
+     * @param sinceTimestamp messages to return from this timestamp
      */
     @GetMapping("/sync")
     public ResponseEntity<SuccessResponseDto<List<MessageHistoryDto>>> syncMessages(

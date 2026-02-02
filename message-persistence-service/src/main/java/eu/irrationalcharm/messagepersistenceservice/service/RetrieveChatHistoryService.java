@@ -52,6 +52,11 @@ public class RetrieveChatHistoryService {
     }
 
 
+    /**
+     * @param page page of the Conversation.
+     * @param size number of conversations per page.
+     * @return returns 20 messages of each conversation. the most recent messages
+     */
     @PreAuthorize("authenticated()")
     public List<MessageHistoryDto> fetchRecentMessages(int page, int size, Authentication authentication) {
         String currentUserId = authentication.getName();
@@ -63,7 +68,7 @@ public class RetrieveChatHistoryService {
 
         // Logic: For every conversation found, fetch the recent X messages
         return conversations.stream().map(conversation -> {
-            Pageable messagePage = PageRequest.of(0, 20, Sort.by("deliveryTimestamp").descending());
+            Pageable messagePage = PageRequest.of(0, 20, Sort.by("timestamp").descending());
             Slice<Message> messageSlice = messageRepository.findByConversationIdOrderByTimestampDesc(
                     conversation.getId(), messagePage
             );
@@ -73,7 +78,10 @@ public class RetrieveChatHistoryService {
     }
 
 
-
+    /**
+     * @param sinceTimestamp timestamp in epoch milliseconds
+     * @return returns all conversations and messages that have messages starting from the timestamp
+     */
     @PreAuthorize("authenticated()")
     public List<MessageHistoryDto> syncMessages(Long sinceTimestamp, Authentication authentication) {
         String currentUserId = authentication.getName();
@@ -89,12 +97,14 @@ public class RetrieveChatHistoryService {
                     conversation.getId(), sinceInstant
             );
 
+
+
             return buildHistoryDto(conversation, messages, currentUserId, true, 0);
         }).toList();
     }
 
 
-    // PRIVATE HELPER METHODS
+    // PRIVATE HELPER METHODS \\
 
 
     private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
@@ -105,6 +115,11 @@ public class RetrieveChatHistoryService {
 
         Instant myReadCursor = conversation.getReadCursors().get(currentUserId);
         Instant myDeliveryCursor = conversation.getReadCursors().get(currentUserId);
+
+        long unreadCount = 0;
+        if(myReadCursor != null) {
+            unreadCount = messageRepository.countByConversationIdAndTimestampAfter(conversation.getId(), myReadCursor);
+        }
 
         List<MessageDto> messageDtos = messages.stream()
                 .map(msg -> {
@@ -124,6 +139,7 @@ public class RetrieveChatHistoryService {
                 messageDtos,
                 partnerDeliveryCursor,
                 partnerReadCursor,
+                unreadCount,
                 pageNumber,
                 0,
                 isLast

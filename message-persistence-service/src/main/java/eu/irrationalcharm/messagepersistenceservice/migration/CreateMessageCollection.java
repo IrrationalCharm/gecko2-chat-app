@@ -23,7 +23,7 @@ public class CreateMessageCollection {
             mongoTemplate.createCollection("messages");
             mongoTemplate.indexOps("messages").createIndex(new Index()
                     .on("conversationId", Sort.Direction.ASC)
-                    .on("deliveryTimestamp", Sort.Direction.DESC));
+                    .on("timestamp", Sort.Direction.DESC));
         }
     }
 

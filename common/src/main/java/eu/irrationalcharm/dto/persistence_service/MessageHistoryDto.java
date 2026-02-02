@@ -13,6 +13,8 @@ public record MessageHistoryDto(
         Instant lastDeliveredMessage,  //The other user of the requester
         Instant lastReadMessage,        //The other user of the requester
 
+        long unreadCount,
+
         int pageNumber,
         int totalPages,
         boolean isLastPage
