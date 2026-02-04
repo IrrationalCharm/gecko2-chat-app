@@ -1,7 +1,5 @@
 package eu.irrationalcharm.messaging_service.service.orchestrator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.chat.MessageEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
@@ -16,10 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -27,13 +25,13 @@ import java.util.UUID;
 public class ChatServiceOrchestrator {
 
     private final StringRedisTemplate redisTemplate;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final WebSocketSessionRegistry sessionRegistry;
     private final UserPresenceService userPresenceService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageEventProducer messageEventProducer;
 
-    public void sendMessage(SendMessageRequest message) throws JsonProcessingException {
+    public void sendMessage(SendMessageRequest message) {
         Instant now = Instant.now();
         MessageEvent event = ChatEventMapper.toMessageEvent(message, now);
         //Push to Kafka
@@ -69,6 +67,8 @@ public class ChatServiceOrchestrator {
             case FriendRequestPayload friendRequestPayload -> {
             }
             case MessageDeliveredPayload messageDeliveredPayload -> {
+            }
+            case MessageReadPayload messageReadPayload -> {
             }
         }
     }

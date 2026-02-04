@@ -1,13 +1,11 @@
 package eu.irrationalcharm.messaging_service.service.orchestrator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
 import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.request.DeliveredReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.ReadReceiptRequest;
-import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
 import eu.irrationalcharm.messaging_service.dto.response.MessageDeliveredPayload;
 import eu.irrationalcharm.messaging_service.dto.response.MessageReadPayload;
 import eu.irrationalcharm.messaging_service.dto.response.ServerMessage;
@@ -15,13 +13,13 @@ import eu.irrationalcharm.messaging_service.mapper.ChatEventMapper;
 import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import eu.irrationalcharm.messaging_service.service.UserPresenceService;
 import eu.irrationalcharm.messaging_service.service.event.MessageEventProducer;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -38,10 +36,10 @@ public class MessageStatusServiceOrchestrator {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageEventProducer messageEventProducer;
     private final UserPresenceService userPresenceService;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final WebSocketSessionRegistry sessionRegistry;
 
-    public void deliveredReceipt(DeliveredReceiptRequest request) throws JsonProcessingException {
+    public void deliveredReceipt(DeliveredReceiptRequest request) {
         Instant now = Instant.now();
         MsgDeliveredEvent event = ChatEventMapper.toMsgDeliveredEvent(request, now);
 
@@ -71,7 +69,7 @@ public class MessageStatusServiceOrchestrator {
         simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", payload);
     }
 
-    public void messageReadReceipt(ReadReceiptRequest request) throws JsonProcessingException {
+    public void messageReadReceipt(ReadReceiptRequest request) {
         Instant readTimestamp = Instant.now();
         MsgReadEvent event = ChatEventMapper.toMsgReadEvent(request, readTimestamp);
 

@@ -11,10 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.BackOff;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -29,7 +29,7 @@ public class ChatEventListener {
     @RetryableTopic(
             attempts = "5",
             exclude = {ConstraintViolationException.class},
-            backoff = @Backoff(delay = 1000, multiplier = 2.0)
+            backOff = @BackOff(delay = 1000, maxDelay = 10000, multiplier = 2)
     )
     @KafkaListener(topics = "${spring.kafka.topic.chat-events}")
     public void userMessageConsumerListener(@Valid ChatEvent event) {

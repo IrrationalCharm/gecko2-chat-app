@@ -1,6 +1,5 @@
 package eu.irrationalcharm.messaging_service.service.orchestrator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
@@ -10,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 
 @Slf4j
@@ -19,7 +19,7 @@ public class NotificationServiceOrchestrator {
 
     private final WebSocketSessionRegistry sessionRegistry;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
 
     public void receivedNotification(NotificationEvent notificationEvent) {
@@ -66,6 +66,8 @@ public class NotificationServiceOrchestrator {
             case FriendRequestPayload friendRequestPayload -> simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", friendRequestPayload);
 
             case ChatMessagePayload _, MessageSentPayload _, MessageDeliveredPayload _ -> log.error("Not a valid notification message");
+            case MessageReadPayload messageReadPayload -> {
+            }
         }
     }
 }

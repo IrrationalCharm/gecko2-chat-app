@@ -2,24 +2,22 @@ package eu.irrationalcharm.messaging_service.config.websocket;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.DefaultManagedTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.server.HandshakeHandler;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -31,6 +29,7 @@ import java.util.List;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final AuthenticationChannelInterceptor authenticationChannelInterceptor;
+    private final JsonMapper jsonMapper;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -72,8 +71,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         var resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(APPLICATION_JSON); //Ensures that if the message does not specify Content-Type, it will be treated as application/json
 
-        var converter = new MappingJackson2MessageConverter(); //Converts JSON payloads to/from java objects using JSON
-        converter.setObjectMapper(new ObjectMapper());
+        var converter = new JacksonJsonMessageConverter(jsonMapper);  //Converts JSON payloads to/from java objects using JSON
         converter.setContentTypeResolver(resolver);
 
         messageConverters.add(converter);

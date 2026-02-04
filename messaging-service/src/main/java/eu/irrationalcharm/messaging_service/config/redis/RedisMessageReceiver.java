@@ -1,7 +1,5 @@
 package eu.irrationalcharm.messaging_service.config.redis;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
 import eu.irrationalcharm.messaging_service.dto.response.ChatMessagePayload;
 import eu.irrationalcharm.messaging_service.service.orchestrator.ChatServiceOrchestrator;
@@ -9,13 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 
 @Service
 @RequiredArgsConstructor
 public class RedisMessageReceiver implements MessageListener {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final WebSocketSessionRegistry registry;
     private final ChatServiceOrchestrator chatService;
 
@@ -27,16 +26,13 @@ public class RedisMessageReceiver implements MessageListener {
      */
     @Override
     public void onMessage(Message message, byte[] pattern) {
-        try {
-            var json = new String(message.getBody());
-            ChatMessagePayload messageDto = objectMapper.readValue(json, ChatMessagePayload.class);
+        var json = new String(message.getBody());
+        ChatMessagePayload messageDto = jsonMapper.readValue(json, ChatMessagePayload.class);
 
-            if (registry.getSession(messageDto.recipientId()).isPresent()) {
-                chatService.internalSendPrivateMessage(messageDto.recipientId(), messageDto);
-            }
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        if (registry.getSession(messageDto.recipientId()).isPresent()) {
+            chatService.internalSendPrivateMessage(messageDto.recipientId(), messageDto);
         }
+
+
     }
 }

@@ -1,9 +1,6 @@
 package eu.irrationalcharm.messaging_service.service.event;
 
 import eu.irrationalcharm.events.chat.ChatEvent;
-import eu.irrationalcharm.events.chat.MessageEvent;
-import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
-import eu.irrationalcharm.messaging_service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,6 +1,5 @@
 package eu.irrationalcharm.messaging_service.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.irrationalcharm.messaging_service.dto.request.DeliveredReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.ReadReceiptRequest;
 import eu.irrationalcharm.messaging_service.dto.request.SendMessageRequest;
@@ -25,18 +24,18 @@ public class ChatController {
 
 
     @MessageMapping("/chat")
-    public void sendMessage(@Payload @Valid SendMessageRequest message) throws JsonProcessingException {
+    public void sendMessage(@Payload @Valid SendMessageRequest message) {
         chatServiceOrchestrator.sendMessage(message);
     }
 
     @MessageMapping("/delivered-receipt")
-    public void deliveryReceipt(@Payload @Valid DeliveredReceiptRequest message) throws JsonProcessingException {
+    public void deliveryReceipt(@Payload @Valid DeliveredReceiptRequest message) {
         log.debug("delivered-receipt received{}", message);
         messageStatusService.deliveredReceipt(message);
     }
 
     @MessageMapping("/read-receipt")
-    public void readReceipt(@Payload @Valid ReadReceiptRequest message) throws JsonProcessingException {
+    public void readReceipt(@Payload @Valid ReadReceiptRequest message) {
         log.debug("read-receipt received{}", message);
         messageStatusService.messageReadReceipt(message);
     }
@@ -49,7 +48,7 @@ public class ChatController {
     }
 
     @MessageMapping("/typing")
-    public void sendMessage(@Payload @Valid TypingStatusRequest message) throws JsonProcessingException {
+    public void sendMessage(@Payload @Valid TypingStatusRequest message) {
         //chatServiceOrchestrator.sendMessage(message);
     }
 }

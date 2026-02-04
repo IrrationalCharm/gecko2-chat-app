@@ -1,11 +1,10 @@
 package eu.irrationalcharm.messaging_service.config.redis;
 
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
+import tools.jackson.databind.json.JsonMapper;
 import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,25 +14,20 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
+
+    private final JsonMapper jsonMapper;
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        var objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        // Use Jackson2JsonRedisSerializer with target class
-        var valueSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserSocialGraphDto.class);
-
+        var valueSerializer = new JacksonJsonRedisSerializer<>(jsonMapper, UserSocialGraphDto.class);
 
         var redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .disableCachingNullValues()

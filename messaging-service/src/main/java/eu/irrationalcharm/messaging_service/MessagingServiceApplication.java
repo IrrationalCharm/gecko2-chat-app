@@ -18,7 +18,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 @EnableWebSocketMessageBroker
 public class MessagingServiceApplication {
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		SpringApplication.run(MessagingServiceApplication.class, args);
 	}
 

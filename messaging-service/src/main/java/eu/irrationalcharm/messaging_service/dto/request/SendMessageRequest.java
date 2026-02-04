@@ -5,18 +5,18 @@ import eu.irrationalcharm.messaging_service.enums.MessageType;
 import eu.irrationalcharm.messaging_service.validation.MessageValid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.With;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 
 @MessageValid
 public record SendMessageRequest(
         @NotNull
         MessageType type,
 
-        //@NotNull
-        //@Pattern(regexp = "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$") //UUID regex
-        @With String clientMsgId, //Temporary
+        @NotNull
+        @Pattern(regexp = "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$") //UUID regex
+        String clientMsgId, //Temporary
 
         @NotBlank(message = "internalId cannot be empty")
         @Size(message = "Please provide a valid Internal User Id", max = 36)
