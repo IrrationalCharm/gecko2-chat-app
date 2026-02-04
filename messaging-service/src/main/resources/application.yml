@@ -2,6 +2,8 @@ server:
   port: 8084
 
 spring:
+  profiles:
+    active: dev
   application:
     name: messaging-service
   config:
@@ -19,7 +21,32 @@ spring:
       cache:
         user-graph: "user-graph"
 
-logging:
-  level:
-    eu.irrationalcharm.messaging_service: DEBUG
-    org.springframework.security: INFO
+---
+# Settings for 'dev' profile (Localhost)
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8888
+
+---
+# Settings for 'docker' profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: configserver:http://configserver:8888
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" #Exposes all actuator endpoints
+  health:
+    readiness-state:
+      enabled: true #Makes sure app is ready to answer calls.
+    liveness-state:
+      enabled: true #Makes sure the app is alive.
+  endpoint:
+    health:
+      probes:
+        enabled: true

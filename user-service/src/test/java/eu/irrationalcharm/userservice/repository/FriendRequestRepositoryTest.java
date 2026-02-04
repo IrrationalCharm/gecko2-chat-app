@@ -1,6 +1,6 @@
 package eu.irrationalcharm.userservice.repository;
 
-import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,23 +129,21 @@ class FriendRequestRepositoryTest {
         int expectedSize = 1;
 
         // Act
-        List<PublicUserResponseDto> friendRequestInitiatorList = friendRequestRepository.findPendingFriendRequestsAsDto(receiver.getId());
+        List<FriendRequestDto> friendRequestInitiatorList = friendRequestRepository.findPendingFriendRequestsAsDto(receiver.getId());
 
         // Assert
         assertThat(friendRequestInitiatorList)
                 .hasSize(expectedSize)
                 .extracting(
-                        PublicUserResponseDto::internalId,
-                        PublicUserResponseDto::username,
-                        PublicUserResponseDto::displayName,
-                        PublicUserResponseDto::profileBio,
-                        PublicUserResponseDto::profileImageUrl)
+                        FriendRequestDto::initiatorId,
+                        FriendRequestDto::initiatorUsername,
+                        FriendRequestDto::initiatorDisplayName,
+                        FriendRequestDto::initiatorUrlProfileImage)
                 .containsOnly(
                         tuple(
                                 initiator.getId(),
                                 initiator.getUsername(),
                                 initiator.getDisplayName(),
-                                initiator.getProfileBio(),
                                 initiator.getProfileImageUrl()
                         )
                 );
@@ -156,7 +154,7 @@ class FriendRequestRepositoryTest {
     @DisplayName("test findInitiatorAsDtoByReceiver by providing a random UUID that doesnt have pending friend requests")
     void testFindPendingFriendRequestsAsDtoIdWhomDoesntHaveFriendRequests_shouldReturnDEmptyList() {
         // Act
-        List<PublicUserResponseDto> friendRequestInitiatorList = friendRequestRepository.findPendingFriendRequestsAsDto(UUID.randomUUID());
+        List<FriendRequestDto> friendRequestInitiatorList = friendRequestRepository.findPendingFriendRequestsAsDto(UUID.randomUUID());
 
         // Assert
         assertThat(friendRequestInitiatorList)
