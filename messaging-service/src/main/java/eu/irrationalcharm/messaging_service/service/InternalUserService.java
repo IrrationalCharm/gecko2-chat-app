@@ -2,6 +2,7 @@ package eu.irrationalcharm.messaging_service.service;
 
 import eu.irrationalcharm.messaging_service.client.UserServiceClient;
 import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 /**
  * Sends requests to user-service and caches the results
  */
+@Slf4j
 @Service
 public class InternalUserService {
 
@@ -37,10 +39,12 @@ public class InternalUserService {
      */
     @Cacheable(value = "user-graph", key = "#internalId")
     public UserSocialGraphDto getAuthenticatedUserSocialGraph(String internalId) {
+        log.debug("Sending request to user-service for retrieving user details");
         ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
 
         UserSocialGraphDto userSocialGraphDto = response.getBody();
         if(response.getStatusCode().is2xxSuccessful() && userSocialGraphDto != null && userSocialGraphDto.internalId().equals(internalId)) {
+            log.debug("Request received from user-service for UserSocialGraphDto");
             return response.getBody();
         } else
             throw new RuntimeException("Something went wrong fetching UserSocialGraph from "+ internalId);

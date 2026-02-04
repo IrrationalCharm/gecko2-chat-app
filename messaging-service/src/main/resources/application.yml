@@ -16,6 +16,13 @@ spring:
       port: 6379
       cache:
         user-graph: "user-graph"
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    eu.irrationalcharm.messaging_service.*: DEBUG
 ---
 # Settings for 'dev' profile (Localhost)
 spring:

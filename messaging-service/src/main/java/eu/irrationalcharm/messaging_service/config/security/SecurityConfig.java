@@ -13,7 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("{$jwkSetUri}")
+    @Value("${jwkSetUri}")
     private String jwkUri;
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;

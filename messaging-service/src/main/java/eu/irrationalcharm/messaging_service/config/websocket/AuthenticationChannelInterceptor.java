@@ -40,12 +40,16 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(@NotNull Message<?> message, @NotNull MessageChannel channel) {
+        log.debug("Request intercepted");
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if(accessor == null || accessor.getCommand() == null )
             return message;
 
+        log.debug("{} command has been received", accessor.getCommand());
+
         if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.CONNECT) {
+            log.debug("Connect command received");
             String authHeader = accessor.getFirstNativeHeader(AUTHORIZATION);
             CustomWebSocketAuthToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
 
@@ -62,6 +66,7 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
 
         //Checks if websocket is already subscribed to destination
         if (Objects.requireNonNull(accessor.getCommand()) == StompCommand.SUBSCRIBE) {
+            log.debug("Subscribe command received");
             Authentication auth = (Authentication) accessor.getUser();
 
             if(auth instanceof CustomWebSocketAuthToken customAuth) {
