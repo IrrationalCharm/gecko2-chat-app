@@ -2,6 +2,9 @@ package eu.irrationalcharm.enums;
 
 public enum ErrorCode {
 
+    // --- media-service ---
+    FILE_TOO_LARGE,
+
     // --- message-persistence-service ---
     VALIDATION_ERROR,
 
@@ -33,5 +36,5 @@ public enum ErrorCode {
     IDP_NOT_SUPPORTED,
 
     //Internal
-    UNAUTHORIZED_ACCESS, KEYCLOAK_API_ERROR,
+    UNAUTHORIZED_ACCESS, KEYCLOAK_API_ERROR, INTERNAL_ERROR,
 }
