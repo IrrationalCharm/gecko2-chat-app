@@ -5,8 +5,6 @@ spring:
     active: dev
   application:
     name: message-persistence-service
-  config:
-    import: configserver:http://localhost:8888
   mvc:
     servlet:
       path: "/message-persistence-service"
@@ -14,16 +12,10 @@ spring:
     mongodb:
       auto-index-creation: false
 
-
-logging:
-  level:
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2: DEBUG
 mongock:
   migration-scan-package: eu.irrationalcharm.messagepersistenceservice.migration
   enabled: true
   index-creation: true
-
 
 ---
 # Settings for 'dev' profile (Localhost)
@@ -40,6 +32,7 @@ spring:
     activate:
       on-profile: docker
     import: configserver:http://configserver:8888
+
 management:
   endpoints:
     web:

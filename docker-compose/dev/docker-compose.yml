@@ -32,6 +32,13 @@ services:
     volumes:
       - ./docker-data/mongo/db:/data/db
     restart: unless-stopped
+    healthcheck:
+      # Pings the database using the root credentials defined in environment variables
+      test: [ "CMD-SHELL", "mongosh --username admin --password password --authenticationDatabase admin --quiet --eval \"db.adminCommand('ping')\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   postgres:
     image: postgres:17
@@ -44,6 +51,13 @@ services:
       - "5432:5432"
     volumes:
       - ./docker-data/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      # Checks if the 'admin' user can connect to the 'user_service' database
+      test: [ "CMD-SHELL", "pg_isready -U admin -d user_service_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   kafka:
     image: apache/kafka-native:4.1.0
@@ -73,6 +87,13 @@ services:
     volumes:
       - ./docker-data/kafka:/var/lib/kafka/data
     restart: unless-stopped
+    healthcheck:
+      # Checks if the broker is listening on port 9092 (PLAINTEXT_HOST)
+      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   redis:
     image: redis:alpine
@@ -80,6 +101,12 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   configserver:
     image: gecko2/config-server:latest
@@ -133,7 +160,7 @@ services:
       configserver:
         condition: service_healthy
     healthcheck:
-      test: "wget -q -O - http://localhost:8087/actuator/health/readiness | grep UP || exit 1"
+      test: "wget -q -O - http://localhost:8087/mobile-bff/actuator/health/readiness | grep UP || exit 1"
       interval: 20s
       timeout: 5s
       retries: 10
@@ -142,3 +169,85 @@ services:
       resources:
         limits:
           memory: 700m
+
+  message-persistence-service:
+    image: gecko2/message-persistence-service:latest
+    container_name: message-persistence-service
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: "wget -q -O - http://localhost:8086/message-persistence-service/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+
+  messaging-service:
+    image: gecko2/messaging-service:latest
+    container_name: messaging-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: "wget -q -O - http://localhost:8084/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+
+  user-service:
+    image: gecko2/user-service:latest
+    container_name: user-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: "wget -q -O - http://localhost:8083/user-service/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+

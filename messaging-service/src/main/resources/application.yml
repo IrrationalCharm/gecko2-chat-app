@@ -6,8 +6,6 @@ spring:
     active: dev
   application:
     name: messaging-service
-  config:
-    import: configserver:http://localhost:8888
   cloud:
     openfeign:
       oauth2:
@@ -18,7 +16,6 @@ spring:
       port: 6379
       cache:
         user-graph: "user-graph"
-
 ---
 # Settings for 'dev' profile (Localhost)
 spring:
