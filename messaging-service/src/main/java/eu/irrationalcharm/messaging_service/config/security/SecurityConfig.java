@@ -28,6 +28,7 @@ public class SecurityConfig {
                 }));
 
         httpSecurity.authorizeHttpRequests(request -> request
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .anyRequest().authenticated()
         );

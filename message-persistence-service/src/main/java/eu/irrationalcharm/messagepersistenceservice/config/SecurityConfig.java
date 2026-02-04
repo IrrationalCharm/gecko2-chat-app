@@ -28,7 +28,9 @@ public class SecurityConfig {
                     jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter);
                 }));
 
-        http.authorizeHttpRequests(httpRequest -> httpRequest.anyRequest().authenticated());
+        http.authorizeHttpRequests(httpRequest -> httpRequest
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().authenticated());
 
         http.csrf(CsrfConfigurer::disable);
 

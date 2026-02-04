@@ -23,6 +23,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/api/v1/users/me").authenticated()
                 .requestMatchers("/api/v1/users/{username}").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated());
 
         http.csrf(CsrfConfigurer::disable);

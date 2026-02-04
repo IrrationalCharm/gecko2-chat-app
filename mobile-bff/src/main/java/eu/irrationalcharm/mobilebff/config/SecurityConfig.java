@@ -21,7 +21,9 @@ public class SecurityConfig {
                 jwt -> jwt.jwkSetUri(jwkSetUri)
         ));
 
-        http.authorizeHttpRequests(request -> request.anyRequest().authenticated());
+        http.authorizeHttpRequests(request -> request
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().authenticated());
         http.csrf(CsrfConfigurer::disable);
 
 

@@ -21,6 +21,7 @@ public class SecurityConfig {
                 oAuth2.jwt(jwtSpec -> jwtSpec.jwkSetUri(jwkSetUri)));
 
         httpSecurity.authorizeExchange(authorize -> { authorize
+                .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/ws/**").permitAll() //TODO can maybe be changed to verify token before websocket upgrade
                 .anyExchange().authenticated();
         });

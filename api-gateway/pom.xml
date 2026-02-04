@@ -97,6 +97,9 @@
                         <image>gecko2/${project.artifactId}:latest</image> </to>
                     <container>
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                        <jvmFlags>
+                            <jvmFlag>--enable-native-access=ALL-UNNAMED</jvmFlag>
+                        </jvmFlags>
                     </container>
                 </configuration>
             </plugin>
