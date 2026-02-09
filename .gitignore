@@ -1,0 +1,21 @@
+### User Specific Environment Variables ###
+# Use this to ignore your local env file
+.env.local
+.env
+
+### IntelliJ IDEA ###
+# Project settings and configuration files
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Maven ###
+# Compiled code and build artifacts
+target/
+*.log
+
+### OS Specific ###
+# Windows
+Thumbs.db

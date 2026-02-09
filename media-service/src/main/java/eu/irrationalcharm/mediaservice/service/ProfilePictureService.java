@@ -2,6 +2,7 @@ package eu.irrationalcharm.mediaservice.service;
 
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.mediaservice.exception.BusinessException;
+import io.awspring.cloud.s3.ObjectMetadata;
 import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,7 @@ public class ProfilePictureService {
     @Value("${application.bucket.name}")
     private String bucketName;
 
-    // Locally: http://10.0.2.2:9000 (Android Emulator) or http://localhost:9000
-    // Prod: https://cdn.yourdomain.com
+    // example: https://cdn.yourdomain.com
     @Value("${application.bucket.public-url:http://localhost:9000}")
     private String publicBucketUrl;
 
@@ -52,7 +52,7 @@ public class ProfilePictureService {
             String fullImagePath = String.format("users/%s/profile.jpg", userId);
             uploadToS3(fullImagePath, fullImageBytes);
 
-            return String.format("%s/%s/%s", publicBucketUrl, bucketName, fullImagePath);
+            return String.format("%s/%s", publicBucketUrl, fullImagePath);
 
         } catch (IOException e) {
             log.error("Failed to process image for user {}", userId, e);
@@ -88,16 +88,23 @@ public class ProfilePictureService {
 
         Thumbnails.of(inputStream)
                 .size(width, height)
-                .outputFormat("jpg") // Standardize everything to JPG for consistency
-                .outputQuality(quality) // Compression step
+                .outputFormat("jpg")
+                .outputQuality(quality)
                 .toOutputStream(outputStream);
 
         return outputStream.toByteArray();
     }
 
     private void uploadToS3(String key, byte[] content) {
+        var inputStream = new ByteArrayInputStream(content);
+
+        ObjectMetadata metadata = ObjectMetadata.builder()
+                .contentType("image/jpeg")
+                .contentLength((long) content.length)
+                .build();
+
         // Simple upload using Spring Cloud AWS S3Template
-        s3Template.upload(bucketName, key, new ByteArrayInputStream(content));
+        s3Template.upload(bucketName, key, inputStream, metadata);
         log.info("Uploaded image to S3: {}", key);
     }
 }
