@@ -115,6 +115,14 @@ public class UserService {
     }
 
 
+    @Transactional
+    public void updateProfileImageUrl(UUID userId, String profileImageUrl) {
+        UserEntity user = getEntityByIdOrThrow(userId);
+
+        user.setProfileImageUrl(profileImageUrl);
+    }
+
+
     public UserEntity getEntityByIdOrThrow(UUID userId) {
         return userRepository.findById(userId).orElseThrow(() ->
                 new BusinessException(
