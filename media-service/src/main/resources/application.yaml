@@ -10,7 +10,6 @@ spring:
     servlet:
       path: "/media-service"
 
-
 ---
 # Settings for 'dev' profile (Localhost)
 spring:

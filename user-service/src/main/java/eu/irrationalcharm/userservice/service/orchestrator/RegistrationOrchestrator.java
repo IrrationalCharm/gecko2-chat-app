@@ -2,6 +2,7 @@ package eu.irrationalcharm.userservice.service.orchestrator;
 
 import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.client.KeycloakAdminClient;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.OnBoardingRequestDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
@@ -24,7 +25,7 @@ public class RegistrationOrchestrator {
     private final UserRepository userRepository;
     private final UserValidatorService userValidatorService;
     private final KeycloakAdminClient keycloakAdminClient;
-
+    private final CdnProperties cdnProperties;
 
     @Transactional
     @PreAuthorize("isAuthenticated()")
@@ -54,7 +55,7 @@ public class RegistrationOrchestrator {
         UserEntity savedUser = userRepository.save(UserMapper.mapToUserEntity(userDto));
         keycloakAdminClient.addUserAttributes(providerId, savedUser);
 
-        return UserMapper.mapToUserDto(savedUser);
+        return UserMapper.mapToUserDto(savedUser, cdnProperties.baseUrl());
     }
 
     public boolean checkUsernameAvailability(String username) {

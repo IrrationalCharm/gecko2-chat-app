@@ -2,6 +2,7 @@ package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.dto.user_service.UserDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final CdnProperties cdnProperties;
 
 
     @Transactional(readOnly = true)
@@ -43,7 +45,9 @@ public class UserService {
     public Optional<UserDto> getAuthenticatedDto(Jwt authJwt) {
         Optional<UserEntity> optionalUser = getAuthenticatedEntity(authJwt);
 
-        return optionalUser.map(UserMapper::mapToUserDto);
+        return optionalUser.map(user ->
+                UserMapper.mapToUserDto(user, cdnProperties.baseUrl())
+        );
     }
 
 
@@ -111,7 +115,7 @@ public class UserService {
         if (userProfileRequestDto.profileImageUrl() != null)
             userEntity.setProfileImageUrl(userProfileRequestDto.profileImageUrl());
 
-        return UserMapper.mapToUserDto( userRepository.save(userEntity) );
+        return UserMapper.mapToUserDto( userRepository.save(userEntity), cdnProperties.baseUrl() );
     }
 
 

@@ -101,7 +101,7 @@ public class FriendshipController {
 
 
     @PatchMapping("/requests/{requestId}")
-    public ResponseEntity<SuccessResponseDto<Void>> updateFriendRequest(@PathVariable Long requestId,
+    public ResponseEntity<SuccessResponseDto<PublicUserResponseDto>> updateFriendRequest(@PathVariable Long requestId,
                                                                         @RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {

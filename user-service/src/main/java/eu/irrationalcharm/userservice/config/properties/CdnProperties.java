@@ -1,0 +1,9 @@
+package eu.irrationalcharm.userservice.config.properties;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "cdn")
+public record CdnProperties(
+        String baseUrl
+) {
+}

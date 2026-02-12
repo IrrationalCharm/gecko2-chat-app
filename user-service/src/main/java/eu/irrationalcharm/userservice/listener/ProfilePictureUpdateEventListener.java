@@ -8,8 +8,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.BackOff;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -36,5 +39,12 @@ public class ProfilePictureUpdateEventListener {
 
         userService.updateProfileImageUrl(uuid, event.fullUrl());
 
+    }
+
+    @DltHandler
+    public void dltHandler(ProfilePictureUpdatedEvent event,
+                           @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.error("Event failed processing and was sent to DLT. Topic: {}, Event: {}", topic, event);
+        // You can add logic here to alert admins, save to a DB table for review, etc.
     }
 }

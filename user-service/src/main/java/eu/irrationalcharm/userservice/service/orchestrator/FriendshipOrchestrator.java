@@ -3,6 +3,7 @@ package eu.irrationalcharm.userservice.service.orchestrator;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.enums.NotificationType;
 import eu.irrationalcharm.events.NotificationEvent;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
@@ -12,10 +13,13 @@ import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.events.UserUpdateEvent;
 import eu.irrationalcharm.userservice.exception.BusinessException;
+import eu.irrationalcharm.userservice.mapper.UserMapper;
 import eu.irrationalcharm.userservice.service.*;
 import eu.irrationalcharm.userservice.service.event.NotificationProducer;
 import eu.irrationalcharm.userservice.service.event.UserEventProducer;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class FriendshipOrchestrator {
@@ -33,6 +38,7 @@ public class FriendshipOrchestrator {
     private final UserService userService;
     private final UserEventProducer userEventProducer;
     private final NotificationProducer notificationProducer;
+    private final CdnProperties cdnProperties;
 
 
     @Transactional(readOnly = true)
@@ -62,7 +68,7 @@ public class FriendshipOrchestrator {
                 requestInitiator.getId().toString(),
                 requestInitiator.getUsername(),
                 requestInitiator.getDisplayName(),
-                requestInitiator.getProfileImageUrl(),
+                String.format("%s/%s",cdnProperties.baseUrl(), requestInitiator.getProfileImageUrl()),
                 savedFriendRequest.getCreated_at().toEpochMilli()
         );
 
@@ -142,14 +148,34 @@ public class FriendshipOrchestrator {
         friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userReceiver.getId(), userInitiator.getId());
         friendPreferenceService.createNewFriendshipPreferenceEntityOrThrow(userInitiator.getId(), userReceiver.getId());
 
+        //Notifies messaging-service to evict outdated cache
         publishFriendshipChangeEvents(userReceiver, userInitiator);
+
+        //Notifies both user of a friend request accepted.
+        publishFriendRequestAcceptedEvent(userReceiver.getId().toString(), userInitiator);
+        publishFriendRequestAcceptedEvent(userInitiator.getId().toString(), userReceiver);
 
         return SuccessfulCode.FRIEND_REQUEST_ACCEPTED;
     }
 
 
     /**
-     * Sends an update event to messaging service to evict outdated cached data
+     * Sends an event to messaging-service to notify (if user is connected) that a friend request is accepted
+     */
+    private void publishFriendRequestAcceptedEvent(String recipientId , UserEntity newFriend) {
+        log.info("Sending Friend Request Accepted event to kafka");
+        PublicUserResponseDto friendDto = UserMapper.mapToPublicUserDto(newFriend, cdnProperties.baseUrl());
+        var event = new NotificationEvent(
+                NotificationType.FRIEND_REQUEST_ACCEPTED,
+                recipientId,
+                friendDto);
+
+        notificationProducer.publishNotificationEvent(event);
+    }
+
+
+    /**
+     * Sends an update event to messaging-service to evict outdated cached data
      */
     private void publishFriendshipChangeEvents(UserEntity userA, UserEntity userB) {
         String userIdA = userA.getId().toString();

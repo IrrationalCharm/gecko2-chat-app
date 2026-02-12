@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.entity.FriendshipEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.enums.ErrorCode;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
+    private final CdnProperties cdnProperties;
 
 
     @Transactional(readOnly = true)
@@ -59,7 +61,7 @@ public class FriendshipService {
                 .map(user -> PublicUserResponseDto.builder()
                         .internalId(user.getId())
                         .displayName(user.getDisplayName())
-                        .profileImageUrl(user.getProfileImageUrl())
+                        .profileImageUrl(String.format("%s/%s", cdnProperties.baseUrl(), user.getProfileImageUrl()))
                         .username(user.getUsername())
                         .profileBio(user.getProfileBio())
                         .build())

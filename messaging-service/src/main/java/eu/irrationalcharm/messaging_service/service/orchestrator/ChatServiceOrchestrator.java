@@ -64,12 +64,13 @@ public class ChatServiceOrchestrator {
         switch(message) {
             case ChatMessagePayload messageDto -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", messageDto);
             case MessageSentPayload ackMessage -> simpMessagingTemplate.convertAndSendToUser(recipientId, "/private", ackMessage);
-            case FriendRequestPayload friendRequestPayload -> {
+            case FriendRequestPayload _ -> {
             }
-            case MessageDeliveredPayload messageDeliveredPayload -> {
+            case MessageDeliveredPayload _ -> {
             }
-            case MessageReadPayload messageReadPayload -> {
+            case MessageReadPayload _ -> {
             }
+            default -> throw new IllegalStateException("Unexpected value: " + message);
         }
     }
 

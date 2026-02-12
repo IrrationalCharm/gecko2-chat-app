@@ -1,5 +1,6 @@
 package eu.irrationalcharm.messaging_service.service.orchestrator;
 
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.events.FriendRequestEvent;
 import eu.irrationalcharm.events.NotificationEvent;
 import eu.irrationalcharm.messaging_service.config.websocket.WebSocketSessionRegistry;
@@ -24,10 +25,15 @@ public class NotificationServiceOrchestrator {
 
     public void receivedNotification(NotificationEvent notificationEvent) {
 
+        //Is the user connected to this messaging-service
+        boolean isConnected = sessionRegistry.isRegistered(notificationEvent.requestReceiverId());
+
+        if (!isConnected) return;
+
         switch(notificationEvent.type()) {
             case FRIEND_REQUEST_RECEIVED -> {
                 //Internally payload is a LinkedHashMap since jackson didn't know to what to convert this into
-                var event = objectMapper.convertValue(
+                FriendRequestEvent event = objectMapper.convertValue(
                         notificationEvent.payload(),
                         FriendRequestEvent.class
                 );
@@ -41,17 +47,23 @@ public class NotificationServiceOrchestrator {
                         event.createdAt()
                 );
 
-                //Is the user connected to this messaging-service
-                boolean isConnected = sessionRegistry.isRegistered(notificationEvent.requestReceiverId());
-
-                if (isConnected) {
-                    internalSendPrivateMessage(notificationEvent.requestReceiverId(), friendRequestReceivedDto);
-                }
+                internalSendPrivateMessage(notificationEvent.requestReceiverId(), friendRequestReceivedDto);
 
                 //TODO fan out to redis to find websocket
             }
-            case FRIEND_REQUEST_ACCEPTED -> {
 
+            case FRIEND_REQUEST_ACCEPTED -> {
+                PublicUserResponseDto newFriend = objectMapper.convertValue(
+                        notificationEvent.payload(),
+                        PublicUserResponseDto.class);
+
+                var acceptedFriendRequest = new FriendRequestAcceptedPayload(
+                        MessageType.FRIEND_REQUEST_ACCEPTED_SERVER,
+                        newFriend,
+                        System.currentTimeMillis()
+                );
+
+                internalSendPrivateMessage(notificationEvent.requestReceiverId(), acceptedFriendRequest);
             }
             case FRIEND_REMOVED, PROFILE_UPDATED, USER_BLOCKED -> log.warn("Notifications not implemented yet");
 
@@ -62,12 +74,6 @@ public class NotificationServiceOrchestrator {
     private void internalSendPrivateMessage(String recipientId, ServerMessage message) {
         log.debug("Sending internal message to: {}", recipientId);
 
-        switch(message) {
-            case FriendRequestPayload friendRequestPayload -> simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", friendRequestPayload);
-
-            case ChatMessagePayload _, MessageSentPayload _, MessageDeliveredPayload _ -> log.error("Not a valid notification message");
-            case MessageReadPayload messageReadPayload -> {
-            }
-        }
+        simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", message);
     }
 }

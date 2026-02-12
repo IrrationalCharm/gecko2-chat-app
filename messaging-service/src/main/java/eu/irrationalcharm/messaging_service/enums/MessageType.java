@@ -11,6 +11,7 @@ public enum MessageType {
     //Outgoing messages
     CHAT_MESSAGE_SERVER, //Outgoing message from server
     FRIEND_REQUEST_SERVER, //Outgoing friend request from server
+    FRIEND_REQUEST_ACCEPTED_SERVER,
     MESSAGE_DELIVERED_SERVER, //Acknowledgment that recipient received message
     MESSAGE_READ_SERVER, //Acknowledgment that recipient read message
     MESSAGE_SENT_SERVER //Acknowledgment that server received message

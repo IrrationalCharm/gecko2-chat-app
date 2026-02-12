@@ -108,25 +108,6 @@ services:
       retries: 5
       start_period: 10s
 
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"   #S3 API
-      - "9001:9001"   #Web UI
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data --console-address ":9001"
-    volumes:
-      - ./docker-data/minio/data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/ready" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
 
   ### Microservices ###
 
@@ -273,3 +254,29 @@ services:
         limits:
           memory: 700m
 
+  media-service:
+    image: gecko2/media-service:latest
+    container_name: media-service
+    env_file:
+      - ../../.env.local
+    ports:
+      - "8089:8089"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: "wget -q -O - http://localhost:8089/media-service/actuator/health/readiness | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
