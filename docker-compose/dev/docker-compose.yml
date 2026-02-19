@@ -95,9 +95,9 @@ services:
       retries: 5
       start_period: 15s
 
-  redis:
+  redis-messaging-service:
     image: redis:alpine
-    container_name: redis
+    container_name: redis-messaging-service
     ports:
       - "6379:6379"
     restart: unless-stopped
@@ -108,6 +108,18 @@ services:
       retries: 5
       start_period: 10s
 
+  redis-gateway:
+    image: redis:alpine
+    container_name: redis-gateway
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   ### Microservices ###
 
@@ -134,10 +146,21 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - JWK_SET_URI=http://keycloak:8080/realms/gecko2-realm/protocol/openid-connect/certs
+      - USER_SERVICE_URI=http://user-service:8083
+      - PERSISTENCE_SERVICE_URI=http://message-persistence-service:8086
+      - MOBILE_BFF_URI=http://mobile-bff:8087
+      - MESSAGING_SERVICE_WS_URI=ws://messaging-service:8084
+      - MESSAGING_SERVICE_HTTP_URI=http://messaging-service:8084
+      - MEDIA_SERVICE_URI=http://media-service:8089
+      - REDIS_GATEWAY_HOST=redis-gateway
+      - REDIS_GATEWAY_PORT=6379
     depends_on:
       keycloak:
         condition: service_healthy
       configserver:
+        condition: service_healthy
+      redis-gateway:
         condition: service_healthy
     healthcheck:
       test: "wget -q -O - http://localhost:8081/actuator/health/readiness | grep UP || exit 1"
@@ -214,7 +237,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      redis:
+      redis-messaging-service:
         condition: service_healthy
     healthcheck:
       test: "wget -q -O - http://localhost:8084/actuator/health/readiness | grep UP || exit 1"

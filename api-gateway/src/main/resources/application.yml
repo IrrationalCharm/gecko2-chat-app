@@ -7,11 +7,15 @@ spring:
     name: gateway
   profiles:
     active: dev
+  data:
+    redis:
+      host: localhost
+      port: 6380
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2: DEBUG
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: INFO
 
 management:
   endpoints:
