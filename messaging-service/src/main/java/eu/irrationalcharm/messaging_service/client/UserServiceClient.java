@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface UserServiceClient {
 
     @Retry(name = "social-graph")
-    @CircuitBreaker(name = "social-graph")
+    @CircuitBreaker(name = "social-graph", fallbackMethod = "getAuthenticatedUserSocialGraphFallback")
     @GetMapping("/social-graph")
     ResponseEntity<UserSocialGraphDto> getAuthenticatedUserSocialGraph();
 

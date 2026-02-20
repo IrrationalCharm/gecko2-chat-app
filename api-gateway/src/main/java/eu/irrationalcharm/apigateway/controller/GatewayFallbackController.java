@@ -43,6 +43,12 @@ public class GatewayFallbackController {
         return buildResponse("Media Service");
     }
 
+    @RequestMapping("/messaging")
+    public Mono<ResponseEntity<ErrorResponseDto<Void>>> messagingFallback(ServerWebExchange exchange) {
+        logException(exchange, "Messaging Service");
+        return buildResponse("Messaging Service");
+    }
+
     // Helper method to build the 503 response
     private Mono<ResponseEntity<ErrorResponseDto<Void>>> buildResponse(String serviceName) {
         return Mono.just(
