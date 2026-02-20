@@ -7,6 +7,8 @@ import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.mobilebff.client.PersistenceServiceClient;
 import eu.irrationalcharm.mobilebff.client.UserServiceClient;
 import eu.irrationalcharm.mobilebff.dto.StartupDataDto;
+import eu.irrationalcharm.mobilebff.wrapper.PersistenceClientWrapper;
+import eu.irrationalcharm.mobilebff.wrapper.UserServiceClientWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -24,12 +26,12 @@ public class StartupService {
     //Spring managed executor (propagates Authentication & tracing into VT)
     private final AsyncTaskExecutor taskExecutor;
 
-    private final UserServiceClient userServiceClient;
-    private final PersistenceServiceClient persistenceServiceClient;
+    private final UserServiceClientWrapper userServiceClient;
+    private final PersistenceClientWrapper persistenceServiceClient;
 
     public StartupService(@Qualifier("applicationTaskExecutor") AsyncTaskExecutor taskExecutor,
-                                                                UserServiceClient userServiceClient,
-                                                                PersistenceServiceClient persistenceServiceClient) {
+                                                                UserServiceClientWrapper userServiceClient,
+                                                                PersistenceClientWrapper persistenceServiceClient) {
         this.taskExecutor = taskExecutor;
         this.userServiceClient = userServiceClient;
         this.persistenceServiceClient = persistenceServiceClient;
@@ -53,59 +55,20 @@ public class StartupService {
     }
 
     private List<FriendRequestDto> fetchPendingFriendRequests() {
-        try {
-            var response = userServiceClient.pendingFriendRequests().getBody().data();
-            if (response != null)
-                log.info("Successfully retrieved pending requests from user-service");
-
-            return response;
-        } catch (Exception e) {
-            log.error("Failed to fetch pending friend requests from user-service", e);
-            return Collections.emptyList();
-        }
+        return userServiceClient.pendingFriendRequests();
     }
-
 
     private UserDto fetchUserData() {
-        try {
-            var response = userServiceClient.fetchMe().getBody().data();
-            if (response != null)
-                log.info("Successfully retrieved User data from user-service");
-
-            return response;
-        } catch (Exception e) {
-            log.error("Failed to fetch user profile from user-service", e);
-            throw new RuntimeException(e);
-        }
+        return userServiceClient.fetchMe();
     }
-
 
     private List<MessageHistoryDto> getSyncConversation(Long sinceTimestamp) {
         long since = sinceTimestamp != null ? sinceTimestamp : 0;
-        try {
-            var response = persistenceServiceClient.getSyncConversation(since).getBody().data();
-            if (response != null)
-                log.info("Successfully retrieved last messages from message-persistence-service");
-
-            return response;
-        } catch (Exception e) {
-            log.error("Failed to fetch last messages from message-persitence-service", e);
-            return Collections.emptyList();
-        }
+        return persistenceServiceClient.getSyncConversation(since);
     }
 
-
     private Set<PublicUserResponseDto> fetchUserFriends() {
-        try {
-            var response = userServiceClient.getFriends().getBody().data();
-            if (response != null)
-                log.info("Successfully retrieved users friends from user-service");
-
-            return response;
-        } catch (Exception e) {
-            log.error("Failed to fetch user friends list from user-service", e);
-            return Collections.emptySet();
-        }
+        return userServiceClient.getFriends();
     }
 
 

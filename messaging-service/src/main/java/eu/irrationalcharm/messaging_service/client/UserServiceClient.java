@@ -9,16 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+
 @FeignClient(name = "user-service", url = "${spring.feign.client.user-service.v1.base-url}")
 public interface UserServiceClient {
 
     @Retry(name = "social-graph")
-    @CircuitBreaker(name = "social-graph", fallbackMethod = "getAuthenticatedUserSocialGraphFallback")
+    //@CircuitBreaker(name = "social-graph", fallbackMethod = "getAuthenticatedUserSocialGraphFallback")
     @GetMapping("/social-graph")
     ResponseEntity<UserSocialGraphDto> getAuthenticatedUserSocialGraph();
 
+
     @Retry(name = "social-graph-username")
-    @CircuitBreaker(name = "social-graph-username")
+    //@CircuitBreaker(name = "social-graph-username")
     @GetMapping("/social-graph/user/{username}")
     ResponseEntity<UserSocialGraphDto> getUserSocialGraphByUsername(@PathVariable String username);
 }

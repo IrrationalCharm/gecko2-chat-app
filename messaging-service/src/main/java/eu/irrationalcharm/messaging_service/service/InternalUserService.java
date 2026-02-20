@@ -74,7 +74,7 @@ public class InternalUserService {
      * Do not use! just for reference.
      */
     @CachePut(value = "user-graph", key = "#result.username")
-    public UserSocialGraphDto fetchAndCacheUserSocialGraph(@NotNull String idpUuid) {
+    public UserSocialGraphDto fetchAndCacheUserSocialGraph(@NotNull String idpUuid, String token) {
         // Note: The idpUuid is passed implicitly via the Feign interceptors Authorization header.
         ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
 

@@ -54,10 +54,17 @@ public class AuthenticationChannelInterceptor implements ChannelInterceptor {
             CustomWebSocketAuthToken jwtAuthToken = getValidAuthenticationOrThrow(authHeader);
 
             SecurityContextHolder.getContext().setAuthentication(jwtAuthToken);
-            var userSocialGraphDto = internalUserService.getAuthenticatedUserSocialGraph(jwtAuthToken.getName());
-
+            UserSocialGraphDto userSocialGraphDto;
+            try {
+                userSocialGraphDto = internalUserService.getAuthenticatedUserSocialGraph(jwtAuthToken.getName());
+            } catch (Exception e) {
+                // Catching Resilience4j CallNotPermittedException or FeignException
+                log.error("Failed to retrieve user social graph for user {}. Aborting STOMP connection.", jwtAuthToken.getName(), e);
+                // Throwing an exception here explicitly rejects the STOMP CONNECT frame.
+                // The client will receive an ERROR frame and can try to reconnect later.
+                throw new BadCredentialsException("Service unavailable. Cannot authorize messaging capabilities right now.");
+            }
             validateUserOrThrow(userSocialGraphDto);
-
 
             jwtAuthToken.setAuthenticated(true);
             accessor.setUser(jwtAuthToken);
