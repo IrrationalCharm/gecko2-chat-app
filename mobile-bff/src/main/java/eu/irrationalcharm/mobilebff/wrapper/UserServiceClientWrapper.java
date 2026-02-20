@@ -9,6 +9,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,13 @@ public class UserServiceClientWrapper {
     @Retry(name = "get-friends")
     @CircuitBreaker(name = "get-friends", fallbackMethod = "getFriendsFallback")
     public Set<PublicUserResponseDto> getFriends() {
-        return userServiceClient.getFriends().getBody().data();
+        var response = userServiceClient.getFriends();
+        if (response != null && response.getBody() != null) {
+            return response.getBody().data();
+        }
+
+        log.warn("response / body was null, returning empty friends list");
+        return Collections.emptySet();
     }
 
     @Retry(name = "fetch-me")
@@ -38,10 +45,17 @@ public class UserServiceClientWrapper {
     }
 
 
+    @Nullable
     @Retry(name = "fetch-me")
     @CircuitBreaker(name = "fetch-me", fallbackMethod = "fetchMeFallback")
     public UserDto fetchMe() {
-        return userServiceClient.fetchMe().getBody().data();
+        var response = userServiceClient.fetchMe();
+        if (response != null && response.getBody() != null) {
+            return response.getBody().data();
+        }
+
+        log.warn("response / body was null, returning null user details");
+        return null;
     }
 
     public Set<PublicUserResponseDto> fetchMeFallback(Throwable t) {
@@ -52,7 +66,13 @@ public class UserServiceClientWrapper {
     @Retry(name = "pending-requests")
     @CircuitBreaker(name = "pending-requests", fallbackMethod = "pendingFriendRequestsFallback")
     public List<FriendRequestDto> pendingFriendRequests() {
-        return  userServiceClient.pendingFriendRequests().getBody().data();
+        var response = userServiceClient.pendingFriendRequests();
+        if (response != null && response.getBody() != null) {
+            return response.getBody().data();
+        }
+
+        log.warn("response / body was null, returning null pending requests");
+        return Collections.emptyList();
     }
 
     public List<FriendRequestDto> pendingFriendRequestsFallback(Throwable t) {

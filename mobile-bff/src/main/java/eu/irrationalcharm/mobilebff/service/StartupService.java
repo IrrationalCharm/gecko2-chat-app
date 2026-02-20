@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -39,12 +40,35 @@ public class StartupService {
 
 
     public StartupDataDto getStartupData(Long sinceTimestamp) {
-        var profileFuture = CompletableFuture.supplyAsync(this::fetchUserData, taskExecutor);
-        var friendsFuture = CompletableFuture.supplyAsync(this::fetchUserFriends, taskExecutor);
-        var lastMessages = CompletableFuture.supplyAsync( () -> getSyncConversation(sinceTimestamp), taskExecutor);
-        var friendRequests = CompletableFuture.supplyAsync(this::fetchPendingFriendRequests, taskExecutor);
+        var profileFuture = CompletableFuture.supplyAsync(this::fetchUserData, taskExecutor)
+                .orTimeout(3, TimeUnit.SECONDS)
+                .exceptionally(ex -> {
+                    log.warn("Profile fetch timed out or failed: {}", ex.getMessage());
+                    return null;
+                });
 
-        CompletableFuture.allOf(profileFuture, friendsFuture, lastMessages).join();
+        var friendsFuture = CompletableFuture.supplyAsync(this::fetchUserFriends, taskExecutor)
+                .orTimeout(3, TimeUnit.SECONDS)
+                .exceptionally(ex -> {
+                    log.warn("Friends fetch timed out or failed: {}", ex.getMessage());
+                    return Collections.emptySet();
+                });
+
+        var lastMessages = CompletableFuture.supplyAsync(() -> getSyncConversation(sinceTimestamp), taskExecutor)
+                .orTimeout(3, TimeUnit.SECONDS)
+                .exceptionally(ex -> {
+                    log.warn("Messages fetch timed out or failed: {}", ex.getMessage());
+                    return Collections.emptyList();
+                });
+
+        var friendRequests = CompletableFuture.supplyAsync(this::fetchPendingFriendRequests, taskExecutor)
+                .orTimeout(3, TimeUnit.SECONDS)
+                .exceptionally(ex -> {
+                    log.warn("Friend requests fetch timed out or failed: {}", ex.getMessage());
+                    return Collections.emptyList();
+                });
+
+        CompletableFuture.allOf(profileFuture, friendsFuture, lastMessages, friendRequests).join();
         log.info("Successfully fetched data on start up");
         return new StartupDataDto(
                 profileFuture.join(),

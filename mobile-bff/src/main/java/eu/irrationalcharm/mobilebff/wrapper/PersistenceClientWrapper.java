@@ -21,7 +21,13 @@ public class PersistenceClientWrapper {
     @Retry(name = "sync-conversation")
     @CircuitBreaker(name = "sync-conversation", fallbackMethod = "getSyncConversationFallback")
     public List<MessageHistoryDto> getSyncConversation(Long sinceTimestamp) {
-        return persistenceServiceClient.getSyncConversation(sinceTimestamp).getBody().data();
+        var response = persistenceServiceClient.getSyncConversation(sinceTimestamp);
+        if (response != null && response.getBody() != null) {
+            return response.getBody().data();
+        }
+
+        log.warn("response / body was null, returning empty messages");
+        return Collections.emptyList();
     }
 
 
