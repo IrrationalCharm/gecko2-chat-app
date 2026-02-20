@@ -37,8 +37,7 @@ public class UserServiceClientWrapper {
         return Collections.emptySet();
     }
 
-    @Retry(name = "fetch-me")
-    @CircuitBreaker(name = "fetch-me", fallbackMethod = "fetchMeFallback")
+
     public Set<PublicUserResponseDto> getFriendsFallback(Throwable t) {
         log.warn("Fallback triggered for sync conversation: {}", t.getMessage());
         return Collections.emptySet();
@@ -58,9 +57,9 @@ public class UserServiceClientWrapper {
         return null;
     }
 
-    public Set<PublicUserResponseDto> fetchMeFallback(Throwable t) {
+    public UserDto fetchMeFallback(Throwable t) {
         log.warn("Fallback triggered for fetch me: {}", t.getMessage());
-        return Collections.emptySet();
+        return null;
     }
 
     @Retry(name = "pending-requests")

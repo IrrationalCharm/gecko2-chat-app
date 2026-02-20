@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 
 @Slf4j
@@ -39,7 +40,10 @@ public class ClientConfig {
             return execution.execute(request, body);
         };
 
-        var requestFactory = new JdkClientHttpRequestFactory();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(1000))
+                .build();
+        var requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofMillis(2000));
 
         return builder
