@@ -29,7 +29,7 @@ public class ClientConfig {
                 request.getHeaders().setBearerAuth(tokenValue);
 
                 if (!tokenValue.isEmpty())
-                    log.info("Successfully injected token to request");
+                    log.debug("Injected JWT into downstream request");
             }
 
             return execution.execute(request, body);

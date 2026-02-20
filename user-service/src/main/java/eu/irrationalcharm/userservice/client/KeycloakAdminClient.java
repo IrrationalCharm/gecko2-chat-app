@@ -3,6 +3,7 @@ package eu.irrationalcharm.userservice.client;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.exception.BusinessException;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,7 @@ public class KeycloakAdminClient {
      * @param keycloakUserId Keycloak sub
      * @param userEntity onboarding user
      */
+    @Retry(name = "keycloak-admin")
     public void addUserAttributes(String keycloakUserId, UserEntity userEntity) {
 
         var attributes = Map.of(

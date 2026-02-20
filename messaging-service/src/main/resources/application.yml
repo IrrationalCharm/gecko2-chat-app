@@ -6,23 +6,13 @@ spring:
     active: dev
   application:
     name: messaging-service
-  cloud:
-    openfeign:
-      oauth2:
-        enabled: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      cache:
-        user-graph: "user-graph"
-
 
 logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2: DEBUG
     eu.irrationalcharm.messaging_service.*: DEBUG
+
 ---
 # Settings for 'dev' profile (Localhost)
 spring:
