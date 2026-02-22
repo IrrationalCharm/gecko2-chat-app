@@ -68,8 +68,10 @@ public class InternalUserService {
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             userGraphCache.put(username, response.getBody());
             return response.getBody();
-        } else
-            throw new RuntimeException("Something went wrong!!!");
+        } else {
+            log.error("Failed to fetch Social Graph for username: {}. HTTP Status: {}", username, response.getStatusCode());
+            throw new RuntimeException("Failed to fetch UserSocialGraph for username: " + username);
+        }
     }
 
 

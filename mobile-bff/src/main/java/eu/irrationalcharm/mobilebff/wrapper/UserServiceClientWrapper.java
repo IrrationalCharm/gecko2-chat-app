@@ -1,6 +1,5 @@
 package eu.irrationalcharm.mobilebff.wrapper;
 
-import eu.irrationalcharm.dto.response.SuccessResponseDto;
 import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.dto.user_service.UserDto;
@@ -10,7 +9,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -33,13 +32,14 @@ public class UserServiceClientWrapper {
             return response.getBody().data();
         }
 
-        log.warn("response / body was null, returning empty friends list");
+        log.warn("Friends response body was null for user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return Collections.emptySet();
     }
 
 
     public Set<PublicUserResponseDto> getFriendsFallback(Throwable t) {
-        log.warn("Fallback triggered for sync conversation: {}", t.getMessage());
+        log.warn("Fallback triggered for get-friends for user {}. Reason: {}",
+                SecurityContextHolder.getContext().getAuthentication().getName(), t.getMessage());
         return Collections.emptySet();
     }
 
@@ -53,12 +53,13 @@ public class UserServiceClientWrapper {
             return response.getBody().data();
         }
 
-        log.warn("response / body was null, returning null user details");
+        log.warn("Fetch me response body was null for user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return null;
     }
 
     public UserDto fetchMeFallback(Throwable t) {
-        log.warn("Fallback triggered for fetch me: {}", t.getMessage());
+        log.warn("Fallback triggered for fetch-me for user {}. Reason: {}",
+                SecurityContextHolder.getContext().getAuthentication().getName(), t.getMessage());
         return null;
     }
 
@@ -70,12 +71,13 @@ public class UserServiceClientWrapper {
             return response.getBody().data();
         }
 
-        log.warn("response / body was null, returning null pending requests");
+        log.warn("Friend request response body was null for user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return Collections.emptyList();
     }
 
     public List<FriendRequestDto> pendingFriendRequestsFallback(Throwable t) {
-        log.warn("Fallback triggered for pending-requests: {}", t.getMessage());
+        log.warn("Fallback triggered for pending-requests for user {}. Reason: {}",
+                SecurityContextHolder.getContext().getAuthentication().getName(), t.getMessage());
         return Collections.emptyList();
     }
 }

@@ -18,6 +18,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponseDto<Void>> handleMaxSizeException(HttpServletRequest request) {
+        log.warn("Upload failed: File size exceeded the configured maximum limit. Path: {}", request.getRequestURI());
+
         return ApiResponse.error(
                 HttpStatus.BAD_REQUEST,
                 ErrorCode.FILE_TOO_LARGE.name(),

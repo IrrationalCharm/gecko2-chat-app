@@ -19,6 +19,6 @@ public class ProfilePictureProducer {
 
     public void publishProfilePictureUpdateEvent(ProfilePictureUpdatedEvent event) {
         kafkaTemplate.send(topic, event);
-        log.debug("Kafka ProfilePictureUpdatedEvent event produced");
+        log.debug("Produced ProfilePictureUpdatedEvent to Kafka for user: {}", event.userId());
     }
 }

@@ -20,7 +20,7 @@ public class MessageEventProducer {
     public void produceMessageEvent(ChatEvent event) {
         kafkaTemplate.send(chatEventsTopic, event.conversationId(), event); //THe second field guarantees order for each conversation
 
-        log.info("A Chat event has been sent to Kafka");
+        log.debug("A Chat event has been sent to Kafka");
     }
 
 }

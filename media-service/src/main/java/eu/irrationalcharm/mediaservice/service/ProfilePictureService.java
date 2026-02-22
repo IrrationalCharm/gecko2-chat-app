@@ -63,6 +63,8 @@ public class ProfilePictureService {
             profilePictureProducer.publishProfilePictureUpdateEvent(
                     new ProfilePictureUpdatedEvent(userId, fullImagePath, thumbnailPath));
 
+            log.info("Successfully processed and uploaded profile pictures to S3 for user: {}", userId);
+
             return publicFullUrl;
 
         } catch (IOException e) {
@@ -117,6 +119,6 @@ public class ProfilePictureService {
 
         // Simple upload using Spring Cloud AWS S3Template
         s3Template.upload(bucketName, key, inputStream, metadata);
-        log.info("Uploaded image to S3: {}", key);
+        log.debug("Uploaded image to S3 path: {}", key);
     }
 }

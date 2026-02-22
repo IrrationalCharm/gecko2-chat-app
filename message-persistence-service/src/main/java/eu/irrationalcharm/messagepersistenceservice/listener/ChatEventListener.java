@@ -33,7 +33,7 @@ public class ChatEventListener {
     )
     @KafkaListener(topics = "${spring.kafka.topic.chat-events}")
     public void userMessageConsumerListener(@Valid ChatEvent event) {
-        log.info("Chat event received: {}", event);
+        log.debug("Chat event received: {}", event);
 
         switch (event) {
             case MessageEvent messageEvent ->  persistMessageService.persistMessage(messageEvent);

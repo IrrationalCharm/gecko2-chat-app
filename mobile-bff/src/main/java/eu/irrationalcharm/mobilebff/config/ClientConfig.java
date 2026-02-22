@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -34,7 +33,7 @@ public class ClientConfig {
                 request.getHeaders().setBearerAuth(tokenValue);
 
                 if (!tokenValue.isEmpty())
-                    log.debug("Injected JWT into downstream request");
+                    log.trace("Injected JWT into downstream request for user: {}", authentication.getName());
             }
 
             return execution.execute(request, body);

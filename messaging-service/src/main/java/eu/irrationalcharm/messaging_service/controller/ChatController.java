@@ -45,7 +45,7 @@ public class ChatController {
     @MessageMapping("/ping")
     @SendToUser("/private")
     public String handlePing(String payload) {
-        log.info("Ping received, returning pong...");
+        log.trace("Ping received, returning pong...");
         return "PONG";
     }
 

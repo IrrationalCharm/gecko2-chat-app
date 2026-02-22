@@ -4,8 +4,6 @@ import eu.irrationalcharm.dto.user_service.FriendRequestDto;
 import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.dto.user_service.UserDto;
-import eu.irrationalcharm.mobilebff.client.PersistenceServiceClient;
-import eu.irrationalcharm.mobilebff.client.UserServiceClient;
 import eu.irrationalcharm.mobilebff.dto.StartupDataDto;
 import eu.irrationalcharm.mobilebff.wrapper.PersistenceClientWrapper;
 import eu.irrationalcharm.mobilebff.wrapper.UserServiceClientWrapper;
@@ -69,6 +67,7 @@ public class StartupService {
                 });
 
         CompletableFuture.allOf(profileFuture, friendsFuture, lastMessages, friendRequests).join();
+
         log.info("Successfully fetched data on start up");
         return new StartupDataDto(
                 profileFuture.join(),

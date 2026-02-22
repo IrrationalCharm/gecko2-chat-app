@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -21,32 +22,51 @@ public class GatewayFallbackController {
 
     @RequestMapping("/user-service") //RequestMapping allows us to cover all HTTP request types
     public Mono<ResponseEntity<ErrorResponseDto<Void>>> userServiceFallback(ServerWebExchange exchange) {
-        logException(exchange, "User Service");
-        return buildResponse("User Service");
+        return handleFallback(exchange, "User Service");
     }
 
     @RequestMapping("/persistence")
     public Mono<ResponseEntity<ErrorResponseDto<Void>>> persistenceFallback(ServerWebExchange exchange) {
-        logException(exchange, "Message Persistence Service");
-        return buildResponse("Message Persistence Service");
+        return handleFallback(exchange, "Message Persistence Service");
     }
 
     @RequestMapping("/mobile-bff")
     public Mono<ResponseEntity<ErrorResponseDto<Void>>> bffFallback(ServerWebExchange exchange) {
-        logException(exchange, "Mobile BFF");
-        return buildResponse("Mobile BFF");
+        return handleFallback(exchange, "Mobile BFF");
     }
 
     @RequestMapping("/media")
     public Mono<ResponseEntity<ErrorResponseDto<Void>>> mediaFallback(ServerWebExchange exchange) {
-        logException(exchange, "Media Service");
-        return buildResponse("Media Service");
+        return handleFallback(exchange, "Media Service");
     }
 
     @RequestMapping("/messaging")
     public Mono<ResponseEntity<ErrorResponseDto<Void>>> messagingFallback(ServerWebExchange exchange) {
-        logException(exchange, "Messaging Service");
-        return buildResponse("Messaging Service");
+        return handleFallback(exchange, "Messaging Service");
+    }
+
+
+    /**
+     * Unified reactive fallback handler that extracts the User ID
+     */
+    private Mono<ResponseEntity<ErrorResponseDto<Void>>> handleFallback(ServerWebExchange exchange, String serviceName) {
+        Throwable exception = exchange.getAttribute(ServerWebExchangeUtils.CIRCUITBREAKER_EXECUTION_EXCEPTION_ATTR);
+
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> ctx.getAuthentication().getPrincipal())
+                .cast(Jwt.class)
+                .map(jwt -> jwt.getClaimAsString("internal_id")) // Get the user's internal ID
+                .defaultIfEmpty("Anonymous/Unauthenticated")
+                .doOnNext(userId -> {
+                    if (exception != null) {
+                        log.error("Circuit breaker fallback triggered for {} due to: {}. Affected User: {}",
+                                serviceName, exception.getMessage(), userId);
+                    } else {
+                        log.warn("Circuit breaker fallback triggered for {}. Affected User: {}",
+                                serviceName, userId);
+                    }
+                })
+                .flatMap(_ -> buildResponse(serviceName));
     }
 
     // Helper method to build the 503 response
@@ -60,10 +80,4 @@ public class GatewayFallbackController {
         );
     }
 
-    private void logException(ServerWebExchange exchange, String serviceName) {
-        Throwable exception = exchange.getAttribute(ServerWebExchangeUtils.CIRCUITBREAKER_EXECUTION_EXCEPTION_ATTR);
-        if (exception != null) {
-            log.error("Fallback triggered for {} due to: {}", serviceName, exception.getMessage(), exception);
-        }
-    }
 }

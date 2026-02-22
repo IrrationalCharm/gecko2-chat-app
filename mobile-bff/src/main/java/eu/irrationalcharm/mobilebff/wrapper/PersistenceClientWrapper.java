@@ -6,6 +6,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -26,13 +27,14 @@ public class PersistenceClientWrapper {
             return response.getBody().data();
         }
 
-        log.warn("response / body was null, returning empty messages");
+        log.warn("Sync conversation response body was null for user: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return Collections.emptyList();
     }
 
 
     public List<MessageHistoryDto> getSyncConversationFallback(Long sinceTimestamp, Throwable t) {
-        log.warn("Fallback triggered for sync conversation: {}", t.getMessage());
+        log.warn("Fallback triggered for sync conversation for user {}. Reason: {}",
+                SecurityContextHolder.getContext().getAuthentication().getName(), t.getMessage());
         return Collections.emptyList();
     }
 }
