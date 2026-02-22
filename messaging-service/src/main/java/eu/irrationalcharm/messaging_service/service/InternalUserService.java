@@ -46,8 +46,11 @@ public class InternalUserService {
         if(response.getStatusCode().is2xxSuccessful() && userSocialGraphDto != null && userSocialGraphDto.internalId().equals(internalId)) {
             log.debug("Request received from user-service for UserSocialGraphDto");
             return response.getBody();
-        } else
+        } else {
+            log.error("Something went wrong fetching UserSocialGraph from user-service. Status code: {}", response.getStatusCode());
             throw new RuntimeException("Something went wrong fetching UserSocialGraph from "+ internalId);
+        }
+
     }
 
 

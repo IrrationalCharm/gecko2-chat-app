@@ -32,6 +32,7 @@ public class NotificationServiceOrchestrator {
 
         switch(notificationEvent.type()) {
             case FRIEND_REQUEST_RECEIVED -> {
+                log.debug("Received {} notification, sending to user {}", notificationEvent.type(), notificationEvent.requestReceiverId());
                 //Internally payload is a LinkedHashMap since jackson didn't know to what to convert this into
                 FriendRequestEvent event = objectMapper.convertValue(
                         notificationEvent.payload(),
@@ -53,6 +54,8 @@ public class NotificationServiceOrchestrator {
             }
 
             case FRIEND_REQUEST_ACCEPTED -> {
+                log.debug("Received {} notification, sending to user {}", notificationEvent.type(), notificationEvent.requestReceiverId());
+
                 PublicUserResponseDto newFriend = objectMapper.convertValue(
                         notificationEvent.payload(),
                         PublicUserResponseDto.class);
@@ -65,14 +68,14 @@ public class NotificationServiceOrchestrator {
 
                 internalSendPrivateMessage(notificationEvent.requestReceiverId(), acceptedFriendRequest);
             }
-            case FRIEND_REMOVED, PROFILE_UPDATED, USER_BLOCKED -> log.warn("Notifications not implemented yet");
+            case FRIEND_REMOVED, PROFILE_UPDATED, USER_BLOCKED -> log.warn("Notification {} has not been implemented yet", notificationEvent.type());
 
         }
 
     }
 
     private void internalSendPrivateMessage(String recipientId, ServerMessage message) {
-        log.debug("Sending internal message to: {}", recipientId);
+        log.debug("Sending internal message to user: {}", recipientId);
 
         simpMessagingTemplate.convertAndSendToUser(recipientId,"/private", message);
     }

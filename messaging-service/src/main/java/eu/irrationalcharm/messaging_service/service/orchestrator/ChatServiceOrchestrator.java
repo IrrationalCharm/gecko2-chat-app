@@ -42,7 +42,8 @@ public class ChatServiceOrchestrator {
         if (sessionIdOptional.isPresent()) {
             ChatMessagePayload messagePayload = MessageMapper.mapToChatMessagePayload(message, now); //Exactly the same, just to keep with naming
             internalSendPrivateMessage(message.recipientId(), messagePayload);
-            log.info("Message has been sent");
+
+            log.debug("Successfully delivered chat message locally to recipient websocket session for user {}", message.recipientId());
         }
 
         var ackMessage = new MessageSentPayload(MessageType.MESSAGE_SENT_SERVER, message.clientMsgId(), now.toString());
@@ -51,10 +52,12 @@ public class ChatServiceOrchestrator {
         if ( sessionIdOptional.isEmpty() ) {
             //Send to redis to fanout
             if(userPresenceService.isUserOnline(message.recipientId())) {
+                log.debug("Recipient {} is not on this instance but is online. Fanning out to Redis Pub/Sub.", message.recipientId());
+
                 String payload = objectMapper.writeValueAsString(message);
                 redisTemplate.convertAndSend("queue/private/messages", payload);
             } else
-                System.out.println("Recipient is offline");
+                log.debug("Recipient {} is entirely offline. Message is persisted but no websocket delivery attempted.", message.recipientId());
         }
 
     }

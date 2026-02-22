@@ -50,17 +50,23 @@ public class MessageStatusServiceOrchestrator {
         if (sessionIdOptional.isPresent()) {
             MessageDeliveredPayload messagePayload = MessageMapper.mapToMessageDeliveredPayload(request, now);
             deliverMessageToWebsocket(request.recipientId(), messagePayload);
-            log.info("Message has been sent to recipient");
+
+            log.debug("Delivered receipt for message {} successfully routed locally to user {}", request.messageId(), request.recipientId());
         }
 
 
         if ( sessionIdOptional.isEmpty() ) {
             //Send to redis to fanout
             if (userPresenceService.isUserOnline(request.recipientId())) { //Checks if user is connected at all on redis
-                String payload = objectMapper.writeValueAsString(request);
-                redisTemplate.convertAndSend("queue/private/messages", payload);
+                log.debug("Recipient {} is not on this instance but is online. Fanning out delivered receipt to Redis Pub/Sub.", request.recipientId());
+                try {
+                    String payload = objectMapper.writeValueAsString(request);
+                    redisTemplate.convertAndSend("queue/private/messages", payload);
+                } catch (Exception e) {
+                    log.error("Failed to serialize DeliveredReceiptRequest for Redis fanout. Request: {}", request, e);
+                }
             } else
-                System.out.println("Recipient is offline");
+                log.debug("Recipient {} is entirely offline. Delivered receipt processed but not sent via websocket.", request.recipientId());
         }
 
     }
@@ -80,17 +86,22 @@ public class MessageStatusServiceOrchestrator {
         if (sessionIdOptional.isPresent()) {
             MessageReadPayload messagePayload = MessageMapper.mapToMessageReadPayload(request, readTimestamp);
             deliverMessageToWebsocket(request.recipientId(), messagePayload);
-            log.info("Read receipt sent to the user!!!{}", messagePayload);
+            log.debug("Read receipt for conversation {} successfully routed locally to user {}", request.conversationId(), request.recipientId());
         }
 
 
         if ( sessionIdOptional.isEmpty() ) {
             //Send to redis to fanout
             if (userPresenceService.isUserOnline(request.recipientId())) { //Checks if user is connected at all on redis
-                String payload = objectMapper.writeValueAsString(request);
-                redisTemplate.convertAndSend("queue/private/messages", payload);
+                log.debug("Recipient {} is not on this instance but is online. Fanning out read receipt to Redis Pub/Sub.", request.recipientId());
+                try {
+                    String payload = objectMapper.writeValueAsString(request);
+                    redisTemplate.convertAndSend("queue/private/messages", payload);
+                } catch (Exception e) {
+                    log.error("Failed to serialize ReadReceiptRequest for Redis fanout. Request: {}", request, e);
+                }
             } else
-                System.out.println("Recipient is offline");
+                log.debug("Recipient {} is entirely offline. Read receipt processed but not sent via websocket.", request.recipientId());
         }
     }
 }

@@ -37,8 +37,11 @@ public class WebsocketEventListener {
 
             log.info("User connected: {}, session id: {}", authentication.getName(), sessionId);
 
-        } else
+        } else {
+            log.error("Something went wrong, user should be authenticated by this point");
             throw new RuntimeException("Something went wrong, user should be authenticated here!!");
+        }
+
     }
 
 

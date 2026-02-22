@@ -40,6 +40,8 @@ public class ChatController {
         messageStatusService.messageReadReceipt(message);
     }
 
+
+    //NGL this implementation sucks, but for real I couldn't find a better way to assure established connection
     @MessageMapping("/ping")
     @SendToUser("/private")
     public String handlePing(String payload) {
