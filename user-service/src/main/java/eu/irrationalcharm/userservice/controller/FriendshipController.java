@@ -14,6 +14,7 @@ import eu.irrationalcharm.validation.UsernameValid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +28,7 @@ import java.util.Set;
 /**
  * Here we will manage anything related to friend requests, friend lists...
  */
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/api/v1/friends")
@@ -68,11 +70,14 @@ public class FriendshipController {
     }
 
 
+    //TODO: Update to use user internalId over username
     @PostMapping("/requests/{username}")
     public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable String username,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
+        log.info("Received request to send friend request to target username: {}", username);
         friendshipOrchestrator.sendFriendRequest(jwt, username);
+
 
         return ApiResponse.success(
                 HttpStatus.CREATED,
@@ -84,11 +89,14 @@ public class FriendshipController {
     }
 
 
+    //TODO: Update to use user internalId over username
     @DeleteMapping("/{username}")
     public ResponseEntity<SuccessResponseDto<Void>> removeFriend(@PathVariable @UsernameValid String username,
                                                                    @AuthenticationPrincipal Jwt jwt,
                                                                    HttpServletRequest request) {
+        log.info("Received request to delete friend request to target username: {}", username);
         friendshipOrchestrator.removeFriend(jwt, username);
+
 
         return ApiResponse.success(
                 HttpStatus.OK,
@@ -105,6 +113,7 @@ public class FriendshipController {
                                                                         @RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
+        log.info("Received request to update friend request status of request id: {}", requestId);
 
         SuccessfulCode successfulCode = friendshipOrchestrator.updateFriendRequest(jwt, requestId, friendRequestDto);
 

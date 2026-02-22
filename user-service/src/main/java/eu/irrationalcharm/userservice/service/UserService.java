@@ -11,6 +11,7 @@ import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService {
@@ -57,18 +59,22 @@ public class UserService {
         isAuthenticatedOnBoardedOrThrow(jwt);
 
         return userRepository.findById(UUID.fromString(userId))
-                .orElseThrow(() -> new BusinessException(
-                        HttpStatus.BAD_REQUEST,
-                        ErrorCode.ON_BOARDING_REQUIRED,
-                        String.format("Could not find account with this user id: %s", userId)));
+                .orElseThrow(() -> {
+                    log.warn("Could now find account for user {}", userId);
+                    return new BusinessException(
+                            HttpStatus.BAD_REQUEST,
+                            ErrorCode.ON_BOARDING_REQUIRED,
+                            String.format("Could not find account with this user id: %s", userId));
+                });
     }
 
 
     public void isAuthenticatedOnBoardedOrThrow(Jwt jwt) {
         String userId = jwt.getClaimAsString(JwtClaims.INTERNAL_ID);
-        if(userId == null)
+        if(userId == null) {
+            log.warn("User with subject id: {} has not completed onboarding process", jwt.getSubject());
             throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.ON_BOARDING_REQUIRED, "Empty internal_id in claim");
-
+        }
     }
 
 
@@ -84,11 +90,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserEntity getEntityByUsernameOrThrow(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() ->
-                new BusinessException(
-                        HttpStatus.NOT_FOUND,
-                        ErrorCode.USERNAME_NOT_FOUND,
-                        String.format("User with username %s not found.", username)));
+        return userRepository.findByUsername(username).orElseThrow(() -> {
+            log.warn("Could not find user with username: {}", username);
+            return new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    ErrorCode.USERNAME_NOT_FOUND,
+                    String.format("User with username %s not found.", username));
+        });
+
     }
 
 
@@ -115,7 +124,10 @@ public class UserService {
         if (userProfileRequestDto.profileImageUrl() != null)
             userEntity.setProfileImageUrl(userProfileRequestDto.profileImageUrl());
 
-        return UserMapper.mapToUserDto( userRepository.save(userEntity), cdnProperties.baseUrl() );
+        UserEntity updatedUserDetails = userRepository.save(userEntity);
+
+        log.debug("User {} details has been updated", updatedUserDetails.getId());
+        return UserMapper.mapToUserDto(updatedUserDetails , cdnProperties.baseUrl() );
     }
 
 
@@ -124,14 +136,18 @@ public class UserService {
         UserEntity user = getEntityByIdOrThrow(userId);
 
         user.setProfileImageUrl(profileImageUrl);
+
+        log.debug("User {} updated user profile Url", user.getId());
     }
 
 
     public UserEntity getEntityByIdOrThrow(UUID userId) {
-        return userRepository.findById(userId).orElseThrow(() ->
-                new BusinessException(
-                        HttpStatus.NOT_FOUND,
-                        ErrorCode.USERNAME_NOT_FOUND,
-                        String.format("User with id %s not found.", userId)));
+        return userRepository.findById(userId).orElseThrow(() -> {
+            log.debug("Could not find user by userId: {}", userId);
+            return new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    ErrorCode.USERNAME_NOT_FOUND,
+                    String.format("User with id %s not found.", userId));
+        });
     }
 }

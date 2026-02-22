@@ -18,6 +18,9 @@ logging:
     org.springframework.security.oauth2: INFO
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:

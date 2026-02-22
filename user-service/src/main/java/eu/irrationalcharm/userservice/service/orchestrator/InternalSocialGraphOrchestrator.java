@@ -5,6 +5,7 @@ import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.service.FriendshipService;
 import eu.irrationalcharm.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InternalSocialGraphOrchestrator {
@@ -39,6 +41,7 @@ public class InternalSocialGraphOrchestrator {
     @NotNull
     private UserSocialGraphDto getUserSocialGraphDto(Optional<UserEntity> userOptional) {
         if(userOptional.isEmpty()) {
+            log.debug("User entity not found in database. Returning empty social graph (isOnBoarded = false).");
             return new UserSocialGraphDto(null, false, null);
         }
 
@@ -46,6 +49,8 @@ public class InternalSocialGraphOrchestrator {
         Set<String> usersFriends = friendshipService.getFriendsId(userEntity).stream()
                 .map(UUID::toString)
                 .collect(Collectors.toSet());
+
+        log.debug("Successfully built social graph for user {}. Total friends included: {}", userEntity.getId(), usersFriends.size());
 
         return new UserSocialGraphDto(userEntity.getId().toString(), true, usersFriends);
     }

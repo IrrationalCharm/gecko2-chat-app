@@ -22,13 +22,13 @@ public class InternalSocialGraphController {
     @GetMapping
     public ResponseEntity<UserSocialGraphDto> getAuthenticatedSocialGraph(@AuthenticationPrincipal Jwt jwt){
         UserSocialGraphDto userSocialGraphDto = socialGraphOrchestrator.getSocialGraph(jwt);
-        System.out.println("Returning to messaging-service: " + userSocialGraphDto);
+
         return ResponseEntity.ok(userSocialGraphDto);
     }
 
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<UserSocialGraphDto> getSocialGraphByUsername(@PathVariable("username") String username){
+    public ResponseEntity<UserSocialGraphDto> getSocialGraphByUsername(@PathVariable String username){
         UserSocialGraphDto userSocialGraphDto = socialGraphOrchestrator.getSocialGraphByUsername(username);
 
         return ResponseEntity.ok(userSocialGraphDto);

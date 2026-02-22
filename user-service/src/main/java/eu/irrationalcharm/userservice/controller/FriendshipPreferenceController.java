@@ -9,6 +9,7 @@ import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
 import eu.irrationalcharm.userservice.service.orchestrator.UpdateFriendPreferenceOrchestrator;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,8 +17,9 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@Slf4j
 @Validated
+@RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/friend-preference")
 public class FriendshipPreferenceController {
@@ -40,11 +42,13 @@ public class FriendshipPreferenceController {
     }
 
 
+    //TODO: Replace username to user internalId
     @PatchMapping("/{username}")
     public ResponseEntity<SuccessResponseDto<PatchFriendPreferenceDto>> patchFriendPreference(@PathVariable @UsernameValid String username,
                                                                                               @RequestBody PatchFriendPreferenceDto friendPreference,
                                                                                               @AuthenticationPrincipal Jwt jwt,
                                                                                               HttpServletRequest request) {
+        log.info("Request received to patch friend preferences to target Username: {}", username);
         var patchedFriendPreferenceDto = ufpOrchestrator.updateFriendPreference(jwt, username, friendPreference);
 
         return ApiResponse.success(

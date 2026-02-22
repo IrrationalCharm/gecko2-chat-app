@@ -10,6 +10,7 @@ import eu.irrationalcharm.userservice.service.orchestrator.RegistrationOrchestra
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/api/register")
@@ -30,7 +32,7 @@ public class RegistrationController {
                                                                         @RequestBody @Valid OnBoardingRequestDto boardingResponseDto,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
-
+        log.info("Request received to complete onboarding with username: {}", boardingResponseDto.username());
         UserDto userDto = registrationOrchestrator.onBoarding(boardingResponseDto, jwt);
 
         return ApiResponse.success(

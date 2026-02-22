@@ -32,7 +32,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
     /**
-     * Handles Error response for hibernate validation errors.
+     * Handles Error response for hibernate validation errors. @RequestBody validation
      * @param ex the exception to handle
      * @param headers the headers to be written to the response
      * @param status the selected response status
@@ -65,6 +65,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponseDto<Object>> businessException(BusinessException businessException, HttpServletRequest request) {
 
+        log.warn("Business Exception: {} - {}", businessException.getErrorCode(), businessException.getMessage());
+
         return ApiResponse.error(
                 businessException.getHttpStatus(),
                 businessException.getErrorCode().toString(),
@@ -74,6 +76,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+    /**
+     * Errors at @RequestParam / @PathVariable
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponseDto< Map<String, String> >> constraintViolationException(ConstraintViolationException ex, HttpServletRequest request) {
 

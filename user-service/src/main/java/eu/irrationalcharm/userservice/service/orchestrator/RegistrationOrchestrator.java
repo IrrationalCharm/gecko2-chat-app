@@ -12,12 +12,14 @@ import eu.irrationalcharm.userservice.mapper.UserMapper;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 import eu.irrationalcharm.userservice.service.UserValidatorService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class RegistrationOrchestrator {
@@ -33,13 +35,23 @@ public class RegistrationOrchestrator {
         final String providerId = authJwt.getClaimAsString(JwtClaims.SUBJECT);
         final String email = authJwt.getClaimAsString(JwtClaims.EMAIL);
 
+        log.info("Starting onboarding process for providerId: {} with requested username: {}", providerId, boardingDto.username());
+
         switch ( userValidatorService.validateOnBoardingUser(boardingDto, authJwt) ) {
-            case PROVIDER_ID_ALREADY_REGISTERED -> throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.PROVIDER_ID_ALREADY_EXISTS, String.format("ProviderId %s is already registered", providerId));
-            case USERNAME_TAKEN -> throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.USERNAME_ALREADY_EXISTS, String.format("Username %s is not available", boardingDto.username()));
-            case EMAIL_TAKEN -> throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.EMAIL_TAKEN, String.format("An account has already been created with: %s", email));
-            case USER_AVAILABLE -> {
-                //User validation passed
+            case PROVIDER_ID_ALREADY_REGISTERED -> {
+                log.warn("Unboarding failed: ProviderId {} is already registered", providerId);
+                throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.PROVIDER_ID_ALREADY_EXISTS, String.format("ProviderId %s is already registered", providerId));
             }
+            case USERNAME_TAKEN -> {
+                log.warn("Unboarding failed: Username {} is taken", boardingDto.username());
+                throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.USERNAME_ALREADY_EXISTS, String.format("Username %s is not available", boardingDto.username()));
+            }
+            case EMAIL_TAKEN -> {
+                log.warn("Unboarding failed: Email {} is already registered", email);
+                throw new BusinessException(HttpStatus.CONFLICT, ErrorCode.EMAIL_TAKEN, String.format("An account has already been created with: %s", email));
+            }
+            case USER_AVAILABLE -> log.debug("User validation passed for username: {}", boardingDto.username());
+
         }
 
         var userDto = UserDto.builder()
@@ -53,8 +65,11 @@ public class RegistrationOrchestrator {
                 .build();
 
         UserEntity savedUser = userRepository.save(UserMapper.mapToUserEntity(userDto));
+        log.debug("User entity saved to database with internal ID: {}", savedUser.getId());
+
         keycloakAdminClient.addUserAttributes(providerId, savedUser);
 
+        log.info("Successfully completed onboarding for user: {}", savedUser.getUsername());
         return UserMapper.mapToUserDto(savedUser, cdnProperties.baseUrl());
     }
 
