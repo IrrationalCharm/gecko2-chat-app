@@ -2,11 +2,14 @@ package eu.irrationalcharm.messaging_service.config.websocket;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
 
+import io.micrometer.context.ContextSnapshotFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.task.TaskDecorator;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
@@ -63,7 +66,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(authenticationChannelInterceptor);
-        registration.interceptors(new SecurityContextChannelInterceptor());
+        registration.interceptors(new SecurityContextChannelInterceptor()); //Extracts Authentication from message
+    }
+
+
+    @Bean
+    public ContextPropagatingTaskDecorator contextPropagatingTaskDecorator() {
+        return new ContextPropagatingTaskDecorator();
     }
 
     @Override
