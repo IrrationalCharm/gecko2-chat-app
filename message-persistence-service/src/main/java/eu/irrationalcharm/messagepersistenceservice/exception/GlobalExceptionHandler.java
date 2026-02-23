@@ -5,6 +5,8 @@ import eu.irrationalcharm.dto.response.ErrorResponseDto;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.messagepersistenceservice.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,11 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, WebRequest request) {
         Map<String, String> validationErrors = new HashMap<>();
         List<ObjectError> validationErrorList = ex.getBindingResult().getAllErrors();
 
@@ -53,10 +56,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
     @Override
-    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
 
         Map<String, String> errors = new HashMap<>();
-        List<ParameterValidationResult> validationErrorList = ex.getParameterValidationResults();
 
         for (ParameterValidationResult result : ex.getParameterValidationResults()) {
             String parameterName = result.getMethodParameter().getParameterName();
@@ -83,10 +85,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponseDto<Object>> businessException(BusinessException e, HttpServletRequest request) {
+        log.warn("Business Exception: {} - {}", e.getErrorCode(), e.getMessage());
         return ApiResponse.error(
                 e.getHttpStatus(),
                 e.getErrorCode().toString(),
                 e.getMessage(),
+                null,
+                request);
+    }
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto<Object>> internalException(Exception exception, HttpServletRequest request) {
+        log.error("An unexpected internal server error occurred in message-persistence-service", exception);
+        return ApiResponse.error(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "INTERNAL_ERROR",
+                "An unexpected error occurred. Please contact support.",
                 null,
                 request);
     }

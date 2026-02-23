@@ -10,6 +10,7 @@ import eu.irrationalcharm.messagepersistenceservice.model.Message;
 import eu.irrationalcharm.messagepersistenceservice.repository.ConversationRepository;
 import eu.irrationalcharm.messagepersistenceservice.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static eu.irrationalcharm.messagepersistenceservice.utils.ConversationUtils.generateConversationId;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetrieveChatHistoryService {
@@ -41,7 +43,10 @@ public class RetrieveChatHistoryService {
         String currentUserId = authentication.getName();
         String conversationId = generateConversationId(currentUserId, friendId);
         Conversation conv = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new IllegalArgumentException("Conversation not found for ID: " + conversationId));
+                .orElseThrow(() -> {
+                    log.warn("User {} attempted to fetch history for conversation ID {} which does not exist in the database.", currentUserId, conversationId);
+                    return new IllegalArgumentException("Conversation not found for ID: " + conversationId);
+                });
 
         Instant dateBefore = Instant.ofEpochMilli(before);
         Pageable pageable = PageRequest.of(0, size);
@@ -61,10 +66,16 @@ public class RetrieveChatHistoryService {
     public List<MessageHistoryDto> fetchRecentMessages(int page, int size, Authentication authentication) {
         String currentUserId = authentication.getName();
         PageRequest conversationPage = PageRequest.of(page, size, Sort.by("updatedAt").descending());
+
+        log.debug("User {} is loading {} Conversation with {} message per conversation", currentUserId, page, size);
+
         List<Conversation> conversations = conversationRepository.findByParticipantsContainsOrderByUpdatedAtDesc(authentication.getName(), conversationPage);
 
-        if(conversations.isEmpty())
+        if(conversations.isEmpty()) {
+            log.debug("No messages to be loaded for user {}", currentUserId);
             return Collections.emptyList();
+        }
+
 
         // Logic: For every conversation found, fetch the recent X messages
         return conversations.stream().map(conversation -> {
@@ -87,17 +98,20 @@ public class RetrieveChatHistoryService {
         String currentUserId = authentication.getName();
         Instant sinceInstant = Instant.ofEpochMilli(sinceTimestamp);
 
+        log.debug("User {} is syncing messages since timestamp {}", currentUserId, sinceInstant);
+
         List<Conversation> conversations = conversationRepository.findByParticipantsContainsAndUpdatedAtAfter(currentUserId, sinceInstant);
 
-        if (conversations.isEmpty())
+        if (conversations.isEmpty()) {
+            log.debug("No new messages to sync for user {}", currentUserId);
             return Collections.emptyList();
+        }
+
 
         return conversations.stream().map(conversation -> {
             List<Message> messages = messageRepository.findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(
                     conversation.getId(), sinceInstant
             );
-
-
 
             return buildHistoryDto(conversation, messages, currentUserId, true, 0);
         }).toList();
