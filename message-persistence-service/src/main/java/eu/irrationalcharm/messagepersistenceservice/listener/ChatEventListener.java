@@ -6,6 +6,7 @@ import eu.irrationalcharm.events.chat.MessageEvent;
 import eu.irrationalcharm.events.chat.MsgDeliveredEvent;
 import eu.irrationalcharm.events.chat.MsgReadEvent;
 import eu.irrationalcharm.messagepersistenceservice.service.PersistMessageService;
+import io.opentelemetry.api.trace.Span;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class ChatEventListener {
     @KafkaListener(topics = "${spring.kafka.topic.chat-events}")
     public void userMessageConsumerListener(@Valid ChatEvent event) {
         log.debug("Chat event received: {}", event);
+
 
         switch (event) {
             case MessageEvent messageEvent ->  persistMessageService.persistMessage(messageEvent);

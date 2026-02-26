@@ -16,6 +16,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.messaging.context.SecurityContextChannelInterceptor;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -32,6 +33,7 @@ import java.util.List;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final AuthenticationChannelInterceptor authenticationChannelInterceptor;
+    private final TraceContextChannelInterceptor traceContextChannelInterceptor;
     private final JsonMapper jsonMapper;
 
     @Override
@@ -65,14 +67,38 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor(websocketInboundExecutor());
+
+        registration.interceptors(traceContextChannelInterceptor);
         registration.interceptors(authenticationChannelInterceptor);
         registration.interceptors(new SecurityContextChannelInterceptor()); //Extracts Authentication from message
     }
 
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor(websocketOutboundExecutor());
+    }
 
     @Bean
-    public ContextPropagatingTaskDecorator contextPropagatingTaskDecorator() {
-        return new ContextPropagatingTaskDecorator();
+    public ThreadPoolTaskExecutor websocketInboundExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 2);
+        executor.setMaxPoolSize(Integer.MAX_VALUE);
+        executor.setQueueCapacity(Integer.MAX_VALUE);
+        executor.setAllowCoreThreadTimeOut(true);
+
+        executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
+
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor websocketOutboundExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
+        executor.initialize();
+        return executor;
     }
 
     @Override

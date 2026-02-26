@@ -1,10 +1,12 @@
 package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.dto.user_service.FriendRequestDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.entity.FriendRequestEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
+import eu.irrationalcharm.userservice.mapper.FriendRequestMapper;
 import eu.irrationalcharm.userservice.repository.FriendRequestRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ public class FriendRequestService {
 
     private final UserService userService;
     private final FriendRequestRepository friendRequestRepository;
+    private final CdnProperties cdnProperties;
 
 
     @Transactional
@@ -56,7 +59,15 @@ public class FriendRequestService {
     public List<FriendRequestDto> getPendingFriendRequests(Jwt jwt) {
         UserEntity userEntity = userService.getAuthenticatedEntityOrThrow(jwt);
 
-        return friendRequestRepository.findPendingFriendRequestsAsDto(userEntity.getId());
+        List<FriendRequestDto> rawDtos = friendRequestRepository.findPendingFriendRequestsAsDto(userEntity.getId());
+
+        return rawDtos.stream()
+                .map(dto -> dto.toBuilder()
+                        //overwrite just the URL field
+                        .initiatorUrlProfileImage(String.format("%s/%s", cdnProperties.baseUrl(), dto.initiatorUrlProfileImage()))
+                        .build()
+                )
+                .toList();
     }
 
 

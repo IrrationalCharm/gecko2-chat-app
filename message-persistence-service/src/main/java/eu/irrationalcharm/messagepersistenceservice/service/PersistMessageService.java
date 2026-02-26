@@ -31,6 +31,8 @@ public class PersistMessageService {
     public void persistMessage(MessageEvent messageEvent) {
         Message message = MessageEventMapper.mapToMessage(messageEvent);
 
+        log.trace("Persisting conversation {} from userId {}", messageEvent.conversationId(), message.getSenderId());
+
         Conversation conversation = conversationRepository.findById(messageEvent.conversationId()).orElseGet(() -> {
             log.debug("Conversation {} does not exist yet. Creating a new conversation document.", messageEvent.conversationId());
 
