@@ -128,11 +128,12 @@ public class RetrieveChatHistoryService {
         Instant partnerDeliveryCursor = conversation.getDeliveryCursors().get(partnerId); //We get the last timestamp of message partner received. (delivered to him)
 
         Instant myReadCursor = conversation.getReadCursors().get(currentUserId);
-        Instant myDeliveryCursor = conversation.getReadCursors().get(currentUserId);
+        Instant myDeliveryCursor = conversation.getDeliveryCursors().get(currentUserId);
 
         long unreadCount = 0;
         if(myReadCursor != null) {
-            unreadCount = messageRepository.countByConversationIdAndTimestampAfter(conversation.getId(), myReadCursor);
+            unreadCount = messageRepository.countByConversationIdAndSenderIdAndTimestampAfter(
+                    conversation.getId(), partnerId, myReadCursor);
         }
 
         List<MessageDto> messageDtos = messages.stream()

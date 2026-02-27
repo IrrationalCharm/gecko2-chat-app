@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -32,8 +33,9 @@ public class SecurityConfig {
 
     // This decorator captures the SecurityContext from the parent thread and wraps the runnable to re-apply it in the child thread.
     // Essentially we have SecurityContext in new threads or VT.
+    //It also propagates the context of the traceID
     @Bean
     public TaskDecorator securityContextTaskDecorator() {
-        return DelegatingSecurityContextRunnable::new;
+        return new ContextPropagatingTaskDecorator();
     }
 }

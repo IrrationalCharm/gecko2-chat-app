@@ -21,4 +21,6 @@ public interface MessageRepository extends MongoRepository<Message, String> {
 
     //Returns the number of unread messages
     long countByConversationIdAndTimestampAfter(String conversationId, Instant myReadCursor);
+
+    long countByConversationIdAndSenderIdAndTimestampAfter(String conversationId, String senderId, Instant timestamp);
 }
