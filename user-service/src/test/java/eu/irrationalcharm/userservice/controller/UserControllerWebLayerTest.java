@@ -5,6 +5,7 @@ package eu.irrationalcharm.userservice.controller;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.dto.user_service.UserDto;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
+import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.enums.SuccessfulCode;
@@ -234,7 +235,7 @@ class UserControllerWebLayerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateProfileDto))
-                .with(jwt())
+                .with(jwt().jwt(builder -> builder.claim(JwtClaims.INTERNAL_ID, "test-internal-id-123")))
                 .exchange();
 
         // Assert

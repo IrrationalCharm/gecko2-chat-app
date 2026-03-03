@@ -2,6 +2,7 @@ package eu.irrationalcharm.userservice.config;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -9,6 +10,7 @@ import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpReq
 import org.springframework.web.client.RestClient;
 
 @Configuration
+@ConfigurationPropertiesScan
 @RequiredArgsConstructor
 public class Config {
 

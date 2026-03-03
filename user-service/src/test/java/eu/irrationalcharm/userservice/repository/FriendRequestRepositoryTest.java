@@ -23,7 +23,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 
 @Testcontainers
-@DataJpaTest
+@DataJpaTest(properties = "spring.profiles.active=test")
 class FriendRequestRepositoryTest {
 
     @Autowired

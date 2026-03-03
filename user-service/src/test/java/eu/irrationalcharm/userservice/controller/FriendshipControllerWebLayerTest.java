@@ -1,11 +1,12 @@
 package eu.irrationalcharm.userservice.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
 import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.config.security.SecurityConfig;
 import eu.irrationalcharm.dto.user_service.FriendRequestDto;
+import eu.irrationalcharm.userservice.dto.request.UpdateFriendRequestDto;
+import eu.irrationalcharm.userservice.enums.FriendRequestAction;
 import eu.irrationalcharm.userservice.service.FriendRequestService;
 import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrator;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 
 import java.time.Instant;
@@ -52,7 +54,8 @@ class FriendshipControllerWebLayerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper;
+    @Autowired
+    private JsonMapper jsonMapper;
 
     @MockitoBean
     private FriendRequestService friendRequestService;
@@ -65,7 +68,7 @@ class FriendshipControllerWebLayerTest {
 
     @BeforeEach
     void setup() {
-        objectMapper = new ObjectMapper();
+
     }
 
 
@@ -173,8 +176,8 @@ class FriendshipControllerWebLayerTest {
                 .andExpect(jsonPath("$.status").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.code").value(SuccessfulCode.FRIEND_REQUEST_PENDING.toString()))
                 .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[*].username", containsInAnyOrder(friendRequest.initiatorUsername(), friendRequest2.initiatorUsername())))
-                .andExpect(jsonPath("$.data[*].displayName", containsInAnyOrder(friendRequest.initiatorDisplayName(), friendRequest2.initiatorDisplayName())));
+                .andExpect(jsonPath("$.data[*].initiatorUsername", containsInAnyOrder(friendRequest.initiatorUsername(), friendRequest2.initiatorUsername())))
+                .andExpect(jsonPath("$.data[*].initiatorDisplayName", containsInAnyOrder(friendRequest.initiatorDisplayName(), friendRequest2.initiatorDisplayName())));
 
         verify(friendRequestService).getPendingFriendRequests(any(Jwt.class));
     }
@@ -267,21 +270,21 @@ class FriendshipControllerWebLayerTest {
         verify(friendshipOrchestrator, never()).removeFriend(any(Jwt.class), eq(username));
     }
 
-    //TODO fix test
-    /**
-    @ParameterizedTest
-    @ValueSource(strings = {"User_123", "AlphaFox", "GamerTag-99", "L33t_Hax0r", "orl", "dataM1ner", "PhoenixRisePhoenixRi"})
+
+
+    @Test
     @DisplayName("Test updateFriendRequest endpoint and validating request and username")
-    void testUpdateFriendRequest_whenUpdateFriendRequestSent_shouldReturnOk200(String username) throws Exception {
+    void testUpdateFriendRequest_whenUpdateFriendRequestSent_shouldReturnOk200() throws Exception {
         // Arrange
-        var friendRequestDto = new UpdateFriendRequestDto(username, FriendRequestAction.ACCEPT_REQUEST);
-        when(friendshipOrchestrator.updateFriendRequest(any(Jwt.class), eq(friendRequestDto))).thenReturn(SuccessfulCode.FRIEND_REQUEST_ACCEPTED);
+        var friendRequestDto = new UpdateFriendRequestDto(FriendRequestAction.ACCEPT_REQUEST);
+        long requestId = 1L;
+        when(friendshipOrchestrator.updateFriendRequest(any(Jwt.class), eq(requestId), eq(friendRequestDto))).thenReturn(SuccessfulCode.FRIEND_REQUEST_ACCEPTED);
 
         // Act & Assert
-        mockMvc.perform(patch("/api/v1/friends/requests")
+        mockMvc.perform(patch("/api/v1/friends/requests/{requestId}", requestId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(friendRequestDto))
+                        .content(jsonMapper.writeValueAsString(friendRequestDto))
                         .with(jwt()))
 
                 .andExpect(status().isOk())
@@ -289,33 +292,6 @@ class FriendshipControllerWebLayerTest {
                 .andExpect(jsonPath("$.code").value(SuccessfulCode.FRIEND_REQUEST_ACCEPTED.toString()))
                 .andExpect(jsonPath("$.data", nullValue()));
 
-        verify(friendshipOrchestrator).updateFriendRequest(any(Jwt.class), eq(friendRequestDto));
+        verify(friendshipOrchestrator).updateFriendRequest(any(Jwt.class), eq(requestId), eq(friendRequestDto));
     }
-    **/
-
-    //TODO fix test
-    /**
-    @ParameterizedTest
-    @ValueSource(strings = {"Us", "Alpha`Fox", "GamerTag{99", "   ", "+pp", "|sssakk", "PhoenixRisePhoenixRise", "lazurus 22"})
-    @DisplayName("Test patch /requests endpoint by sending invalid usernames")
-    void testUpdateFriendRequest_whenInvalidUsernameSent_shouldReturnBadRequest400(String username) throws Exception {
-        // Arrange
-        var friendRequestDto = new UpdateFriendRequestDto(username, FriendRequestAction.ACCEPT_REQUEST);
-        when(friendshipOrchestrator.updateFriendRequest(any(Jwt.class), eq(friendRequestDto))).thenReturn(SuccessfulCode.FRIEND_REQUEST_ACCEPTED);
-
-        // Act & Assert
-        mockMvc.perform(patch("/api/v1/friends/requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(friendRequestDto))
-                        .with(jwt()))
-
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_ERROR.toString()))
-                .andExpect(jsonPath("$.error", notNullValue()));
-
-        verify(friendshipOrchestrator, never()).updateFriendRequest(any(Jwt.class), eq(friendRequestDto));
-    }
-    **/
 }

@@ -31,7 +31,7 @@ class UserValidatorServiceTest {
     private Jwt jwt;
     private OnBoardingRequestDto onBoardingRequest;
 
-    /**
+
     @BeforeEach
     void setup(){
         username = "testUser";
@@ -44,7 +44,7 @@ class UserValidatorServiceTest {
         onBoardingRequest = OnBoardingRequestDto.builder()
                 .username(username)
                 .build();
-    }**/
+    }
 
     @Test
     @DisplayName("Testing if validateOnBoardingUser returns USER_AVAILABLE")

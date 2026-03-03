@@ -1,6 +1,7 @@
 package eu.irrationalcharm.userservice.service;
 
 import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.entity.FriendshipEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
 import eu.irrationalcharm.userservice.exception.BusinessException;
@@ -30,6 +31,9 @@ class FriendshipServiceTest {
     @Mock
     private FriendshipRepository friendshipRepository;
 
+    @Mock
+    private CdnProperties cdnProperties;
+
     private final UUID lowUuid = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private final UUID highUuid = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
@@ -49,7 +53,7 @@ class FriendshipServiceTest {
         boolean areFriends = friendshipService.areFriends(lowerUserEntity, higherUserEntity);
 
         // Assert
-        assertTrue(areFriends, () -> "Expected true but got false");
+        assertTrue(areFriends, "Expected true but got false");
         verify(friendshipRepository, times(1)).existsByFriendAAndFriendB(higherUserEntity, lowerUserEntity);
 
     }
@@ -70,7 +74,7 @@ class FriendshipServiceTest {
         boolean areFriends = friendshipService.areFriends(higherUserEntity, lowerUserEntity);
 
         // Assert
-        assertTrue(areFriends, () -> "Expected true but got false");
+        assertTrue(areFriends, "Expected true but got false");
         verify(friendshipRepository, times(1)).existsByFriendAAndFriendB(higherUserEntity, lowerUserEntity);
 
     }
@@ -97,6 +101,9 @@ class FriendshipServiceTest {
     @Test
     @DisplayName("Test getFriends maps entities to DTO")
     void testGetFriend_whenUserHasFriends_shouldReturnMappedDto() {
+        final String friendImageUrl = "users/71a523e0-85e2-4c12-bd37-5df58f9efa05/e542f0ba-e1e6-41cc-9cd6-dbeb86f41dda_thumb.jpg";
+        final String cdnBaseUrl = "abc.cloudfront.net";
+
         // Arrange
         var userEntity = new UserEntity();
         userEntity.setId(lowUuid);
@@ -104,12 +111,13 @@ class FriendshipServiceTest {
         var friendEntity = new UserEntity();
         friendEntity.setId(highUuid);
         friendEntity.setDisplayName("Kaylin");
-        friendEntity.setProfileImageUrl("https://www.google.com/search?q=monkey");
+        friendEntity.setProfileImageUrl(friendImageUrl);
         friendEntity.setUsername("kaylinita");
         friendEntity.setProfileBio("la mas guapa");
 
         Set<UserEntity> friends = Set.of(friendEntity);
 
+        when(cdnProperties.baseUrl()).thenReturn(cdnBaseUrl);
         when(friendshipRepository.findAllFriendsByUserEntity(userEntity)).thenReturn(friends);
 
         // Act
@@ -123,7 +131,9 @@ class FriendshipServiceTest {
 
         assertEquals(friendEntity.getId(), friend.internalId());
         assertEquals(friendEntity.getDisplayName() , friend.displayName());
-        assertEquals(friendEntity.getProfileImageUrl() , friend.profileImageUrl());
+
+        final String expectedUrl = String.format("%s/%s", cdnBaseUrl, friendImageUrl);
+        assertEquals(expectedUrl , friend.profileImageUrl());
         assertEquals(friendEntity.getUsername() , friend.username());
         assertEquals(friendEntity.getProfileBio() , friend.profileBio());
     }

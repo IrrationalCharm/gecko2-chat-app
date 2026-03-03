@@ -13,6 +13,7 @@ import eu.irrationalcharm.userservice.service.orchestrator.FriendshipOrchestrato
 import eu.irrationalcharm.validation.UsernameValid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -72,7 +73,7 @@ public class FriendshipController {
 
     //TODO: Update to use user internalId over username
     @PostMapping("/requests/{username}")
-    public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable String username,
+    public ResponseEntity<SuccessResponseDto<Void>> sendFriendRequest(@PathVariable @UsernameValid String username,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
         log.info("Received request to send friend request to target username: {}", username);
@@ -109,7 +110,7 @@ public class FriendshipController {
 
 
     @PatchMapping("/requests/{requestId}")
-    public ResponseEntity<SuccessResponseDto<PublicUserResponseDto>> updateFriendRequest(@PathVariable Long requestId,
+    public ResponseEntity<SuccessResponseDto<PublicUserResponseDto>> updateFriendRequest(@PathVariable @Positive Long requestId,
                                                                         @RequestBody @Valid UpdateFriendRequestDto friendRequestDto,
                                                                         @AuthenticationPrincipal Jwt jwt,
                                                                         HttpServletRequest request) {
