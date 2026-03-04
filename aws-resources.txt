@@ -1,0 +1,4 @@
+AWS RESOURCES
+- IAM Identity Provider: token.actions.githubusercontent.com
+- IAM Policy: GitHubActionsECRPushPolicy
+- IAM Role: GitHubActionsECRRole

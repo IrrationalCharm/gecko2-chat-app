@@ -1,0 +1,109 @@
+name: User Service CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'user-service/**' # ONLY run this pipeline if files in the user-service folder change
+      - 'common/**'
+      - '.github/workflows/user-service.yml' # ALSO run if this specific workflow file is updated
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'user-service/**'
+      - 'common/**'
+
+# Required for AWS OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    name: Tests
+    defaults:
+      run:
+        working-directory: ./user-service #This tells all 'run' commands in this job to execute inside the user-service folder
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4
+        with:
+          # The cache key is hashed against the pom.xml. If the pom.xml doesn't change,
+          # it reuses the cached dependencies instead of downloading the internet again.
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('user-service/pom.xml', 'common/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and Install Common Module
+        working-directory: ./common
+        run: ../mvnw clean install -DskipTests -B
+
+      - name: Running Unit Tests
+        run: ../mvnw clean test -B
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy
+    needs: tests #ensures this job only starts if the 'tests' job passes successfully.
+    # This prevents pull requests from triggering a deployment. It ensures we
+    # only deploy when code is actually merged into the main branch.
+    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ./user-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('user-service/pom.xml', 'common/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and Install Common Module # Needed in this job as well
+        working-directory: ./common
+        run: ../mvnw clean install -DskipTests -B
+
+      #We don't need to compile the service because google jib does that for us.
+
+      # --- AWS ECR --- #
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with: # Using OpenID Connect (OIDC) to assume a role
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-south-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push image using Google Jib
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: chat-app/user-service
+          IMAGE_TAG: ${{ github.sha }}
+        #dynamically overrides what is written in your pom.xml
+        run: |
+          ../mvnw compile jib:build -Djib.to.image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
