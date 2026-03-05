@@ -1,0 +1,72 @@
+name: Config Server CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'config-server/**' # ONLY run this pipeline if files in the user-service folder change
+      - 'common/**'
+      - '.github/workflows/config-server.yml' # ALSO run if this specific workflow file is updated
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'config-server/**'
+      - 'common/**'
+
+# Required for AWS OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy
+    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ./mobile-bff
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'corretto'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('config-server/pom.xml', 'common/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and Install Common Module # Needed in this job as well
+        working-directory: ./common
+        run: ../mvnw clean install -DskipTests -B
+
+
+      # --- AWS ECR --- #
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-south-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push image using Google Jib
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: chat-app/config-server
+          IMAGE_TAG: ${{ github.sha }}
+        #dynamically overrides what is written in your pom.xml
+        run: |
+          ../mvnw compile jib:build -Djib.to.image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
