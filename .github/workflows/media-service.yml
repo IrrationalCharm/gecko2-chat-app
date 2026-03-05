@@ -1,16 +1,16 @@
-name: media-service.yml
+name: Media Service CI/CD
 
 on:
   push:
     branches: [ "main" ]
     paths:
-      - 'message-persistence-service/**' # ONLY run this pipeline if files in the user-service folder change
+      - 'media-service/**' # ONLY run this pipeline if files in the user-service folder change
       - 'common/**'
-      - '.github/workflows/message-persistence-service.yml' # ALSO run if this specific workflow file is updated
+      - '.github/workflows/media-service.yml' # ALSO run if this specific workflow file is updated
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'message-persistence-service/**'
+      - 'media-service/**'
       - 'common/**'
 
 # Required for AWS OIDC authentication
@@ -25,7 +25,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     defaults:
       run:
-        working-directory: ./message-persistence-service
+        working-directory: ./media-service
 
     steps:
       - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('message-persistence-service/pom.xml', 'common/pom.xml') }}
+          key: ${{ runner.os }}-m2-${{ hashFiles('media-service/pom.xml', 'common/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and Install Common Module # Needed in this job as well
@@ -64,7 +64,7 @@ jobs:
       - name: Build and Push image using Google Jib
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: chat-app/message-persistence-service
+          ECR_REPOSITORY: chat-app/media-service
           IMAGE_TAG: ${{ github.sha }}
         #dynamically overrides what is written in your pom.xml
         run: |
