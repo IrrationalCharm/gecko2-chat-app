@@ -1,0 +1,92 @@
+package eu.irrationalcharm.messaging_service.service;
+
+import eu.irrationalcharm.messaging_service.client.UserServiceClient;
+import eu.irrationalcharm.messaging_service.client.dto.UserSocialGraphDto;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+
+/**
+ * Sends requests to user-service and caches the results
+ */
+@Slf4j
+@Service
+public class InternalUserService {
+
+    private final UserServiceClient userServiceClient;
+    private final Cache userGraphCache;
+
+
+    public InternalUserService(UserServiceClient userServiceClient,
+                               CacheManager cache,
+                               @Value("${spring.data.redis.cache.user-graph}") String userGraphCacheName) {
+
+        this.userServiceClient = userServiceClient;
+        this.userGraphCache = cache.getCache(userGraphCacheName);
+    }
+
+
+    /**
+     * On cache miss, fetches the UserSocialGraph from user-service by using the Authentication from SecurityContextHolder
+     * @param internalId internalId assigned by user-service
+     */
+    @Cacheable(value = "user-graph", key = "#internalId")
+    public UserSocialGraphDto getAuthenticatedUserSocialGraph(String internalId) {
+        log.debug("Sending request to user-service for retrieving user details");
+        ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
+
+        UserSocialGraphDto userSocialGraphDto = response.getBody();
+        if(response.getStatusCode().is2xxSuccessful() && userSocialGraphDto != null && userSocialGraphDto.internalId().equals(internalId)) {
+            log.debug("Request received from user-service for UserSocialGraphDto");
+            return response.getBody();
+        } else {
+            log.error("Something went wrong fetching UserSocialGraph from user-service. Status code: {}", response.getStatusCode());
+            throw new RuntimeException("Something went wrong fetching UserSocialGraph from "+ internalId);
+        }
+
+    }
+
+
+
+    /**
+     * Checks cache, on miss it fetches it from user-service by username.
+     */
+    public UserSocialGraphDto getUserSocialGraphByUsername(@NotNull String username){
+        UserSocialGraphDto userSocialGraphDto = userGraphCache.get(username, UserSocialGraphDto.class);
+        if(userSocialGraphDto != null) {
+            return userSocialGraphDto;
+        }
+
+        ResponseEntity<UserSocialGraphDto> response = userServiceClient.getUserSocialGraphByUsername(username);
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            userGraphCache.put(username, response.getBody());
+            return response.getBody();
+        } else {
+            log.error("Failed to fetch Social Graph for username: {}. HTTP Status: {}", username, response.getStatusCode());
+            throw new RuntimeException("Failed to fetch UserSocialGraph for username: " + username);
+        }
+    }
+
+
+    /**
+     * Do not use! just for reference.
+     */
+    @CachePut(value = "user-graph", key = "#result.username")
+    public UserSocialGraphDto fetchAndCacheUserSocialGraph(@NotNull String idpUuid, String token) {
+        // Note: The idpUuid is passed implicitly via the Feign interceptors Authorization header.
+        ResponseEntity<UserSocialGraphDto> response = userServiceClient.getAuthenticatedUserSocialGraph();
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            return response.getBody();
+        }
+
+        throw new RuntimeException("Failed to fetch social graph from user-service");
+    }
+}

@@ -1,0 +1,54 @@
+server:
+  port: 8086
+spring:
+  profiles:
+    active: dev
+  application:
+    name: message-persistence-service
+  mvc:
+    servlet:
+      path: "/message-persistence-service"
+  data:
+    mongodb:
+      auto-index-creation: false
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: "*" #Exposes all actuator endpoints
+  health:
+    readiness-state:
+      enabled: true #Makes sure app is ready to answer calls.
+    liveness-state:
+      enabled: true #Makes sure the app is alive.
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+mongock:
+  migration-scan-package: eu.irrationalcharm.messagepersistenceservice.migration
+  enabled: true
+  index-creation: true
+
+---
+# Settings for 'dev' profile (Localhost)
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8888
+
+---
+# Settings for 'docker' profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: configserver:http://configserver:8888
+
+

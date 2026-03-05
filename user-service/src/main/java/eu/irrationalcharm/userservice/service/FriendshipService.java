@@ -1,9 +1,10 @@
 package eu.irrationalcharm.userservice.service;
 
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.entity.FriendshipEntity;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.repository.FriendshipRepository;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
+    private final CdnProperties cdnProperties;
 
 
     @Transactional(readOnly = true)
@@ -50,19 +52,27 @@ public class FriendshipService {
 
     @Transactional(readOnly = true)
     public Set<PublicUserResponseDto> getFriends(UserEntity userEntity) {
-        Set<UserEntity> userFriends = friendshipRepository.findAllFriendsByUserId(userEntity);
+        Set<UserEntity> userFriends = friendshipRepository.findAllFriendsByUserEntity(userEntity);
 
         if (userFriends.isEmpty())
             return Collections.emptySet();
 
         return userFriends.stream()
                 .map(user -> PublicUserResponseDto.builder()
+                        .internalId(user.getId())
                         .displayName(user.getDisplayName())
-                        .profileImageUrl(user.getProfileImageUrl())
+                        .profileImageUrl(String.format("%s/%s", cdnProperties.baseUrl(), user.getProfileImageUrl()))
                         .username(user.getUsername())
                         .profileBio(user.getProfileBio())
                         .build())
                 .collect(Collectors.toSet());
+    }
+
+
+
+    @Transactional(readOnly = true)
+    public Set<UUID> getFriendsId(UserEntity userEntity) {
+        return friendshipRepository.findFriendsIdByUserEntity(userEntity);
     }
 
 

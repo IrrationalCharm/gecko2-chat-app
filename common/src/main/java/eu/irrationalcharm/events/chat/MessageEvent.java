@@ -1,0 +1,34 @@
+package eu.irrationalcharm.events.chat;
+
+import eu.irrationalcharm.enums.TextType;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.time.Instant;
+
+public record MessageEvent(
+
+        @NotNull
+        String clientMsgId,
+
+        @NotNull
+        String conversationId,
+
+        @NotNull
+        String senderId,
+
+        @NotNull
+        String recipientId,
+
+        @NotEmpty
+        @Size(min = 1, max = 3000)
+        String content,
+
+        @NotNull
+        Instant timestamp,
+
+        @NotNull
+        TextType textType
+) implements ChatEvent {
+}

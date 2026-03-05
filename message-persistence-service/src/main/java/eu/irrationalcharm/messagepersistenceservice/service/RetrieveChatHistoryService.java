@@ -1,0 +1,191 @@
+package eu.irrationalcharm.messagepersistenceservice.service;
+
+
+import eu.irrationalcharm.dto.persistence_service.MessageDto;
+import eu.irrationalcharm.dto.persistence_service.MessageHistoryDto;
+import eu.irrationalcharm.enums.MessageStatus;
+import eu.irrationalcharm.messagepersistenceservice.mapper.MessageMapper;
+import eu.irrationalcharm.messagepersistenceservice.model.Conversation;
+import eu.irrationalcharm.messagepersistenceservice.model.Message;
+import eu.irrationalcharm.messagepersistenceservice.repository.ConversationRepository;
+import eu.irrationalcharm.messagepersistenceservice.repository.MessageRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+
+import static eu.irrationalcharm.messagepersistenceservice.utils.ConversationUtils.generateConversationId;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class RetrieveChatHistoryService {
+
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
+
+
+    /**
+     * @param before epoch time, fetch messages before given epoch time
+     * @param size number of messages to be retrieved
+     * @param friendId chat to be retrieved
+     * @param authentication authentication
+     * @return messages
+     */
+    @PreAuthorize("authenticated()")
+    public MessageHistoryDto getConversation(long before, int size, String friendId, Authentication authentication) {
+        String currentUserId = authentication.getName();
+        String conversationId = generateConversationId(currentUserId, friendId);
+        Conversation conv = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> {
+                    log.warn("User {} attempted to fetch history for conversation ID {} which does not exist in the database.", currentUserId, conversationId);
+                    return new IllegalArgumentException("Conversation not found for ID: " + conversationId);
+                });
+
+        Instant dateBefore = Instant.ofEpochMilli(before);
+        Pageable pageable = PageRequest.of(0, size);
+        Slice<Message> messageSlice = messageRepository.findByConversationIdAndTimestampLessThanOrderByTimestampDesc(conversationId, dateBefore, pageable);
+
+
+        return buildHistoryDto(conv, messageSlice.getContent(), currentUserId, messageSlice.isLast(), 0);
+    }
+
+
+    /**
+     * @param page page of the Conversation.
+     * @param size number of conversations per page.
+     * @return returns 20 messages of each conversation. the most recent messages
+     */
+    @PreAuthorize("authenticated()")
+    public List<MessageHistoryDto> fetchRecentMessages(int page, int size, Authentication authentication) {
+        String currentUserId = authentication.getName();
+        PageRequest conversationPage = PageRequest.of(page, size, Sort.by("updatedAt").descending());
+
+        log.debug("User {} is loading {} Conversation with {} message per conversation", currentUserId, page, size);
+
+        List<Conversation> conversations = conversationRepository.findByParticipantsContainsOrderByUpdatedAtDesc(authentication.getName(), conversationPage);
+
+        if(conversations.isEmpty()) {
+            log.debug("No messages to be loaded for user {}", currentUserId);
+            return Collections.emptyList();
+        }
+
+
+        // Logic: For every conversation found, fetch the recent X messages
+        return conversations.stream().map(conversation -> {
+            Pageable messagePage = PageRequest.of(0, 20, Sort.by("timestamp").descending());
+            Slice<Message> messageSlice = messageRepository.findByConversationIdOrderByTimestampDesc(
+                    conversation.getId(), messagePage
+            );
+
+            return buildHistoryDto(conversation, messageSlice.getContent(), currentUserId, messageSlice.isLast(), messageSlice.getNumber());
+        }).toList();
+    }
+
+
+    /**
+     * @param sinceTimestamp timestamp in epoch milliseconds
+     * @return returns all conversations and messages that have messages starting from the timestamp
+     */
+    @PreAuthorize("authenticated()")
+    public List<MessageHistoryDto> syncMessages(Long sinceTimestamp, Authentication authentication) {
+        String currentUserId = authentication.getName();
+        Instant sinceInstant = Instant.ofEpochMilli(sinceTimestamp);
+
+        log.debug("User {} is syncing messages since timestamp {}", currentUserId, sinceInstant);
+
+        List<Conversation> conversations = conversationRepository.findByParticipantsContainsAndUpdatedAtAfter(currentUserId, sinceInstant);
+
+        if (conversations.isEmpty()) {
+            log.debug("No new messages to sync for user {}", currentUserId);
+            return Collections.emptyList();
+        }
+
+
+        return conversations.stream().map(conversation -> {
+            List<Message> messages = messageRepository.findByConversationIdAndTimestampIsAfterOrderByTimestampDesc(
+                    conversation.getId(), sinceInstant
+            );
+
+            return buildHistoryDto(conversation, messages, currentUserId, true, 0);
+        }).toList();
+    }
+
+
+    // PRIVATE HELPER METHODS \\
+
+
+    private MessageHistoryDto buildHistoryDto(Conversation conversation, List<Message> messages, String currentUserId, boolean isLast, int pageNumber) {
+        String partnerId = getPartnerId(conversation, currentUserId);
+
+        Instant partnerReadCursor = conversation.getReadCursors().get(partnerId); //We get the last timestamp of message partner read
+        Instant partnerDeliveryCursor = conversation.getDeliveryCursors().get(partnerId); //We get the last timestamp of message partner received. (delivered to him)
+
+        Instant myReadCursor = conversation.getReadCursors().get(currentUserId);
+        Instant myDeliveryCursor = conversation.getDeliveryCursors().get(currentUserId);
+
+        long unreadCount = 0;
+        if(myReadCursor != null) {
+            unreadCount = messageRepository.countByConversationIdAndSenderIdAndTimestampAfter(
+                    conversation.getId(), partnerId, myReadCursor);
+        }
+
+        List<MessageDto> messageDtos = messages.stream()
+                .map(msg -> {
+                    MessageStatus status;
+                    if (msg.getSenderId().equals(currentUserId)) {
+                        status = determineMessageStatus(msg, partnerReadCursor, partnerDeliveryCursor);
+                    } else {
+                        status = determineMessageStatus(msg, myReadCursor, myDeliveryCursor);
+                    }
+
+                    return MessageMapper.mapToDto(msg, status);
+                })
+                .toList();
+
+        return new MessageHistoryDto(
+                conversation.getId(),
+                messageDtos,
+                partnerDeliveryCursor,
+                partnerReadCursor,
+                unreadCount,
+                pageNumber,
+                0,
+                isLast
+        );
+    }
+
+
+    private String getPartnerId(Conversation conversation, String currentUserId) {
+        return conversation.getParticipants().stream()
+                .filter(id -> !id.equals(currentUserId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Conversation " + conversation.getId() + " has invalid participants."));
+    }
+
+
+    //Determines if a given message is SENT, DELIVERED and/or READ
+    private MessageStatus determineMessageStatus(Message msg, Instant readCursor, Instant deliveryCursor) {
+        //i sent this message. Has my partner read it?
+        //Check if message time is BEFORE my partner's read cursor.
+        if (readCursor != null && !msg.getTimestamp().isAfter(readCursor)) {
+            return MessageStatus.READ;
+        }
+
+        //i sent this message. has my partner received it?
+        if (deliveryCursor != null && !msg.getTimestamp().isAfter(deliveryCursor)) {
+            return MessageStatus.DELIVERED;
+        }
+
+        return MessageStatus.SENT;
+    }
+
+
+
+}

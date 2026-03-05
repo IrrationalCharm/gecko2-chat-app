@@ -1,27 +1,33 @@
 package eu.irrationalcharm.userservice.controller;
 
 
-import eu.irrationalcharm.userservice.annotation.UsernameValid;
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
+import eu.irrationalcharm.dto.response.SuccessResponseDto;
+import eu.irrationalcharm.enums.SuccessfulCode;
+import eu.irrationalcharm.userservice.constants.JwtClaims;
+import eu.irrationalcharm.validation.UsernameValid;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.dto.response.base.ApiResponse;
-import eu.irrationalcharm.userservice.dto.response.base.SuccessResponseDto;
-import eu.irrationalcharm.userservice.enums.SuccessfulCode;
 import eu.irrationalcharm.userservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Optional;
 
 
+@Slf4j
 @RestController
+@Validated
 @RequestMapping("/api/v1/users")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
@@ -59,7 +65,7 @@ public class UserController {
 
         return ApiResponse.success(HttpStatus.OK,
                 successfulCode,
-                "Successfully determined user status",
+                "Successfully retrieved user status",
                 userDto,
                 request);
     }
@@ -69,8 +75,9 @@ public class UserController {
     public ResponseEntity<SuccessResponseDto<UserDto>> updateUserDetails(@RequestBody UpdateUserProfileRequestDto userProfileRequestDto,
                                                                          @AuthenticationPrincipal Jwt jwt,
                                                                          HttpServletRequest request) {
-        UserDto userDto = userService.updateUserDetails(userProfileRequestDto, jwt);
+        log.info("Request received to update user details for user internalId: {}", jwt.getClaim(JwtClaims.INTERNAL_ID).toString());
 
+        UserDto userDto = userService.updateUserDetails(userProfileRequestDto, jwt);
         return ApiResponse.success(HttpStatus.OK,
                 SuccessfulCode.USER_UPDATED,
                 "Updated Successfully",

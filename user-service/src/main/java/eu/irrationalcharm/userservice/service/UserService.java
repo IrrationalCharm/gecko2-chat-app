@@ -1,18 +1,17 @@
 package eu.irrationalcharm.userservice.service;
 
+import eu.irrationalcharm.dto.user_service.PublicUserResponseDto;
+import eu.irrationalcharm.dto.user_service.UserDto;
+import eu.irrationalcharm.userservice.config.properties.CdnProperties;
 import eu.irrationalcharm.userservice.constants.JwtClaims;
 import eu.irrationalcharm.userservice.dto.request.UpdateUserProfileRequestDto;
-import eu.irrationalcharm.userservice.dto.response.PublicUserResponseDto;
-import eu.irrationalcharm.userservice.dto.UserDto;
 import eu.irrationalcharm.userservice.entity.UserEntity;
-import eu.irrationalcharm.userservice.entity.UserIdentityProviderEntity;
-import eu.irrationalcharm.userservice.enums.ErrorCode;
-import eu.irrationalcharm.userservice.enums.IdentityProviderType;
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import eu.irrationalcharm.userservice.mapper.UserMapper;
-import eu.irrationalcharm.userservice.repository.UserIdentityProviderRepository;
 import eu.irrationalcharm.userservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,14 +19,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserIdentityProviderRepository userIdpRepository;
-
+    private final CdnProperties cdnProperties;
 
 
     @Transactional(readOnly = true)
@@ -45,38 +45,65 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<UserDto> getAuthenticatedDto(Jwt authJwt) {
-        String authId = authJwt.getClaims().get(JwtClaims.SUBJECT).toString();
-        Optional<UserIdentityProviderEntity> userIdpEntity = userIdpRepository.findByProviderUserId(authId);
+        Optional<UserEntity> optionalUser = getAuthenticatedEntity(authJwt);
 
-        if (userIdpEntity.isPresent()) {
-            UserEntity userEntity = userIdpEntity.get().getUserEntity();
-            return Optional.of(UserMapper.mapToUserDto(userEntity));
-        }
-
-        return Optional.empty();
+        return optionalUser.map(user ->
+                UserMapper.mapToUserDto(user, cdnProperties.baseUrl())
+        );
     }
 
 
     @Transactional(readOnly = true)
-    public UserEntity getAuthenticatedEntityOrThrow(Jwt authJwt) {
-        String authId = authJwt.getClaimAsString(JwtClaims.SUBJECT);
-        IdentityProviderType idpType = IdentityProviderType.fromIssuer(authJwt.getClaimAsString(JwtClaims.ISSUER));
+    public UserEntity getAuthenticatedEntityOrThrow(Jwt jwt) {
+        String userId = jwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        isAuthenticatedOnBoardedOrThrow(jwt);
 
-        return userIdpRepository.findUserIdByProviderAndProviderUserId(idpType, authId)
-                .orElseThrow(() -> new BusinessException(
-                        HttpStatus.BAD_REQUEST,
-                        ErrorCode.ON_BOARDING_REQUIRED,
-                        String.format("Could not find account with this user id: %s", authId)));
+        return userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> {
+                    log.warn("Could now find account for user {}", userId);
+                    return new BusinessException(
+                            HttpStatus.BAD_REQUEST,
+                            ErrorCode.ON_BOARDING_REQUIRED,
+                            String.format("Could not find account with this user id: %s", userId));
+                });
+    }
+
+
+    public void isAuthenticatedOnBoardedOrThrow(Jwt jwt) {
+        String userId = jwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        if(userId == null) {
+            log.warn("User with subject id: {} has not completed onboarding process", jwt.getSubject());
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ErrorCode.ON_BOARDING_REQUIRED, "Empty internal_id in claim");
+        }
+    }
+
+
+    @Transactional(readOnly = true)
+    public Optional<UserEntity> getAuthenticatedEntity(Jwt authJwt) {
+        String userId = authJwt.getClaimAsString(JwtClaims.INTERNAL_ID);
+        if(userId == null)
+            return Optional.empty();
+
+        return userRepository.findById(UUID.fromString(userId));
     }
 
 
     @Transactional(readOnly = true)
     public UserEntity getEntityByUsernameOrThrow(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() ->
-                new BusinessException(
-                        HttpStatus.NOT_FOUND,
-                        ErrorCode.USERNAME_NOT_FOUND,
-                        String.format("User with username %s not found.", username)));
+        return userRepository.findByUsername(username).orElseThrow(() -> {
+            log.warn("Could not find user with username: {}", username);
+            return new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    ErrorCode.USERNAME_NOT_FOUND,
+                    String.format("User with username %s not found.", username));
+        });
+
+    }
+
+
+    @Transactional(readOnly = true)
+    public Optional<UserEntity> getEntityByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
 
@@ -97,8 +124,30 @@ public class UserService {
         if (userProfileRequestDto.profileImageUrl() != null)
             userEntity.setProfileImageUrl(userProfileRequestDto.profileImageUrl());
 
-        return UserMapper.mapToUserDto( userRepository.save(userEntity) );
+        UserEntity updatedUserDetails = userRepository.save(userEntity);
+
+        log.debug("User {} details has been updated", updatedUserDetails.getId());
+        return UserMapper.mapToUserDto(updatedUserDetails , cdnProperties.baseUrl() );
     }
 
 
+    @Transactional
+    public void updateProfileImageUrl(UUID userId, String profileImageUrl) {
+        UserEntity user = getEntityByIdOrThrow(userId);
+
+        user.setProfileImageUrl(profileImageUrl);
+
+        log.debug("User {} updated user profile Url", user.getId());
+    }
+
+
+    public UserEntity getEntityByIdOrThrow(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(() -> {
+            log.debug("Could not find user by userId: {}", userId);
+            return new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    ErrorCode.USERNAME_NOT_FOUND,
+                    String.format("User with id %s not found.", userId));
+        });
+    }
 }

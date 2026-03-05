@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 
 @Entity
@@ -20,15 +20,15 @@ public class FriendRequestEntity {
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "initiator", referencedColumnName = "id")
     private UserEntity initiator;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "receiver", referencedColumnName = "id")
     private UserEntity receiver;
 
     @CreatedDate
-    private LocalDateTime created_at;
+    private Instant created_at;
 
 }

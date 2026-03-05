@@ -1,5 +1,5 @@
 package eu.irrationalcharm.userservice.enums;
-
+import eu.irrationalcharm.enums.ErrorCode;
 import eu.irrationalcharm.userservice.exception.BusinessException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

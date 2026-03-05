@@ -1,11 +1,29 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
+  profiles:
+    active: dev
   application:
     name: user-service
-  config:
-    import: configserver:http://localhost:8888
   mvc:
     servlet:
       path: "/user-service"
+
+---
+# Settings for 'dev' profile (Localhost)
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: configserver:http://localhost:8888
+
+---
+# Settings for 'docker' profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+    import: configserver:http://configserver:8888
+
+

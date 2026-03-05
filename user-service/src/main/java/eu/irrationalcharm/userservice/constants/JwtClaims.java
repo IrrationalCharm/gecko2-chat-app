@@ -10,4 +10,9 @@ public final class JwtClaims {
     public static final String SUBJECT = "sub";
     public static final String EXPIRATION = "exp";
     public static final String EMAIL = "email";
+
+    //Added attributes after onBoarding
+    public static final String USERNAME_APP = "username_app";
+    public static final String INTERNAL_ID = "internal_id";
+    public static final String ATTRIBUTES = "attributes";
 }
