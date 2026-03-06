@@ -19,3 +19,4 @@ target/
 ### OS Specific ###
 # Windows
 Thumbs.db
+/docker-compose/dev/docker-data/
