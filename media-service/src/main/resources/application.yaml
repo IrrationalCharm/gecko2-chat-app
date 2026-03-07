@@ -1,6 +1,8 @@
 server:
   port: 8089
 
+jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
+
 spring:
   application:
     name: media-service
@@ -9,42 +11,51 @@ spring:
   mvc:
     servlet:
       path: "/media-service"
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 30MB
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
+      region:
+        static: eu-south-2
+
+  kafka:
+    template:
+      observation-enabled: true
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      profile-image: "profile-image-update"
+
+application:
+  bucket:
+    name: gecko2-media
+    # Ensure no trailing slash here to match your string format logic
+    public-url: ${CLOUDFRONT_URL}
 
 management:
   tracing:
     sampling:
-      probability: 1.0
-  endpoints:
-    web:
-      exposure:
-        include: "*" #Exposes all actuator endpoints
-  health:
-    readiness-state:
-      enabled: true #Makes sure app is ready to answer calls.
-    liveness-state:
-      enabled: true #Makes sure the app is alive.
-  endpoint:
-    health:
-      probes:
-        enabled: true
-
----
-# Settings for 'dev' profile (Localhost)
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: configserver:http://localhost:8888
-
----
-# Settings for 'docker' profile
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://configserver:8888
-
-management:
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_METRICS_URL:http://localhost:4318/v1/metrics}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_TRACES_URL:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_LOGS_URL:http://localhost:4318/v1/logs}
   endpoints:
     web:
       exposure:

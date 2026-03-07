@@ -1,0 +1,17 @@
+gecko2-common:
+  image:
+    repository: gecko2/media-service
+    tag: latest
+
+  service:
+    port: 8089
+
+  # These match your application.yml placeholders exactly
+  env:
+    SPRING_PROFILES_ACTIVE: "k8s"
+    JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
+    KAFKA_BROKERS: "host.k3d.internal:9095"
+    GRAFANA_METRICS_URL: "http://host.k3d.internal:4318/v1/metrics"
+    GRAFANA_TRACES_URL: "http://host.k3d.internal:4318/v1/traces"
+    GRAFANA_LOGS_URL: "http://host.k3d.internal:4318/v1/logs"
+

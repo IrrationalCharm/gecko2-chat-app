@@ -1,6 +1,12 @@
 ### User Specific Environment Variables ###
 # Use this to ignore your local env file
 .env.local
+*-secrets.yaml
+values-secrets.yaml
+
+# 2. Ignore downloaded chart dependencies
+**/charts/*.tgz
+**/charts/
 .env
 
 ### IntelliJ IDEA ###

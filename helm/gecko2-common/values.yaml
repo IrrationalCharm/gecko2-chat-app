@@ -1,0 +1,9 @@
+# Fallback defaults for any microservice
+image:
+  repository: nginx # Just a dummy fallback
+  tag: latest
+
+service:
+  port: 8080
+
+env: {} # Empty by default

@@ -1,0 +1,22 @@
+gecko2-common:
+  image:
+    repository: gecko2/api-gateway
+    tag: latest
+
+  service:
+    port: 8081
+
+  env:
+    SPRING_PROFILES_ACTIVE: "k8s"
+    JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
+    USER_SERVICE_URI: http://user-service:8083
+    PERSISTENCE_SERVICE_URI: http://message-persistence-service:8086
+    MOBILE_BFF_URI: http://mobile-bff:8087
+    MESSAGING_SERVICE_WS_URI: ws://messaging-service:8084
+    MESSAGING_SERVICE_HTTP_URI: http://messaging-service:8084
+    MEDIA_SERVICE_URI: http://media-service:8089
+    REDIS_GATEWAY_HOST: host.k3d.internal
+    REDIS_GATEWAY_PORT: 6380
+    GRAFANA_METRICS_URL: "http://host.k3d.internal:4318/v1/metrics"
+    GRAFANA_TRACES_URL: "http://host.k3d.internal:4318/v1/traces"
+    GRAFANA_LOGS_URL: "http://host.k3d.internal:4318/v1/logs"

@@ -1,0 +1,22 @@
+gecko2-common:
+  image:
+    repository: gecko2/message-persistence-service
+    tag: latest
+
+  service:
+    port: 8086
+
+  # These match your application.yml placeholders exactly
+  env:
+    SPRING_PROFILES_ACTIVE: "k8s"
+    JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
+    MONGO_HOST: "host.k3d.internal"
+    MONGO_PORT: 27017
+    MONGO_DB: "chat_history_db"
+    MONGO_USERNAME: "admin"
+    MONGO_PASSWORD: "password"
+    KAFKA_BROKERS: "host.k3d.internal:9095"
+    GRAFANA_METRICS_URL: "http://host.k3d.internal:4318/v1/metrics"
+    GRAFANA_TRACES_URL: "http://host.k3d.internal:4318/v1/traces"
+    GRAFANA_LOGS_URL: "http://host.k3d.internal:4318/v1/logs"
+
