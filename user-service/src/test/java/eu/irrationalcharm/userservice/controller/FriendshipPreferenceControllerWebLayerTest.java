@@ -17,6 +17,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,6 +44,10 @@ class FriendshipPreferenceControllerWebLayerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    //prevents spring from fetching the issuer-uri from keycloak
+    @MockitoBean
+    private ClientRegistrationRepository clientRegistrationRepository;
 
     private ObjectMapper objectMapper;
 

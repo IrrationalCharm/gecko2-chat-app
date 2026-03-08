@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -62,6 +63,10 @@ class FriendshipControllerWebLayerTest {
 
     @MockitoBean
     private FriendshipOrchestrator friendshipOrchestrator;
+
+    //prevents spring from fetching the issuer-uri from keycloak
+    @MockitoBean
+    private ClientRegistrationRepository clientRegistrationRepository;
 
     private static final String baseFriendsUrl = "/api/v1/friends";
 
