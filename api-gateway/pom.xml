@@ -109,6 +109,7 @@
                         <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         <jvmFlags>
                             <jvmFlag>--enable-native-access=ALL-UNNAMED</jvmFlag>
+                            <jvmFlag>--sun-misc-unsafe-memory-access=allow</jvmFlag> <!-- Removes annoying warning in logs, eventually needs to remove this flag when openTelemetry updates-->
                         </jvmFlags>
                     </container>
                 </configuration>

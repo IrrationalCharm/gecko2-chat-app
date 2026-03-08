@@ -1,6 +1,7 @@
 #Global settings
 server:
   port: 8087
+  shutdown: graceful
 
 jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 url:
@@ -12,6 +13,8 @@ spring:
     active: dev
   application:
     name: mobile-bff
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   threads:
     virtual:
       enabled: true

@@ -1,5 +1,6 @@
 server:
   port: 8081
+  shutdown: graceful
 
 jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 
@@ -8,6 +9,8 @@ spring:
     name: gateway
   profiles:
     active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   data:
     redis:
       host: ${REDIS_GATEWAY_HOST:localhost}

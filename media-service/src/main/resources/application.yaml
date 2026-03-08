@@ -1,5 +1,6 @@
 server:
   port: 8089
+  shutdown: graceful
 
 jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 
@@ -8,6 +9,8 @@ spring:
     name: media-service
   profiles:
     active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   mvc:
     servlet:
       path: "/media-service"

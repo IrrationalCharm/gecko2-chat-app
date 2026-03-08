@@ -1,5 +1,6 @@
 server:
   port: 8083
+  shutdown: graceful
 
 jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 cdn:
@@ -14,6 +15,8 @@ spring:
     active: dev
   application:
     name: user-service
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   mvc:
     servlet:
       path: "/user-service"

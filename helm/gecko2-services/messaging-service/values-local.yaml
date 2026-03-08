@@ -6,9 +6,13 @@ gecko2-common:
   service:
     port: 8084
 
+  probePath: ""
+
   # These match your application.yml placeholders exactly
   env:
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" #Tell JVM to only use 75% of total memory allocated
     SPRING_PROFILES_ACTIVE: "k8s"
+    JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
     REDIS_GATEWAY_HOST: "host.k3d.internal"
     REDIS_GATEWAY_PORT: "6379"
     USER_SERVICE_URI: "http://user-service:8083/user-service/internal/api/v1"

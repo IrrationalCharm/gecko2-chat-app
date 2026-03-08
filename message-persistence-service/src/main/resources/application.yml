@@ -1,11 +1,14 @@
 server:
   port: 8086
+  shutdown: graceful
 
 jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 
 spring:
   profiles:
     active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   application:
     name: message-persistence-service
   mvc:

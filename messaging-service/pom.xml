@@ -149,6 +149,9 @@
 						<image>gecko2/${project.artifactId}:latest</image> </to>
 					<container>
 						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+						<jvmFlags>
+							<jvmFlag>--sun-misc-unsafe-memory-access=allow</jvmFlag> <!-- Removes annoying warning in logs, eventually needs to remove this flag when openTelemetry updates-->
+						</jvmFlags>
 					</container>
 				</configuration>
 			</plugin>

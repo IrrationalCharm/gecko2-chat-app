@@ -3,11 +3,14 @@ gecko2-common:
     repository: gecko2/media-service
     tag: latest
 
+  probePath: "/media-service"
+
   service:
     port: 8089
 
   # These match your application.yml placeholders exactly
   env:
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" #Tell JVM to only use 75% of total memory allocated
     SPRING_PROFILES_ACTIVE: "k8s"
     JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
     KAFKA_BROKERS: "host.k3d.internal:9095"
