@@ -1,0 +1,9 @@
+1. Install k3d, kubectl, helm CLIs
+2. run: k3d cluster create gecko2-cluster --port "8888:80@loadbalancer" #This maps the local port to clusters traefic ingress controller
+3. K3d cluster runs inside its own isolated Docker container...
+k3d image import gecko2/user-service:latest gecko2/mobile-bff:latest gecko2/messaging-service:latest gecko2/message-persistence-service:latest gecko2/media-service:latest gecko2/api-gateway:latest -c gecko2-cluster
+4. we run / install: helm upgrade --install user-service . or execute .\helm\deploy-local.ps1 script
+
+- Gracefully stop cluster: k3d cluster stop gecko2-cluster
+- Stratup kubernetes cluster: k3d cluster start gecko2-cluster
+- restart pods: "kubectl rollout restart deployment" or specific pod "kubectl rollout restart deployment mobile-bff"

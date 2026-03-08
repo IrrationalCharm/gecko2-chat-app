@@ -1,0 +1,27 @@
+gecko2-common:
+  image:
+    repository: gecko2/user-service # Assuming you built this locally with Jib
+    tag: latest
+
+  service:
+    port: 8083
+
+  probePath: "/user-service"
+
+  # These match your application.yml placeholders exactly
+  env:
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0" #Tell JVM to only use 75% of total memory allocated
+    SPRING_PROFILES_ACTIVE: "k8s"
+    JWK_SET_URI: "http://host.k3d.internal:8080/realms/gecko2-realm/protocol/openid-connect/certs"
+    KEYCLOAK_BASE_URI: "http://host.k3d.internal:8080"
+    KEYCLOAK_ISSUER_URI: "http://host.k3d.internal:8080/realms/gecko2-realm"
+    KEYCLOAK_CLIENT_SECRET: "VQx9eUvpHD9fCQrkGlMnztUcCKJDoC2n"
+    KAFKA_BROKERS: "host.k3d.internal:9095"
+    DB_URL: "jdbc:postgresql://host.k3d.internal:5432/user_service_db"
+    DB_USERNAME: "user_service"
+    DB_PASSWORD: "nonSecureUserPassword"
+    FLYWAY_USER: "flyway_admin"
+    FLYWAY_PASSWORD: "thisIsWild123"
+    GRAFANA_METRICS_URL: "http://host.k3d.internal:4318/v1/metrics"
+    GRAFANA_TRACES_URL: "http://host.k3d.internal:4318/v1/traces"
+    GRAFANA_LOGS_URL: "http://host.k3d.internal:4318/v1/logs"

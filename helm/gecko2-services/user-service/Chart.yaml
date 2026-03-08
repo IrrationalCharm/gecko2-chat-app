@@ -1,0 +1,7 @@
+apiVersion: v2
+name: user-service
+version: 0.1.0
+dependencies:
+  - name: gecko2-common
+    version: 0.1.0
+    repository: "file://../../gecko2-common"

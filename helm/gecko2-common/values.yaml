@@ -1,0 +1,20 @@
+# Fallback defaults for any microservice
+image:
+  repository: nginx # Just a dummy fallback
+  tag: latest
+
+service:
+  port: 8080
+
+env: {} # Empty by default
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m      #1 CPU core
+    memory: 700Mi   #Avoid memory leaks

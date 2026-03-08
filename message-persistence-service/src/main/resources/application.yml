@@ -1,8 +1,14 @@
 server:
   port: 8086
+  shutdown: graceful
+
+jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
+
 spring:
   profiles:
     active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   application:
     name: message-persistence-service
   mvc:
@@ -11,11 +17,48 @@ spring:
   data:
     mongodb:
       auto-index-creation: false
+  mongodb:
+    host: ${MONGO_HOST:localhost}
+    port: ${MONGO_PORT:27017}
+    database: ${MONGO_DB:chat_history_db}
+    username: ${MONGO_USERNAME:admin}
+    password: ${MONGO_PASSWORD:password}
+    authentication-database: admin
+  kafka:
+    listener:
+      observation-enabled: true
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      group-id: messaging-persistence-group
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      chat-events: "chat-events"
 
 management:
   tracing:
     sampling:
-      probability: 1.0
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_METRICS_URL:http://localhost:4318/v1/metrics}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_TRACES_URL:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_LOGS_URL:http://localhost:4318/v1/logs}
   endpoints:
     web:
       exposure:
@@ -35,20 +78,5 @@ mongock:
   enabled: true
   index-creation: true
 
----
-# Settings for 'dev' profile (Localhost)
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: configserver:http://localhost:8888
-
----
-# Settings for 'docker' profile
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://configserver:8888
 
 

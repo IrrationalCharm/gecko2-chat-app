@@ -1,29 +1,122 @@
 server:
   port: 8083
+  shutdown: graceful
+
+jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
+cdn:
+  base-url: "https://d1gb9cksfsfumv.cloudfront.net"
+
+keycloak:
+  baseUri: ${KEYCLOAK_BASE_URI:http://localhost:8080}
+  realm: "gecko2-realm"
 
 spring:
   profiles:
     active: dev
   application:
     name: user-service
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   mvc:
     servlet:
       path: "/user-service"
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/user_service_db}
+    username: ${DB_USERNAME:user_service}
+    password: ${DB_PASSWORD:nonSecureUserPassword}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  flyway:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/user_service_db}
+    user: ${FLYWAY_USER:flyway_admin}
+    password: ${FLYWAY_PASSWORD:thisIsWild123}
+    enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/gecko2-realm}
+        registration:
+          keycloak-admin:
+            provider: keycloak
+            client-id: user-service-admin
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:VQx9eUvpHD9fCQrkGlMnztUcCKJDoC2n}
+            authorization-grant-type: client_credentials
+            client-name: "User Service Admin"
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
+    consumer:
+      group-id: user-service-group
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      user-updates: "user-updates-topic"
+      profile-image: "profile-image-update"
+      notification-update: "notification-topic"
 
----
-# Settings for 'dev' profile (Localhost)
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: configserver:http://localhost:8888
+resilience4j:
+  retry:
+    instances:
+      keycloak-admin:
+        max-attempts: 3
+        wait-duration: 300ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
 
----
-# Settings for 'docker' profile
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://configserver:8888
+management:
+  tracing:
+    sampling:
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_METRICS_URL:http://localhost:4318/v1/metrics}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_TRACES_URL:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_LOGS_URL:http://localhost:4318/v1/logs}
+  endpoints:
+    web:
+      exposure:
+        include: "*" #Exposes all actuator endpoints
+  health:
+    readiness-state:
+      enabled: true #Makes sure app is ready to answer calls.
+    liveness-state:
+      enabled: true #Makes sure the app is alive.
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
-
+logging:
+  level:
+    eu.irrationalcharm.messaging_service.*: DEBUG
+    org.apache.kafka.clients.NetworkClient: WARN
+    org.apache.kafka.clients.consumer.internals.ConsumerCoordinator: WARN
+    org.apache.kafka.clients.admin.AdminClient: WARN

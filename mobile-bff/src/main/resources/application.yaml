@@ -1,12 +1,20 @@
 #Global settings
 server:
   port: 8087
+  shutdown: graceful
+
+jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
+url:
+  user-service: ${USER_SERVICE_URL:http://localhost:8083/user-service}
+  persistence-service: ${PERSISTENCE_SERVICE_URL:http://localhost:8086/message-persistence-service}
 
 spring:
   profiles:
     active: dev
   application:
     name: mobile-bff
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   threads:
     virtual:
       enabled: true
@@ -14,10 +22,59 @@ spring:
     servlet:
       path: "/mobile-bff"
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10 # Number of calls to record for calculating the failure rate
+        permitted-number-of-calls-in-half-open-state: 2 # Number of test calls allowed when in HALF_OPEN state
+        failure-rate-threshold: 50 # Percentage of failed calls (out of sliding window) to trip the circuit to OPEN
+        wait-duration-in-open-state: 10s
+    instances:
+      sync-conversation:
+        base-config: default
+      get-friends:
+        base-config: default
+      fetch-me:
+        base-config: default
+      pending-requests:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 100ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        ignore-exceptions:
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+    instances:
+      sync-conversation:
+        base-config: default
+      get-friends:
+        base-config: default
+      fetch-me:
+        base-config: default
+      pending-requests:
+        base-config: default
+
 management:
   tracing:
     sampling:
-      probability: 1.0
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_METRICS_URL:http://localhost:4318/v1/metrics}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_TRACES_URL:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_LOGS_URL:http://localhost:4318/v1/logs}
   endpoints:
     web:
       exposure:
@@ -31,19 +88,3 @@ management:
     health:
       probes:
         enabled: true
-
----
-# Settings for 'dev' profile (Localhost)
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: configserver:http://localhost:8888
-
----
-# Settings for 'docker' profile
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://configserver:8888

@@ -1,16 +1,168 @@
-#Global settings
 server:
   port: 8081
+  shutdown: graceful
+
+jwkSetUri: ${JWK_SET_URI:http://localhost:8080/realms/gecko2-realm/protocol/openid-connect/certs}
 
 spring:
   application:
     name: gateway
   profiles:
     active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   data:
     redis:
-      host: localhost
-      port: 6380
+      host: ${REDIS_GATEWAY_HOST:localhost}
+      port: ${REDIS_GATEWAY_PORT:6380}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 1000 # Max time (in milliseconds) to establish a connection with downstream service
+            response-timeout: 5s # Max time to wait for the response after connection is established
+          routes:
+            - id: user-service
+              uri: ${USER_SERVICE_URI:http://localhost:8083}
+              predicates:
+                - Path=/user-service/**
+              filters:
+                - name: CacheRequestBody #Since we are using webflux, body of http is a stream and on first read, its lost, thats why we need this for POST.
+                  args:
+                    bodyClass: java.lang.String
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1 # Number of tokens added per second
+                    redis-rate-limiter.burstCapacity: 10 # Maximum number of tokens the bucket can hold
+                    redis-rate-limiter.requestedTokens: 1 # How many tokens one request consumes
+                    key-resolver: "#{@jwtUserKeyResolver}" # References your Java bean
+                - name: Retry
+                  args:
+                    retries: 3
+                    methods: GET,POST
+                    statuses: INTERNAL_SERVER_ERROR,GATEWAY_TIMEOUT
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 2s
+                      factor: 2
+                      basedOnPreviousValue: true
+                - name: CircuitBreaker
+                  args:
+                    name: userServiceBreaker
+                    fallbackUri: forward:/fallback/user-service
+
+            - id: messaging-persistence-service
+              uri: ${PERSISTENCE_SERVICE_URI:http://localhost:8086}
+              predicates:
+                - Path=/message-persistence-service/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1 # Number of tokens added per second
+                    redis-rate-limiter.burstCapacity: 10 # Maximum number of tokens the bucket can hold
+                    redis-rate-limiter.requestedTokens: 1 # How many tokens one request consumes
+                    key-resolver: "#{@jwtUserKeyResolver}" # References your Java bean
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: INTERNAL_SERVER_ERROR,GATEWAY_TIMEOUT
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 2s
+                      factor: 2
+                      basedOnPreviousValue: true
+                - name: CircuitBreaker
+                  args:
+                    name: messagingPersistenceBreaker
+                    fallbackUri: forward:/fallback/persistence
+
+
+            - id: mobile-bff
+              uri: ${MOBILE_BFF_URI:http://localhost:8087}
+              predicates:
+                - Path=/mobile-bff/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1 # Number of tokens added per second
+                    redis-rate-limiter.burstCapacity: 10 # Maximum number of tokens the bucket can hold
+                    redis-rate-limiter.requestedTokens: 1 # How many tokens one request consumes
+                    key-resolver: "#{@jwtUserKeyResolver}" # References your Java bean
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: INTERNAL_SERVER_ERROR,GATEWAY_TIMEOUT
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 2s
+                      factor: 2
+                      basedOnPreviousValue: true
+                - name: CircuitBreaker
+                  args:
+                    name: mobileBffBreaker
+                    fallbackUri: forward:/fallback/mobile-bff
+
+            - id: messaging-service-ws
+              uri: ${MESSAGING_SERVICE_WS_URI:ws://localhost:8084}
+              predicates:
+                - Path=/ws/**
+
+            - id: messaging-service-http
+              uri: ${MESSAGING_SERVICE_HTTP_URI:http://localhost:8084}
+              predicates:
+                - Path=/ws/**
+              filters:
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: INTERNAL_SERVER_ERROR,GATEWAY_TIMEOUT
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 2s
+                      factor: 2
+                      basedOnPreviousValue: true
+                - name: CircuitBreaker
+                  args:
+                    name: messagingServiceBreaker
+                    fallbackUri: forward:/fallback/messaging
+
+            - id: media-service
+              uri: ${MEDIA_SERVICE_URI:http://localhost:8089}
+              predicates:
+                - Path=/media-service/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1 # Number of tokens added per second
+                    redis-rate-limiter.burstCapacity: 10 # Maximum number of tokens the bucket can hold
+                    redis-rate-limiter.requestedTokens: 1 # How many tokens one request consumes
+                    key-resolver: "#{@jwtUserKeyResolver}" # References your Java bean
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses: INTERNAL_SERVER_ERROR,GATEWAY_TIMEOUT
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 2s
+                      factor: 2
+                      basedOnPreviousValue: true
+                - name: CircuitBreaker
+                  args:
+                    name: mediaServiceBreaker
+                    fallbackUri: forward:/fallback/media
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 6s
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10 # Number of calls to record for calculating the failure rate
+        permitted-number-of-calls-in-half-open-state: 2 # Number of test calls allowed when in HALF_OPEN state
+        failure-rate-threshold: 50 # Percentage of failed calls (out of sliding window) to trip the circuit to OPEN
+        wait-duration-in-open-state: 10000 # Time (in milliseconds) to wait before transitioning from OPEN to HALF_OPEN
 
 logging:
   level:
@@ -20,7 +172,20 @@ logging:
 management:
   tracing:
     sampling:
-      probability: 1.0
+      probability: ${SAMPLING_PROBABILITY:1.0}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_METRICS_URL:http://localhost:4318/v1/metrics}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_TRACES_URL:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_LOGS_URL:http://localhost:4318/v1/logs}
   endpoints:
     web:
       exposure:
@@ -34,19 +199,3 @@ management:
     health:
       probes:
         enabled: true
-
----
-# Settings for 'dev' profile (Localhost)
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: configserver:http://localhost:8888
-
----
-# Settings for 'docker' profile
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://configserver:8888

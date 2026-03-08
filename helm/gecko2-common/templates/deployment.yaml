@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent #tell Helm chart to use the local image if it exists
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            {{ toYaml .Values.resources | nindent 12 }}
+
+
+          readinessProbe: #Are you ready to receive network traffic?
+            httpGet:
+              path: {{ .Values.probePath | default "" }}/actuator/health/readiness
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe: #Are you alive, or have you crashed/deadlocked?
+            httpGet:
+              path: {{ .Values.probePath | default "" }}/actuator/health/liveness
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end}}
+

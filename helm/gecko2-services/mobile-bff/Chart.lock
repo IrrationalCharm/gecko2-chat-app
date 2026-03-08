@@ -1,0 +1,6 @@
+dependencies:
+- name: gecko2-common
+  repository: file://../../gecko2-common
+  version: 0.1.0
+digest: sha256:b625bf72b04adb767259574741b579ee8b8798c2ff0da3d40443f60c072329b5
+generated: "2026-03-07T12:57:30.1251987+01:00"
