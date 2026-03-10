@@ -16,11 +16,11 @@ Gecko Chat es una plataforma de mensajería en tiempo real construida desde cero
 ### Cliente Android
 ### Cliente Android
 <p align="center">
-  <img src="assets/messaging.png" alt="Lista de Chats" width="35%" />
+  <img src="assets/messaging.png" alt="Pantalla de Mensajerías" width="80%" />
 </p>
 <p align="center">
   <img src="assets/contacts.png" alt="Lista de Contactos" width="30%" />
-  <img src="assets/chat-list.png" alt="Pantalla de Mensajería" width="30%" />
+  <img src="assets/chat-list.png" alt="Lista de Chat" width="30%" />
   <img src="assets/profile.png" alt="Perfil de Usuario" width="30%" />
 </p>
 
